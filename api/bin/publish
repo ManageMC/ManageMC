@@ -9,7 +9,14 @@ fi
 
 
 publish_ruby() {
-  echo "Unimplemented"
+  # for help, please see:
+  # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-rubygems-registry
+  # We use the Bundler strategy
+
+  cd generated/ruby
+  gem build *.gemspec
+  gem push --key github --host https://rubygems.pkg.github.com/ManageMC managemc_api-*.gem
+  rm *.gem
 }
 
 publish_java() {

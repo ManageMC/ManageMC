@@ -12,6 +12,10 @@ generate_ruby() {
   mkdir -p generated/ruby
   rm -rf generated/ruby/*
   mvn clean compile -f poms/pom-ruby.xml
+
+  # add gem metadata so that RubyGems knows which repo to publish to (the code generator doesn't support this yet)
+  cd generated/ruby
+  sed -i '' 's/Gem::Specification.new do |s|/Gem::Specification.new do |s|\n  # this line was appended after code generation\n  s.metadata    = { "github_repo" => "ssh:\/\/github.com\/ManageMC\/ManageMC" }\n/g' *.gemspec
 }
 
 generate_java() {
