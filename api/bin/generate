@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$1" ]; then
+  echo "Usage: bin/generate <language>"
+  exit 0
+fi
+
+
+generate_ruby() {
+  mkdir -p generated/ruby
+  rm -rf generated/ruby/*
+  mvn clean compile -f poms/pom-ruby.xml
+
+  # add gem metadata so that RubyGems knows which repo to publish to (the code generator doesn't support this yet)
+  cd generated/ruby
+  sed -i '' 's/Gem::Specification.new do |s|/Gem::Specification.new do |s|\n  # this line was appended after code generation\n  s.metadata    = { "github_repo" => "ssh:\/\/github.com\/ManageMC\/ManageMC" }\n/g' *.gemspec
+}
+
+generate_java() {
+  mkdir -p generated/java
+  rm -rf generated/java/*
+  mvn clean compile -f poms/pom-java.xml
+  rm -rf poms/target
+}
+
+
+case $1 in
+  ruby) generate_ruby;;
+  java) generate_java;;
+  *) echo "Unrecognized language $1. Must be one of: java, ruby";;
+esac
