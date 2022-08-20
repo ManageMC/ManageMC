@@ -23,9 +23,14 @@ publish_java_client() {
   mvn clean deploy -f api/poms/pom-java.xml -Pdefault
 }
 
+publish_wrapper() {
+  mvn clean deploy -f libs/api-wrapper/pom.xml
+}
+
 
 case $1 in
   ruby_client) publish_ruby_client;;
   java_client) publish_java_client;;
+  wrapper) publish_wrapper;;
   *) echo "Unrecognized language $1. Must be one of: java_client, ruby_client";;
 esac
