@@ -29,8 +29,14 @@ generate_java() {
   rm -rf poms/target
 }
 
+generate_all() {
+  generate_java
+  generate_ruby
+}
+
 
 case $1 in
+  all) generate_all;;
   ruby) generate_ruby;;
   java) generate_java;;
   *) echo "Unrecognized language $1. Must be one of: all, java, ruby";;
