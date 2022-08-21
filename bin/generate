@@ -9,6 +9,8 @@ fi
 
 
 generate_ruby() {
+  cd api
+
   mkdir -p generated/ruby
   rm -rf generated/ruby/*
   mvn clean compile -f poms/pom-ruby.xml
@@ -19,15 +21,23 @@ generate_ruby() {
 }
 
 generate_java() {
+  cd api
+
   mkdir -p generated/java
   rm -rf generated/java/*
   mvn clean compile -f poms/pom-java.xml
   rm -rf poms/target
 }
 
+generate_all() {
+  generate_java
+  generate_ruby
+}
+
 
 case $1 in
+  all) generate_all;;
   ruby) generate_ruby;;
   java) generate_java;;
-  *) echo "Unrecognized language $1. Must be one of: java, ruby";;
+  *) echo "Unrecognized language $1. Must be one of: all, java, ruby";;
 esac
