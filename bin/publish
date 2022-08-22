@@ -28,10 +28,16 @@ publish_wrapper() {
   mvn clean deploy -f libs/api-wrapper/pom.xml
 }
 
+publish_pom() {
+  # repo ID comes from ~/.m2/settings.xml
+  mvn clean deploy:deploy-file -DpomFile=pom.xml -Dfile=./pom.xml -Durl=https://maven.pkg.github.com/ManageMC/ManageMC -DrepositoryId=github
+}
+
 
 case $1 in
   ruby_client) publish_ruby_client;;
   java_client) publish_java_client;;
   wrapper) publish_wrapper;;
+  pom) publish_pom;;
   *) echo "Unrecognized language $1. Must be one of: java_client, ruby_client";;
 esac
