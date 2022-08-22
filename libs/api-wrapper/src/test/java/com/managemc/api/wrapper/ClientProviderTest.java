@@ -10,7 +10,7 @@ import com.managemc.api.wrapper.model.metadata.ExternalApplicationAuthMetadata;
 import com.managemc.api.wrapper.model.metadata.ExternalServerAuthMetadata;
 import com.managemc.api.wrapper.model.metadata.InternalAuthMetadata;
 import com.managemc.api.wrapper.model.metadata.PlayerAuthMetadata;
-import com.managemc.api.wrapper.refresher.WebServiceTokenRefresher;
+import com.managemc.api.wrapper.refresher.TokenRefresher;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,31 +38,31 @@ public class ClientProviderTest {
   @Test
   public void internal_badCredentials_shouldThrowError() {
     Assert.assertThrows(
-        WebServiceTokenRefresher.BadCredentialsException.class,
+        TokenRefresher.BadCredentialsException.class,
         () -> ClientProvider.local(logger, new Keys(INTERNAL_PUBLIC_KEY, "oops"), null).internal().getPingApi().ping()
     );
 
-    Mockito.verify(logger, Mockito.times(1)).logWarning(WebServiceTokenRefresher.BAD_CREDS_MESSAGE);
+    Mockito.verify(logger, Mockito.times(1)).logWarning(TokenRefresher.BAD_CREDS_MESSAGE);
   }
 
   @Test
   public void externalApplication_badCredentials_shouldThrowError() {
     Assert.assertThrows(
-        WebServiceTokenRefresher.BadCredentialsException.class,
+        TokenRefresher.BadCredentialsException.class,
         () -> ClientProvider.local(logger, new Keys(EXTERNAL_PUBLIC_KEY, "oops"), null).externalApplication().getPingApi().ping()
     );
 
-    Mockito.verify(logger, Mockito.times(1)).logWarning(WebServiceTokenRefresher.BAD_CREDS_MESSAGE);
+    Mockito.verify(logger, Mockito.times(1)).logWarning(TokenRefresher.BAD_CREDS_MESSAGE);
   }
 
   @Test
   public void externalServer_badCredentials_shouldThrowError() {
     Assert.assertThrows(
-        WebServiceTokenRefresher.BadCredentialsException.class,
+        TokenRefresher.BadCredentialsException.class,
         () -> ClientProvider.local(logger, new Keys(EXTERNAL_PUBLIC_KEY, "oops"), SERVER_GROUP).externalServer().getPingApi().ping()
     );
 
-    Mockito.verify(logger, Mockito.times(1)).logWarning(WebServiceTokenRefresher.BAD_CREDS_MESSAGE);
+    Mockito.verify(logger, Mockito.times(1)).logWarning(TokenRefresher.BAD_CREDS_MESSAGE);
   }
 
   @Test

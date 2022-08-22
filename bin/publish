@@ -14,6 +14,7 @@ publish_ruby_client() {
   # We use the Bundler strategy
 
   cd api/generated/ruby
+  rm -f *.gem
   gem build *.gemspec
   gem push --key github --host https://rubygems.pkg.github.com/ManageMC managemc_api-*.gem
   rm *.gem

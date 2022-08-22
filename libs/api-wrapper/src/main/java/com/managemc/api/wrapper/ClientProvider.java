@@ -80,7 +80,7 @@ public class ClientProvider {
       return internalClient.get();
     }
 
-    InternalTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    InternalTokenRefresher tokenRefresher = TokenRefreshers
         .internal(logger, basePath, keys);
     internalClient = ThreadLocal.withInitial(() -> new InternalClient(tokenRefresher));
     return internalClient.get();
@@ -112,7 +112,7 @@ public class ClientProvider {
       return externalServerClient.get();
     }
 
-    ExternalServerTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    ExternalServerTokenRefresher tokenRefresher = TokenRefreshers
         .externalServer(logger, basePath, keys, serverGroup);
     externalServerClient = ThreadLocal.withInitial(() -> new ExternalServerClient(tokenRefresher));
     return externalServerClient.get();
@@ -127,7 +127,7 @@ public class ClientProvider {
       return externalApplicationClient.get();
     }
 
-    ExternalApplicationTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    ExternalApplicationTokenRefresher tokenRefresher = TokenRefreshers
         .externalApplication(logger, basePath, keys);
     externalApplicationClient = ThreadLocal.withInitial(() -> new ExternalApplicationClient(tokenRefresher));
     return externalApplicationClient.get();
@@ -142,7 +142,7 @@ public class ClientProvider {
       return playerClients.get(playerId);
     }
 
-    PlayerTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    PlayerTokenRefresher tokenRefresher = TokenRefreshers
         .player(logger, basePath, playerId, this);
     PlayerClient playerClient = new PlayerClient(tokenRefresher);
     playerClients.put(playerId, playerClient);

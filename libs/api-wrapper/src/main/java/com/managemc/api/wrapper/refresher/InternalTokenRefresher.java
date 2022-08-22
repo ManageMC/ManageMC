@@ -10,7 +10,7 @@ import org.openapitools.client.model.GenerateInternalServiceTokenInput;
 
 import java.util.Map;
 
-public class InternalTokenRefresher extends WebServiceTokenRefresher<InternalAuthMetadata> {
+public class InternalTokenRefresher extends TokenRefresher<InternalAuthMetadata> {
 
   private final Keys keys;
 

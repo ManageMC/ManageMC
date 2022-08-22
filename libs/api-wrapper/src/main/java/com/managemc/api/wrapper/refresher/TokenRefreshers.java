@@ -5,9 +5,9 @@ import com.managemc.api.wrapper.model.Keys;
 
 import java.util.UUID;
 
-public class WebServiceTokenRefreshers {
+public class TokenRefreshers {
 
-  private WebServiceTokenRefreshers() {
+  private TokenRefreshers() {
   }
 
   public static InternalTokenRefresher internal(
