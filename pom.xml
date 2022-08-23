@@ -20,6 +20,7 @@
 
     <modules>
         <module>libs/api-wrapper</module>
+        <module>libs/plugins-shared</module>
     </modules>
 
     <dependencies>
