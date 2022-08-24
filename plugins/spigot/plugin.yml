@@ -1,0 +1,7 @@
+name: managemc-spigot-external
+main: com.managemc.spigot.external.ManageMCSpigotPlugin
+version: 0.1.0-SNAPSHOT
+commands:
+  mmc:
+    description: Root command for ManageMC
+    usage: /mmc <resource> <action> [...other args]
