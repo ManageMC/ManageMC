@@ -1,6 +1,7 @@
 package com.managemc.spigot;
 
 import com.managemc.api.ApiException;
+import com.managemc.api.wrapper.refresher.TokenRefresher;
 import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.config.FileBasedLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
@@ -24,16 +25,19 @@ import java.util.Optional;
 public class ManageMCSpigotPlugin extends JavaPlugin {
 
   private static final String DEFAULT_CONFIG_FILENAME = "default-config.yml";
+  private static final String CONFIG_FILENAME = "ManageMC.yml";
 
   private SpigotPluginConfig config;
 
   @Override
   public void onEnable() {
-    BukkitLogging logging = new BukkitLogging("ManageMC");
-    BukkitWrapper wrapper = new BukkitWrapper(this);
+    BukkitLogging logger = new BukkitLogging("ManageMC");
+    BukkitWrapper bukkitWrapper = new BukkitWrapper(this);
+
+    String configFilePath = bukkitWrapper.getDataFolder() + "/" + CONFIG_FILENAME;
 
     try {
-      config = buildConfig(logging, wrapper);
+      config = buildConfig(logger, bukkitWrapper);
 
       config.getApiPingService().ping();
       config.getRemoteConfigService().loadSync();
@@ -42,15 +46,27 @@ public class ManageMCSpigotPlugin extends JavaPlugin {
       registerListeners(config);
       registerCommands(config);
       config.getPeriodicHeartbeatSender().start();
-    } catch (Exception e) {
-      logging.logStackTrace(e);
-      logging.logSevere("Since ManageMC failed to load, the server will shut down");
-      getServer().shutdown();
+    } catch (LocalConfig.IncompleteConfigException e) {
+      logger.logInfo("Welcome to ManageMC! Please fill out the local config file at " + configFilePath + ".");
+      logger.logInfo("Unloading ManageMC because local config is incomplete...");
+      bukkitWrapper.disable();
+    } catch (TokenRefresher.BadCredentialsException e) {
+      logger.logWarning("Authentication with ManageMC failed because the credentials at " + configFilePath + " are wrong.");
+      logger.logWarning("Unloading ManageMC due to misconfiguration...");
+      bukkitWrapper.disable();
+    } catch (RuntimeException | ApiException | IOException e) {
+      logger.logStackTrace(e);
+      logger.logWarning("Unloading ManageMC down due to an unexpected error...");
+      bukkitWrapper.disable();
     }
   }
 
   @Override
   public void onDisable() {
+    if (config == null) {
+      return;
+    }
+
     try {
       new BatchKickPlayersOnDisable(config.getLogging(), config.getBukkitWrapper(), config.getLoginLogoutService())
           .run();
@@ -58,10 +74,14 @@ public class ManageMCSpigotPlugin extends JavaPlugin {
       if (config.getPeriodicHeartbeatSender() != null) {
         config.getPeriodicHeartbeatSender().stop();
       }
-      config.getHeartbeatService().emitFinalHeartbeat();
-    } catch (ApiException e) {
+
+      LocalConfig.DynamicComponents dynamicComponents = config.getLocalConfig().getDynamicComponents();
+      if (dynamicComponents != null) {
+        config.getHeartbeatService().emitFinalHeartbeat();
+      }
+    } catch (RuntimeException | ApiException e) {
+      config.getLogging().logWarning("Something unexpected went wrong while disabling ManageMC.");
       config.getLogging().logStackTrace(e);
-      config.getLogging().logSevere("Something unexpected went wrong while disabling ManageMC.");
     }
   }
 
@@ -70,7 +90,7 @@ public class ManageMCSpigotPlugin extends JavaPlugin {
 
     LocalConfigLoader configLoader = new FileBasedLocalConfigLoader(
         bukkitWrapper.getDataFolder(),
-        "ManageMC.yml",
+        CONFIG_FILENAME,
         Optional
             .ofNullable(bukkitWrapper.getResource(DEFAULT_CONFIG_FILENAME))
             .orElseThrow(() -> new RuntimeException("Default config file not found. This is a bug."))

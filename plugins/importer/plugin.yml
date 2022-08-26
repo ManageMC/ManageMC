@@ -1,3 +1,5 @@
 name: ManageMCImporter
 main: com.managemc.importer.ManageMCImporterPlugin
 version: 0.1.0-SNAPSHOT
+api-version: 1.19
+softdepend: [ AdvancedBan, MaxBansPlus ]

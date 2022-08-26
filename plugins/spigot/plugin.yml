@@ -1,6 +1,7 @@
 name: ManageMC
 main: com.managemc.spigot.ManageMCSpigotPlugin
 version: 0.1.0-SNAPSHOT
+api-version: 1.19
 commands:
   mmc:
     description: Root command for ManageMC
