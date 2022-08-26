@@ -1,0 +1,65 @@
+#!/bin/bash
+
+set -e
+
+MODULE_OPTIONS="spigot, linker, importer"
+
+if [ -z "$1" ]; then
+  echo "Usage: bin/local_plugin <plugin>"
+  echo "Available modules: $MODULE_OPTIONS"
+  exit 0
+fi
+
+THIS_DIRECTORY="$( dirname "$0" )"
+cd $THIS_DIRECTORY/../plugins
+
+
+export_importer_to_test_server()
+{
+  echo "Building ManageMC Importer plugin..."
+
+  cd importer
+  TEST_SERVER_DIRECTORY="../../local_minecraft_server/spigot"
+
+  mvn clean package
+  rm -f $TEST_SERVER_DIRECTORY/plugins/ManageMCImporter-*.jar
+  cp target/ManageMCImporter-*.jar $TEST_SERVER_DIRECTORY/plugins
+
+  echo "Copied plugin to your local test server"
+}
+
+export_spigot_to_test_server()
+{
+  echo "Building ManageMC Spigot plugin..."
+
+  cd spigot
+  TEST_SERVER_DIRECTORY="../../local_minecraft_server/spigot"
+
+  mvn clean package
+  rm -f $TEST_SERVER_DIRECTORY/plugins/ManageMC-*.jar
+  cp target/ManageMC-*.jar $TEST_SERVER_DIRECTORY/plugins
+
+  echo "Copied plugin to your local test server"
+}
+
+export_linker_to_test_server()
+{
+  echo "Building ManageMC Linker plugin..."
+
+  cd linker
+  TEST_SERVER_DIRECTORY="../../local_minecraft_server/spigot"
+
+  mvn clean package
+  rm -f $TEST_SERVER_DIRECTORY/plugins/ManageMCLinker-*.jar
+  cp target/ManageMCLinker-*.jar $TEST_SERVER_DIRECTORY/plugins
+
+  echo "Copied plugin to your local test server"
+}
+
+
+case $1 in
+  importer) export_importer_to_test_server;;
+  spigot) export_spigot_to_test_server;;
+  linker) export_linker_to_test_server;;
+  *) echo "Unrecognized plugin $1. Must be one of: $MODULE_OPTIONS";;
+esac

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+THIS_DIRECTORY="$( dirname "$0" )"
+
+cd $THIS_DIRECTORY/../local_minecraft_server/spigot
+
+# tip: use the --nogui flag to disable the server GUI
+# The IReallyKnowWhatIAmDoingISwear flag disables the warning message you get when the Spigot build is out of date
+java -DIReallyKnowWhatIAmDoingISwear -Xms512M -Xmx1G -jar *.jar $1

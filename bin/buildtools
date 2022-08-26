@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# This script downloads and runs BuildTools and saves the resulting jar in a gitignored folder.
+# If you have built the jar before, then the old one will be used.
+
+if [ -z "$1" ]; then
+  echo "Please specify a version of Spigot to use (e.g. bin/buildtools 1.13.2)"
+  exit 0
+fi
+
+THIS_DIRECTORY="$( dirname "$0" )"
+cd $THIS_DIRECTORY/../local_minecraft_server
+
+replace_jarfile()
+{
+  rm -f spigot/spigot-*.jar
+  cp $1 spigot
+}
+
+update_spigot()
+{
+  wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+  mkdir temp
+  mv BuildTools.jar temp
+  cd temp
+  java -jar BuildTools.jar --rev $1
+
+  cd ..
+
+  cp temp/spigot-*.jar jars
+
+  rm -rf temp
+}
+
+JAR="jars/spigot-$1.jar"
+if test -f $JAR; then
+  echo "Setting the version of your test server to $1."
+  echo "If Spigot complains that the build is out of date, simply delete $JAR and run this script again."
+  replace_jarfile $JAR
+  rm -rf spigot/world
+else
+  echo "$1 has not been built yet, so we will run buildtools. This will take a few minutes..."
+  update_spigot $1
+  replace_jarfile "jars/spigot-$1.jar"
+fi
+
