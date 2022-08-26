@@ -3,7 +3,6 @@ package com.managemc.importer;
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
 import com.managemc.importer.command.base.CommandBaseAsync;
-import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
 import org.junit.Before;
 
 import java.util.concurrent.TimeUnit;

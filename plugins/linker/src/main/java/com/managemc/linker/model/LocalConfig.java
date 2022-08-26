@@ -1,4 +1,4 @@
-package com.managemc.importer.config;
+package com.managemc.linker.model;
 
 import com.managemc.api.wrapper.model.Keys;
 import lombok.Getter;

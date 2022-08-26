@@ -1,3 +1,3 @@
-name: managemc-importer
+name: ManageMCImporter
 main: com.managemc.importer.ManageMCImporterPlugin
 version: 0.1.0-SNAPSHOT

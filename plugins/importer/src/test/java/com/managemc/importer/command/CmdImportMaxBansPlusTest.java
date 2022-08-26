@@ -569,6 +569,21 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
         .build();
   }
 
+  private void onCommand(String... args) {
+    PunishmentImporterService service = new PunishmentImporterService(
+        logging,
+        Mockito.mock(AdvancedBanDb.class),
+        db,
+        onboardingApiService,
+        jobTracker
+    );
+
+    Mockito.when(config.getImporterService()).thenReturn(service);
+    Mockito.when(config.getMaxBansMainClass()).thenReturn(maxBansMainClass);
+
+    new CmdImport(logging, config).execute(sender, "nobodycares", args);
+  }
+
   @Builder
   private static class MockBan extends Ban {
 
@@ -625,20 +640,5 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
     private final User revoker;
     @Getter
     private final Tenant tenant;
-  }
-
-  private void onCommand(String... args) {
-    PunishmentImporterService service = new PunishmentImporterService(
-        logging,
-        Mockito.mock(AdvancedBanDb.class),
-        db,
-        onboardingApiService,
-        jobTracker
-    );
-
-    Mockito.when(config.getImporterService()).thenReturn(service);
-    Mockito.when(config.getMaxBansMainClass()).thenReturn(maxBansMainClass);
-
-    new CmdImport(logging, config).execute(sender, "nobodycares", args);
   }
 }

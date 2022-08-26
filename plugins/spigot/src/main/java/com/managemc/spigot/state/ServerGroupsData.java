@@ -14,6 +14,9 @@ public class ServerGroupsData {
   private final Map<Long, ServerGroupAbridged> serverGroups = new ConcurrentHashMap<>();
   private final ClientProvider clientProvider;
 
+  @Getter(value = AccessLevel.PROTECTED)
+  private boolean needsRefresh = true;
+
   public ServerGroupsData(ClientProvider clientProvider) {
     this.clientProvider = clientProvider;
   }
@@ -25,9 +28,6 @@ public class ServerGroupsData {
     }
     return group;
   }
-
-  @Getter(value = AccessLevel.PROTECTED)
-  private boolean needsRefresh = true;
 
   public void refreshBlocking() throws ApiException {
     clientProvider.externalServer().getServerGroupsApi().fetchServerGroups(networkId())

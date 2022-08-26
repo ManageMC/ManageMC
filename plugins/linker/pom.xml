@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.managemc.spigot</groupId>
-    <artifactId>managemc-spigot</artifactId>
+    <groupId>com.managemc.linker</groupId>
+    <artifactId>managemc-linker</artifactId>
     <packaging>jar</packaging>
     <version>0.1.0-SNAPSHOT</version>
-    <name>ManageMC Spigot Plugin</name>
+    <name>ManageMC Linker Plugin</name>
 
     <parent>
         <groupId>com.managemc</groupId>
@@ -17,7 +17,7 @@
     </parent>
 
     <build>
-        <finalName>ManageMC-${project.version}</finalName>
+        <finalName>ManageMCLinker-${project.version}</finalName>
 
         <plugins>
             <plugin>
@@ -81,34 +81,6 @@
             <artifactId>awaitility</artifactId>
             <version>4.2.0</version>
             <scope>test</scope>
-        </dependency>
-
-        <!-- for making HTTP requests -->
-        <dependency>
-            <groupId>com.mashape.unirest</groupId>
-            <artifactId>unirest-java</artifactId>
-            <version>1.4.9</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.30</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.ocpsoft.prettytime/prettytime -->
-        <dependency>
-            <groupId>org.ocpsoft.prettytime</groupId>
-            <artifactId>prettytime</artifactId>
-            <version>5.0.3.Final</version>
         </dependency>
     </dependencies>
 </project>

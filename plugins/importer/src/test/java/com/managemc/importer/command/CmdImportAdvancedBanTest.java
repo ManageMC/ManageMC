@@ -672,6 +672,21 @@ public class CmdImportAdvancedBanTest extends TestsWithServiceClient {
     return new MockPunishment(name, uuid, reason, operator, type, start, start + 500_000);
   }
 
+  private void onCommand(String... args) {
+    PunishmentImporterService service = new PunishmentImporterService(
+        logging,
+        db,
+        Mockito.mock(MaxBansPlusDb.class),
+        onboardingApiService,
+        jobTracker
+    );
+
+    Mockito.when(config.getImporterService()).thenReturn(service);
+    Mockito.when(config.getAdvancedBanMainClass()).thenReturn(advancedBanMainClass);
+
+    new CmdImport(logging, config).execute(sender, "nobodycares", args);
+  }
+
   private static class MockPunishment extends Punishment {
 
     // these getters quietly override superclass methods
@@ -700,20 +715,5 @@ public class CmdImportAdvancedBanTest extends TestsWithServiceClient {
       this.start = start;
       this.end = end;
     }
-  }
-
-  private void onCommand(String... args) {
-    PunishmentImporterService service = new PunishmentImporterService(
-        logging,
-        db,
-        Mockito.mock(MaxBansPlusDb.class),
-        onboardingApiService,
-        jobTracker
-    );
-
-    Mockito.when(config.getImporterService()).thenReturn(service);
-    Mockito.when(config.getAdvancedBanMainClass()).thenReturn(advancedBanMainClass);
-
-    new CmdImport(logging, config).execute(sender, "nobodycares", args);
   }
 }

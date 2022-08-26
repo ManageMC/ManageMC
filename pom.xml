@@ -21,7 +21,7 @@
     <modules>
         <module>libs/api-wrapper</module>
         <module>libs/plugins-shared</module>
-        <module>plugins/account-linker</module>
+        <module>plugins/linker</module>
         <module>plugins/importer</module>
         <module>plugins/spigot</module>
     </modules>

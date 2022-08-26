@@ -14,8 +14,6 @@ import java.util.UUID;
 
 public class CommandAssertions {
 
-  private static final IpV4Validator IP_V4_VALIDATOR = new IpV4Validator();
-  private static final RangeIpValidator RANGE_IP_VALIDATOR = new RangeIpValidator();
   public static final String WRONG_NUM_ARGS = "Wrong number of arguments";
   public static final String NO_SHADOW_PUNISHMENTS_MSG = "You don't have permission to issue shadow punishments";
   public static final String NOT_FOUND_MSG = "Player does not exist. Perhaps they changed their username?";
@@ -23,6 +21,8 @@ public class CommandAssertions {
   public static final String NO_PERMANENT_PUNISHMENTS_MSG = "You don't have permission to issue permanent punishments";
   public static final String MOJANG_RATE_LIMIT_MSG = "Could not find player due to Mojang's rate limit";
   public static final String UUID_RESOLUTION_UNEXPECTED_MSG = "Player UUID resolution failed for unexpected reasons";
+  private static final IpV4Validator IP_V4_VALIDATOR = new IpV4Validator();
+  private static final RangeIpValidator RANGE_IP_VALIDATOR = new RangeIpValidator();
 
   public static void assertTrue(boolean expression, String errorMessage, boolean syntactic) {
     if (!expression) {

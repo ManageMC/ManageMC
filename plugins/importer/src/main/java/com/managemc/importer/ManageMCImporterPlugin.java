@@ -23,7 +23,7 @@ public class ManageMCImporterPlugin extends JavaPlugin {
 
   private static final String DEFAULT_CONFIG_FILENAME = "default-config.yml";
   private static final String CONFIG_FILENAME = "ManageMC.yml";
-  private static final String PLUGIN_NAME = "MangeMC Punishment Importer";
+  private static final String PLUGIN_NAME = "ManageMC Importer";
 
   @Override
   public void onEnable() {

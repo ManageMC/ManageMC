@@ -44,30 +44,30 @@ public class PunishmentImporter {
 
     ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
 
-    List<Callable<Object>> todo = new ArrayList<>();
+    List<Callable<Object>> tasks = new ArrayList<>();
 
     buildPartitionedApiRequests(
         punishmentsCache.allBans(),
         (batch) -> onboardingApiService.importBans(importId, new ImportableBans().bans(batch))
-    ).forEach(task -> todo.add(Executors.callable(task)));
+    ).forEach(task -> tasks.add(Executors.callable(task)));
 
     buildPartitionedApiRequests(
         punishmentsCache.allMutes(),
         (batch) -> onboardingApiService.importMutes(importId, new ImportableMutes().mutes(batch))
-    ).forEach(task -> todo.add(Executors.callable(task)));
+    ).forEach(task -> tasks.add(Executors.callable(task)));
 
     buildPartitionedApiRequests(
         punishmentsCache.allWarnings(),
         (batch) -> onboardingApiService
             .importWarnings(importId, new ImportableWarnings().warnings(batch))
-    ).forEach(task -> todo.add(Executors.callable(task)));
+    ).forEach(task -> tasks.add(Executors.callable(task)));
 
     buildPartitionedApiRequests(
         punishmentsCache.allIpBans(),
         (batch) -> onboardingApiService.importIpBans(importId, new ImportableIpBans().ipBans(batch))
-    ).forEach(task -> todo.add(Executors.callable(task)));
+    ).forEach(task -> tasks.add(Executors.callable(task)));
 
-    executorService.invokeAll(todo);
+    executorService.invokeAll(tasks);
 
     if (failureCount.get() == 0) {
       onboardingApiService.completeImport(importId);

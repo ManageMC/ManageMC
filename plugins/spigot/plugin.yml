@@ -1,5 +1,5 @@
-name: managemc-spigot-external
-main: com.managemc.spigot.external.ManageMCSpigotPlugin
+name: ManageMC
+main: com.managemc.spigot.ManageMCSpigotPlugin
 version: 0.1.0-SNAPSHOT
 commands:
   mmc:

@@ -37,14 +37,14 @@ public class BatchKickPlayersOnDisable {
   public void run() {
     ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS);
 
-    List<Callable<Object>> todo = bukkitWrapper.getOnlinePlayers().stream()
+    List<Callable<Object>> tasks = bukkitWrapper.getOnlinePlayers().stream()
         .peek(player -> player.kickPlayer(RELOAD_MESSAGE))
         .map((player) -> Executors.callable(logoutTaskForPlayer(player)))
         .collect(Collectors.toList());
 
-    if (!todo.isEmpty()) {
+    if (!tasks.isEmpty()) {
       try {
-        executorService.invokeAll(todo);
+        executorService.invokeAll(tasks);
         executorService.shutdownNow();
       } catch (InterruptedException e) {
         logging.logStackTrace(e);

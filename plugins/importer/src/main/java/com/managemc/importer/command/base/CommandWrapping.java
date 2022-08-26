@@ -6,11 +6,6 @@ import org.bukkit.command.CommandSender;
 
 public class CommandWrapping {
 
-  @FunctionalInterface
-  public interface FunctionWrappedWithErrorHandling {
-    void apply() throws Exception;
-  }
-
   public static boolean wrap(
       FunctionWrappedWithErrorHandling function,
       CommandSender sender,
@@ -30,5 +25,10 @@ public class CommandWrapping {
       sender.sendMessage(CommandBase.HARD_FAILURE_MESSAGE);
     }
     return false;
+  }
+
+  @FunctionalInterface
+  public interface FunctionWrappedWithErrorHandling {
+    void apply() throws Exception;
   }
 }

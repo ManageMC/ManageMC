@@ -27,10 +27,9 @@ public class PunishmentFlags {
           CommandFlag.defaultFlag(LOCAL_FLAG)
       )
   );
-
+  private final ProcessedCommandArguments args;
   @Getter
   private Long duration;
-  private final ProcessedCommandArguments args;
 
   public PunishmentFlags(ProcessedCommandArguments args) {
     this.args = args;
