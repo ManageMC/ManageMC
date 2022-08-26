@@ -14,6 +14,7 @@ publish_ruby_client() {
   # We use the Bundler strategy
 
   cd api/generated/ruby
+  rm -f *.gem
   gem build *.gemspec
   gem push --key github --host https://rubygems.pkg.github.com/ManageMC managemc_api-*.gem
   rm *.gem
@@ -27,10 +28,36 @@ publish_wrapper() {
   mvn clean deploy -f libs/api-wrapper/pom.xml
 }
 
+publish_shared() {
+  mvn clean deploy -f libs/plugins-shared/pom.xml
+}
+
+publish_importer() {
+  mvn clean deploy -f plugins/importer/pom.xml
+}
+
+publish_spigot() {
+  mvn clean deploy -f plugins/spigot/pom.xml
+}
+
+publish_account_linker() {
+  mvn clean deploy -f plugins/account-linker/pom.xml
+}
+
+publish_pom() {
+  # repo ID comes from ~/.m2/settings.xml
+  mvn clean deploy:deploy-file -DpomFile=pom.xml -Dfile=./pom.xml -Durl=https://maven.pkg.github.com/ManageMC/ManageMC -DrepositoryId=github
+}
+
 
 case $1 in
   ruby_client) publish_ruby_client;;
   java_client) publish_java_client;;
   wrapper) publish_wrapper;;
-  *) echo "Unrecognized language $1. Must be one of: java_client, ruby_client";;
+  shared) publish_shared;;
+  importer) publish_importer;;
+  spigot) publish_spigot;;
+  linker) publish_account_linker;;
+  pom) publish_pom;;
+  *) echo "Unrecognized resource $1. Must be one of: ruby_client, java_client, wrapper, shared, importer, spigot, linker, pom";;
 esac

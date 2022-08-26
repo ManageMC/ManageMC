@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
 import java.util.Base64;
 import java.util.Map;
 
-public abstract class WebServiceTokenRefresher<T extends AuthMetadata> implements MethodHandler {
+public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHandler {
 
   private static final long THIRTY_SECONDS = 30 * 1000;
   public static final String BAD_CREDS_MESSAGE = "Invalid public/private key configured for application";
@@ -30,7 +30,7 @@ public abstract class WebServiceTokenRefresher<T extends AuthMetadata> implement
   protected final ApiClient client;
   private final ClientProvider.Logger logger;
 
-  public WebServiceTokenRefresher(ClientProvider.Logger logger, String basePath) {
+  public TokenRefresher(ClientProvider.Logger logger, String basePath) {
     this.client = new ApiClient();
     this.client.setBasePath(basePath);
     this.unproxiedAuthApi = new AuthenticationApi(client);
@@ -48,9 +48,6 @@ public abstract class WebServiceTokenRefresher<T extends AuthMetadata> implement
         logger.logWarning(String.format(BAD_REQUEST_MESSAGE, body));
       }
       throw e.getCause();
-    } catch (BadCredentialsException e) {
-      logger.logWarning(BAD_CREDS_MESSAGE);
-      throw e;
     } finally {
       // helps with testing by making it easy for us to tell if an async request has finished
       // if this behaves unexpectedly, possible causes include a method we are filtering incorrectly
@@ -96,6 +93,9 @@ public abstract class WebServiceTokenRefresher<T extends AuthMetadata> implement
   }
 
   public static class BadCredentialsException extends RuntimeException {
+    public BadCredentialsException() {
+      super(BAD_CREDS_MESSAGE);
+    }
   }
 
   private static final TypeReference<Map<String, Object>> JSON_MAP_TYPE =

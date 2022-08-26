@@ -1,0 +1,19 @@
+# Client-side configuration for ManageMC
+
+# Your public and private keys, which may be copied and pasted from https://managemc.com/config#credentials.
+# Anyone with access to these keys has the same power as your Minecraft server on ManageMC, so be sure not
+# to share them with hooligans you do not trust.
+public_key:
+private_key:
+
+# The server group is a label that serves as a logical category. Permissions and punishments may be scoped to
+# server groups rather than assigned throughout your network, and player traffic stats will be calculated for
+# each server group. Generally, each game type your network provides should have a unique server group. Short
+# or abbreviated groups look better on the website. Example: KitPvP.
+group:
+
+# The server name is a unique identifier for this Minecraft server instance. If a player on your watch list
+# appears online, this field will be used to describe the server they are using. The best possible choice
+# for this field is the server's public IP, if you know it, but a descriptive label might be good enough.
+# Examples: KitPvP 2, KitPvP eu
+name:

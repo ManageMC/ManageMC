@@ -10,7 +10,7 @@ import org.openapitools.client.model.GenerateExternalServiceTokenInput;
 
 import java.util.Map;
 
-public class ExternalServerTokenRefresher extends WebServiceTokenRefresher<ExternalServerAuthMetadata> {
+public class ExternalServerTokenRefresher extends TokenRefresher<ExternalServerAuthMetadata> {
 
   private final Keys keys;
   private final String serverGroup;

@@ -10,7 +10,7 @@ import org.openapitools.client.model.GeneratePlayerTokenInput;
 import java.util.Map;
 import java.util.UUID;
 
-public class PlayerTokenRefresher extends WebServiceTokenRefresher<PlayerAuthMetadata> {
+public class PlayerTokenRefresher extends TokenRefresher<PlayerAuthMetadata> {
 
   private final UUID playerId;
   private final ClientProvider provider;

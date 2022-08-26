@@ -3,7 +3,7 @@ package com.managemc.api.wrapper.client;
 import com.managemc.api.ApiClient;
 import com.managemc.api.api.*;
 import com.managemc.api.wrapper.model.metadata.AuthMetadata;
-import com.managemc.api.wrapper.refresher.WebServiceTokenRefresher;
+import com.managemc.api.wrapper.refresher.TokenRefresher;
 import com.managemc.api.wrapper.refresher.filter.TokenRefresherMethodFilter;
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;
@@ -37,9 +37,9 @@ public abstract class Client<T extends AuthMetadata> {
   @Getter
   private final ServerGroupsApi serverGroupsApi;
 
-  private final WebServiceTokenRefresher<T> refresher;
+  private final TokenRefresher<T> refresher;
 
-  public Client(WebServiceTokenRefresher<T> refresher) {
+  public Client(TokenRefresher<T> refresher) {
     this.client = refresher.getClient();
     this.refresher = refresher;
     this.pingApi = generateProxyApi(PingApi.class);

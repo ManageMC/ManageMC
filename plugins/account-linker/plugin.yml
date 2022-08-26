@@ -1,0 +1,7 @@
+name: managemc-spigot-internal
+main: com.managemc.account_linker.ManageMCAccountLinkerPlugin
+version: 0.1.0-SNAPSHOT
+commands:
+  link:
+    description: Link your Minecraft account with your ManageMC account
+    usage: /link <email> <token>

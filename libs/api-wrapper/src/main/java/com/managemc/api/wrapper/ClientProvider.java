@@ -42,6 +42,10 @@ public class ClientProvider {
     return new ClientProvider(logger, LOCAL_BASE_PATH, keys, serverGroup);
   }
 
+  public static ClientProvider local(@NonNull Keys keys, String serverGroup) {
+    return ClientProvider.local(new DefaultLogger(), keys, serverGroup);
+  }
+
   /**
    * One client per player is fine for now. Players can't make requests fast enough that
    * it would make sense to have one client per player per thread. If necessary, we can
@@ -80,7 +84,7 @@ public class ClientProvider {
       return internalClient.get();
     }
 
-    InternalTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    InternalTokenRefresher tokenRefresher = TokenRefreshers
         .internal(logger, basePath, keys);
     internalClient = ThreadLocal.withInitial(() -> new InternalClient(tokenRefresher));
     return internalClient.get();
@@ -112,7 +116,7 @@ public class ClientProvider {
       return externalServerClient.get();
     }
 
-    ExternalServerTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    ExternalServerTokenRefresher tokenRefresher = TokenRefreshers
         .externalServer(logger, basePath, keys, serverGroup);
     externalServerClient = ThreadLocal.withInitial(() -> new ExternalServerClient(tokenRefresher));
     return externalServerClient.get();
@@ -127,7 +131,7 @@ public class ClientProvider {
       return externalApplicationClient.get();
     }
 
-    ExternalApplicationTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    ExternalApplicationTokenRefresher tokenRefresher = TokenRefreshers
         .externalApplication(logger, basePath, keys);
     externalApplicationClient = ThreadLocal.withInitial(() -> new ExternalApplicationClient(tokenRefresher));
     return externalApplicationClient.get();
@@ -142,7 +146,7 @@ public class ClientProvider {
       return playerClients.get(playerId);
     }
 
-    PlayerTokenRefresher tokenRefresher = WebServiceTokenRefreshers
+    PlayerTokenRefresher tokenRefresher = TokenRefreshers
         .player(logger, basePath, playerId, this);
     PlayerClient playerClient = new PlayerClient(tokenRefresher);
     playerClients.put(playerId, playerClient);
@@ -157,5 +161,18 @@ public class ClientProvider {
     void logWarning(String message);
 
     void logInfo(String message);
+  }
+
+  public static class DefaultLogger implements Logger {
+
+    @Override
+    public void logWarning(String message) {
+      System.out.println(message);
+    }
+
+    @Override
+    public void logInfo(String message) {
+      System.out.println(message);
+    }
   }
 }
