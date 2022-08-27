@@ -6,3 +6,4 @@ Welcome to [ManageMC](https://managemc.com/)'s public repository, which contains
 
 - [License](LICENSE)
 - [API](api/API.md)
+- [Local Minecraft Server](local_minecraft_server/LOCAL-SERVER.md) (for testing)
