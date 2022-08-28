@@ -5,4 +5,4 @@ api-version: 1.19
 commands:
   link:
     description: Link your Minecraft account with your ManageMC account
-    usage: /link <email> <token>
+    usage: /link <token>
