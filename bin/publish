@@ -27,32 +27,32 @@ publish_ruby_client() {
 }
 
 publish_java_client() {
-  mvn clean deploy -f api/poms/pom-java.xml -Pdefault
+  mvn clean deploy -f api/poms/pom-java.xml -Pdefault --settings ~/.m2/settings.xml
 }
 
 publish_wrapper() {
-  mvn clean deploy -f libs/api-wrapper/pom.xml
+  mvn clean deploy -f libs/api-wrapper/pom.xml --settings ~/.m2/settings.xml
 }
 
 publish_shared() {
-  mvn clean deploy -f libs/plugins-shared/pom.xml
+  mvn clean deploy -f libs/plugins-shared/pom.xml --settings ~/.m2/settings.xml
 }
 
 publish_importer() {
-  mvn clean deploy -f plugins/importer/pom.xml
+  mvn clean deploy -f plugins/importer/pom.xml --settings ~/.m2/settings.xml
 }
 
 publish_spigot() {
-  mvn clean deploy -f plugins/spigot/pom.xml
+  mvn clean deploy -f plugins/spigot/pom.xml --settings ~/.m2/settings.xml
 }
 
 publish_linker() {
-  mvn clean deploy -f plugins/linker/pom.xml
+  mvn clean deploy -f plugins/linker/pom.xml --settings ~/.m2/settings.xml
 }
 
 publish_pom() {
   # repo ID comes from ~/.m2/settings.xml
-  mvn clean deploy:deploy-file -DpomFile=pom.xml -Dfile=./pom.xml -Durl=https://maven.pkg.github.com/ManageMC/ManageMC -DrepositoryId=github
+  mvn clean deploy:deploy-file -DpomFile=pom.xml -Dfile=./pom.xml -Durl=https://maven.pkg.github.com/ManageMC/ManageMC -DrepositoryId=github --settings ~/.m2/settings.xml
 }
 
 
