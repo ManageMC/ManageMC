@@ -30,7 +30,7 @@ public class LocalConfig {
 
   public static class IncompleteConfigException extends RuntimeException {
     public IncompleteConfigException(String key) {
-      super("Missing required entry from config.yml: " + key);
+      super("Missing required entry from local config file: " + key);
     }
   }
 }

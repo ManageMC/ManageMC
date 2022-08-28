@@ -2,15 +2,19 @@
 
 set -e
 
+LANGUAGE_OPTIONS="all, java, ruby"
+
 if [ -z "$1" ]; then
   echo "Usage: bin/generate <language>"
+  echo "Language options: $LANGUAGE_OPTIONS"
   exit 0
 fi
 
+THIS_DIRECTORY="$( dirname "$0" )"
+cd $THIS_DIRECTORY/../api
+
 
 generate_ruby() {
-  cd api
-
   mkdir -p generated/ruby
   rm -rf generated/ruby/*
   mvn clean compile -f poms/pom-ruby.xml
@@ -21,8 +25,6 @@ generate_ruby() {
 }
 
 generate_java() {
-  cd api
-
   mkdir -p generated/java
   rm -rf generated/java/*
   mvn clean compile -f poms/pom-java.xml
@@ -39,5 +41,5 @@ case $1 in
   all) generate_all;;
   ruby) generate_ruby;;
   java) generate_java;;
-  *) echo "Unrecognized language $1. Must be one of: all, java, ruby";;
+  *) echo "Unrecognized language $1. Must be one of: $LANGUAGE_OPTIONS";;
 esac

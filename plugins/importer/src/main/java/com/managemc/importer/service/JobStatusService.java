@@ -19,7 +19,7 @@ public class JobStatusService {
     if (allStatuses.isEmpty()) {
       sender.sendMessage(ChatColor.BLUE + "No job history yet");
     } else {
-    allStatuses.forEach((jobId, status) -> displayJobStatus(sender, jobId, status));
+      allStatuses.forEach((jobId, status) -> displayJobStatus(sender, jobId, status));
     }
   }
 

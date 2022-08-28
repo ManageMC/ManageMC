@@ -17,7 +17,7 @@ public class PluginMessageFormatter {
   private static final String DARK_GREEN = String.valueOf(ChatColor.DARK_GREEN);
   private static final String LIGHT_PURPLE = String.valueOf(ChatColor.LIGHT_PURPLE);
 
-  private static final String LABEL = LIGHT_PURPLE + "[" + AQUA + "MMC" + LIGHT_PURPLE + "]";
+  private static final String LABEL = LIGHT_PURPLE + "[" + AQUA + "ManageMC" + LIGHT_PURPLE + "]";
   private static final String NULL = ChatColor.GRAY + "null";
 
   private final StringBuilder builder = new StringBuilder();

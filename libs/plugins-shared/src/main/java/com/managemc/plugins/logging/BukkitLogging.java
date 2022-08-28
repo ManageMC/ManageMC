@@ -10,28 +10,36 @@ public class BukkitLogging {
 
   private final String loggerPrefix;
 
-  public BukkitLogging(String loggerPrefix) {
-    this.loggerPrefix = loggerPrefix;
+  public BukkitLogging(String pluginName) {
+    this.loggerPrefix = String.format(
+        "%s%s[%s%s%s]%s",
+        ConsoleColors.ANSI_BOLD,
+        ConsoleColors.ANSI_PURPLE,
+        ConsoleColors.ANSI_CYAN,
+        pluginName,
+        ConsoleColors.ANSI_PURPLE,
+        ConsoleColors.ANSI_RESET
+    );
   }
 
   public void logInfo(String message) {
-    Bukkit.getLogger().info(ConsoleColors.ANSI_BLUE + wrap(message));
+    Bukkit.getLogger().info(wrap(message, ConsoleColors.ANSI_BLUE));
   }
 
   public void logWarning(String message) {
-    Bukkit.getLogger().warning(ConsoleColors.ANSI_YELLOW + wrap(message));
+    Bukkit.getLogger().warning(wrap(message, ConsoleColors.ANSI_YELLOW));
   }
 
   public void logStackTrace(Throwable error) {
-    Bukkit.getLogger().log(Level.WARNING, ConsoleColors.ANSI_YELLOW + wrap(LOG_STACK_TRACE_MESSAGE), error);
+    Bukkit.getLogger().log(Level.WARNING, wrap(LOG_STACK_TRACE_MESSAGE, ConsoleColors.ANSI_YELLOW), error);
   }
 
   public void logSevere(String message) {
-    Bukkit.getLogger().severe(ConsoleColors.ANSI_RED + wrap(message));
+    Bukkit.getLogger().severe(wrap(message, ConsoleColors.ANSI_RED));
   }
 
 
-  private String wrap(String message) {
-    return String.format("%s%s %s%s", ConsoleColors.ANSI_BOLD, loggerPrefix, message, ConsoleColors.ANSI_RESET);
+  private String wrap(String message, String color) {
+    return String.format("%s%s%s %s%s", loggerPrefix, color, ConsoleColors.ANSI_BOLD, message, ConsoleColors.ANSI_RESET);
   }
 }

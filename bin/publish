@@ -2,10 +2,16 @@
 
 set -e
 
+MODULE_OPTIONS="ruby_client, java_client, wrapper, shared, importer, spigot, linker, pom"
+
 if [ -z "$1" ]; then
   echo "Usage: bin/publish <module>"
+  echo "Module options: $MODULE_OPTIONS"
   exit 0
 fi
+
+THIS_DIRECTORY="$( dirname "$0" )"
+cd $THIS_DIRECTORY/../
 
 
 publish_ruby_client() {
@@ -40,8 +46,8 @@ publish_spigot() {
   mvn clean deploy -f plugins/spigot/pom.xml
 }
 
-publish_account_linker() {
-  mvn clean deploy -f plugins/account-linker/pom.xml
+publish_linker() {
+  mvn clean deploy -f plugins/linker/pom.xml
 }
 
 publish_pom() {
@@ -57,7 +63,7 @@ case $1 in
   shared) publish_shared;;
   importer) publish_importer;;
   spigot) publish_spigot;;
-  linker) publish_account_linker;;
+  linker) publish_linker;;
   pom) publish_pom;;
-  *) echo "Unrecognized resource $1. Must be one of: ruby_client, java_client, wrapper, shared, importer, spigot, linker, pom";;
+  *) echo "Unrecognized resource $1. Must be one of: $MODULE_OPTIONS";;
 esac

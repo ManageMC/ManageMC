@@ -42,9 +42,9 @@ public abstract class TestBase {
 
   protected SpigotPluginConfigTest config;
   @Mock
-  private PlayerUuidResolver uuidResolver;
-  @Mock
   protected CommandSender sender;
+  @Mock
+  private PlayerUuidResolver uuidResolver;
 
   @Before
   public final void abstractBefore() throws ApiException {
@@ -83,11 +83,6 @@ public abstract class TestBase {
       e.printStackTrace();
     }
     await().atMost(10, TimeUnit.SECONDS).until(() -> CommandProcessorAsync.COMPLETED_ASYNC_COMMANDS.get() > completedRequests);
-  }
-
-  @FunctionalInterface
-  protected interface VoidFunctionPossiblyThrowingException {
-    void apply() throws Exception;
   }
 
   protected void stubOnlinePlayers(String... usernames) {
@@ -186,5 +181,10 @@ public abstract class TestBase {
 
     MuteData muteData = new MuteData(TestConstants.JACOB_UUID, mute);
     config.getMuteManager().setMuted(muteData);
+  }
+
+  @FunctionalInterface
+  protected interface VoidFunctionPossiblyThrowingException {
+    void apply() throws Exception;
   }
 }

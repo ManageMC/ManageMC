@@ -47,9 +47,8 @@ public class FileBasedLocalConfigLoader implements LocalConfigLoader {
   private void createConfigFileIfNecessary() {
     dataFolder.mkdir();
     File configFile = new File(configFilePath());
-    boolean existedBefore = configFile.exists();
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
-      if (!existedBefore) {
+    if (!configFile.exists()) {
+      try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
         writer.write(defaultContents);
       }
     }

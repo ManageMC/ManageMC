@@ -8,11 +8,6 @@ public class CommandWrapping {
 
   public static String HARD_FAILURE_MESSAGE = ChatColor.DARK_RED + "Unexpected plugin exception";
 
-  @FunctionalInterface
-  public interface FunctionWrappedWithErrorHandling {
-    void apply() throws Exception;
-  }
-
   public static boolean wrap(
       FunctionWrappedWithErrorHandling function,
       CommandSender sender,
@@ -36,5 +31,10 @@ public class CommandWrapping {
       sender.sendMessage(HARD_FAILURE_MESSAGE);
     }
     return false;
+  }
+
+  @FunctionalInterface
+  public interface FunctionWrappedWithErrorHandling {
+    void apply() throws Exception;
   }
 }

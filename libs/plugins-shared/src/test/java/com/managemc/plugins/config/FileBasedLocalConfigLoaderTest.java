@@ -6,7 +6,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
@@ -54,8 +56,11 @@ public class FileBasedLocalConfigLoaderTest {
   public void whenConfigFilePresent_doesNotWriteToConfigFile() throws IOException {
     Assert.assertTrue(DATA_FOLDER.mkdir());
     Assert.assertTrue(configFile().createNewFile());
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile()))) {
+      writer.write("foo: 1");
+    }
     localConfigLoader.load();
-    Assert.assertEquals("", readConfigFile());
+    Assert.assertEquals("foo: 1", readConfigFile());
   }
 
   @Test

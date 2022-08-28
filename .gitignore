@@ -4,3 +4,8 @@
 **/*dependency-reduced-pom.xml
 
 api/generated
+
+local_minecraft_server/spigot/*
+local_minecraft_server/jars/*
+
+!**/*/.keep

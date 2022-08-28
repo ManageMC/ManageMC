@@ -1,0 +1,8 @@
+name: ManageMCLinker
+main: com.managemc.linker.ManageMCLinkerPlugin
+version: 0.1.0-SNAPSHOT
+api-version: 1.19
+commands:
+  link:
+    description: Link your Minecraft account with your ManageMC account
+    usage: /link <email> <token>

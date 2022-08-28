@@ -12,8 +12,8 @@ import java.util.List;
 
 public class VanillaBanReader implements PunishmentReader<VanillaBan> {
 
-  private static final GsonBuilder BUILDER = new GsonBuilder();
   static final String BANNED_PLAYERS_FILENAME = "banned-players.json";
+  private static final GsonBuilder BUILDER = new GsonBuilder();
 
   @Override
   public List<VanillaBan> read() throws Exception {

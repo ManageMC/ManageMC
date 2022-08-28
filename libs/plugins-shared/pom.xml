@@ -8,6 +8,7 @@
     <artifactId>managemc-plugins-shared</artifactId>
     <packaging>jar</packaging>
     <version>0.1.0-SNAPSHOT</version>
+    <name>ManageMC Shared Plugin Library</name>
 
     <parent>
         <groupId>com.managemc</groupId>

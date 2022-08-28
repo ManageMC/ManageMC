@@ -31,6 +31,10 @@ public class BukkitWrapper {
     plugin.getServer().shutdown();
   }
 
+  public void disable() {
+    plugin.getServer().getPluginManager().disablePlugin(plugin);
+  }
+
   public File getDataFolder() {
     return plugin.getDataFolder();
   }

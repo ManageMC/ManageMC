@@ -50,7 +50,7 @@ public class LocalConfig {
 
   public static class IncompleteConfigException extends RuntimeException {
     public IncompleteConfigException(String key) {
-      super("Missing required entry from ManageMC.yml: " + key);
+      super("Missing required entry from local config file: " + key);
     }
   }
 
