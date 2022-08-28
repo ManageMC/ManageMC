@@ -111,10 +111,6 @@ components:
         to a Minecraft player.
 
         '
-    EmailAddress:
-      type: string
-      pattern: "^\\S+@\\S+\\.\\S+$"
-      description: an email address
     IPv4Address:
       type: string
       pattern: "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$"
@@ -1635,8 +1631,8 @@ components:
       properties:
         version:
           type: string
-          description: the ManageMC version the client is using (must be three sets
-            of numbers separated by periods)
+          description: the ManageMC version the client is using
+          pattern: "^\\d+\\.\\d+\\.\\d+(-SNAPSHOT){0,1}$"
         server_id:
           type: integer
           format: int64
@@ -1664,8 +1660,8 @@ components:
       properties:
         version:
           type: string
-          description: the ManageMC version the client is using (must be three sets
-            of numbers separated by periods)
+          description: the ManageMC version the client is using
+          pattern: "^\\d+\\.\\d+\\.\\d+(-SNAPSHOT){0,1}$"
         server_name:
           type: string
           description: |
@@ -1696,8 +1692,6 @@ components:
       - server_id
     LinkPlayerInput:
       properties:
-        email:
-          "$ref": "#/components/schemas/EmailAddress"
         account_linking_token:
           type: string
           description: |
@@ -1706,7 +1700,6 @@ components:
         uuid:
           "$ref": "#/components/schemas/PlayerUuid"
       required:
-      - email
       - account_linking_token
       - uuid
     LinkPlayerResponse:
@@ -1717,14 +1710,12 @@ components:
           - SUCCESS
           - TOKEN_INCORRECT
           - ALREADY_LINKED
-          - USER_NOT_FOUND
           description: |
             an enum value with the following statuses:
 
             - SUCCESS = Minecraft account successfully linked to user
             - TOKEN_INCORRECT = failed because the token was wrong
             - ALREADY_LINKED = failed because the Minecraft account is linked with a different user
-            - USER_NOT_FOUND = failed because the user email was wrong
       required:
       - status
     PluginVersionRecommendations:
@@ -3560,6 +3551,7 @@ paths:
       - Onboarding
       security:
       - external_minecraft: []
+      x-rollback: false
       description: |
         Create a persistent record representing a punishment import. This reference will allow
         consumers to add punishments to a given import and then modify those punishments collectively

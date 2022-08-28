@@ -35,13 +35,13 @@ public class CmdLinkAccount implements CommandExecutor {
         return true;
       }
 
-      if (args.length != 2) {
+      if (args.length != 1) {
         sender.sendMessage(WRONG_NUM_ARGS);
         return false;
       }
 
       Player player = (Player) sender;
-      accountLinkingService.linkPlayer(player, args[0], args[1]);
+      accountLinkingService.linkPlayer(player, args[0]);
     } catch (RuntimeException e) {
       logger.logStackTrace(e);
       sender.sendMessage(AccountLinkingService.UNEXPECTED_EXCEPTION);
