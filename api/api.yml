@@ -111,10 +111,6 @@ components:
         to a Minecraft player.
 
         '
-    EmailAddress:
-      type: string
-      pattern: "^\\S+@\\S+\\.\\S+$"
-      description: an email address
     IPv4Address:
       type: string
       pattern: "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$"
@@ -1635,8 +1631,8 @@ components:
       properties:
         version:
           type: string
-          description: the ManageMC version the client is using (must be three sets
-            of numbers separated by periods)
+          description: the ManageMC version the client is using
+          pattern: "^\\d+\\.\\d+\\.\\d+(-SNAPSHOT){0,1}$"
         server_id:
           type: integer
           format: int64
@@ -1664,8 +1660,8 @@ components:
       properties:
         version:
           type: string
-          description: the ManageMC version the client is using (must be three sets
-            of numbers separated by periods)
+          description: the ManageMC version the client is using
+          pattern: "^\\d+\\.\\d+\\.\\d+(-SNAPSHOT){0,1}$"
         server_name:
           type: string
           description: |
@@ -1696,8 +1692,6 @@ components:
       - server_id
     LinkPlayerInput:
       properties:
-        email:
-          "$ref": "#/components/schemas/EmailAddress"
         account_linking_token:
           type: string
           description: |
@@ -1706,7 +1700,6 @@ components:
         uuid:
           "$ref": "#/components/schemas/PlayerUuid"
       required:
-      - email
       - account_linking_token
       - uuid
     LinkPlayerResponse:
@@ -1717,14 +1710,12 @@ components:
           - SUCCESS
           - TOKEN_INCORRECT
           - ALREADY_LINKED
-          - USER_NOT_FOUND
           description: |
             an enum value with the following statuses:
 
             - SUCCESS = Minecraft account successfully linked to user
             - TOKEN_INCORRECT = failed because the token was wrong
             - ALREADY_LINKED = failed because the Minecraft account is linked with a different user
-            - USER_NOT_FOUND = failed because the user email was wrong
       required:
       - status
     PluginVersionRecommendations:
@@ -1943,34 +1934,6 @@ components:
       - review_permit_expiration_time_minutes
     PunishmentConfig:
       properties:
-        allow_shadow_ban:
-          type: boolean
-          description: 'whether staff are allowed to issue shadow bans (overrides
-            all permissions if false)
-
-            '
-        allow_shadow_mute:
-          type: boolean
-          description: 'whether staff are allowed to issue shadow mutes (overrides
-            all permissions if false)
-
-            '
-        allow_shadow_ip_ban:
-          type: boolean
-          description: 'whether staff are allowed to issue shadow IP bans (overrides
-            all permissions if false)
-
-            '
-        allow_public_ban_message:
-          type: boolean
-          description: |
-            whether public punishments issued in-game can produce a public message for other
-            players to see
-        allow_punishment_sharing:
-          type: boolean
-          description: 'whether public punishments are visible to the public internet
-
-            '
         blocked_commands_for_muted_players:
           type: array
           items:
@@ -1978,11 +1941,6 @@ components:
           description: An array of strings representing commands that a muted player
             cannot use
       required:
-      - allow_shadow_ban
-      - allow_shadow_mute
-      - allow_shadow_ip_ban
-      - allow_public_ban_message
-      - allow_punishment_sharing
       - blocked_commands_for_muted_players
     UpdateActiveServerNetworkInput:
       properties:
@@ -3560,6 +3518,7 @@ paths:
       - Onboarding
       security:
       - external_minecraft: []
+      x-rollback: false
       description: |
         Create a persistent record representing a punishment import. This reference will allow
         consumers to add punishments to a given import and then modify those punishments collectively
@@ -5894,6 +5853,8 @@ paths:
           "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          description: User is not operating as a player
         422:
           description: |
             Under any of the following conditions:
