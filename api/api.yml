@@ -1934,34 +1934,6 @@ components:
       - review_permit_expiration_time_minutes
     PunishmentConfig:
       properties:
-        allow_shadow_ban:
-          type: boolean
-          description: 'whether staff are allowed to issue shadow bans (overrides
-            all permissions if false)
-
-            '
-        allow_shadow_mute:
-          type: boolean
-          description: 'whether staff are allowed to issue shadow mutes (overrides
-            all permissions if false)
-
-            '
-        allow_shadow_ip_ban:
-          type: boolean
-          description: 'whether staff are allowed to issue shadow IP bans (overrides
-            all permissions if false)
-
-            '
-        allow_public_ban_message:
-          type: boolean
-          description: |
-            whether public punishments issued in-game can produce a public message for other
-            players to see
-        allow_punishment_sharing:
-          type: boolean
-          description: 'whether public punishments are visible to the public internet
-
-            '
         blocked_commands_for_muted_players:
           type: array
           items:
@@ -1969,11 +1941,6 @@ components:
           description: An array of strings representing commands that a muted player
             cannot use
       required:
-      - allow_shadow_ban
-      - allow_shadow_mute
-      - allow_shadow_ip_ban
-      - allow_public_ban_message
-      - allow_punishment_sharing
       - blocked_commands_for_muted_players
     UpdateActiveServerNetworkInput:
       properties:
@@ -5886,6 +5853,8 @@ paths:
           "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          description: User is not operating as a player
         422:
           description: |
             Under any of the following conditions:
