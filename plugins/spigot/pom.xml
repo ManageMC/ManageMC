@@ -75,6 +75,13 @@
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- ManageMC API client wrapper -->
+        <dependency>
+            <groupId>com.managemc.api.wrapper</groupId>
+            <artifactId>managemc-api-wrapper</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.awaitility/awaitility -->
         <dependency>
             <groupId>org.awaitility</groupId>

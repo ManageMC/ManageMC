@@ -18,13 +18,6 @@
     </parent>
 
     <dependencies>
-        <!-- ManageMC API client wrapper -->
-        <dependency>
-            <groupId>com.managemc.api.wrapper</groupId>
-            <artifactId>managemc-api-wrapper</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-
         <!--https://www.spigotmc.org/wiki/spigot-maven/-->
         <dependency>
             <groupId>org.spigotmc</groupId>

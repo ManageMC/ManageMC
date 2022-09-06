@@ -70,6 +70,13 @@
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- ManageMC API client wrapper -->
+        <dependency>
+            <groupId>com.managemc.api.wrapper</groupId>
+            <artifactId>managemc-api-wrapper</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- Optional dependency, only used for punishment imports from AdvancedBan -->
         <dependency>
             <groupId>com.github.DevLeoko</groupId>
