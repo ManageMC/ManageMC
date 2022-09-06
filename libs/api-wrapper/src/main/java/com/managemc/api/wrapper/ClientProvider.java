@@ -21,10 +21,8 @@ public class ClientProvider {
 
   public static final AtomicLong COMPLETED_REQUESTS = new AtomicLong(0);
 
-  private static final String LOCAL_BASE_PATH = "http://localhost:9070/api/v1";
-
   private final Logger logger;
-  private final String basePath;
+  private final ApiHost apiHost;
   private final Keys keys;
   private final String serverGroup;
   private final ScheduledExecutorService executorService;
@@ -39,11 +37,27 @@ public class ClientProvider {
   private ThreadLocal<ExternalApplicationClient> externalApplicationClient;
 
   public static ClientProvider local(@NonNull Logger logger, @NonNull Keys keys, String serverGroup) {
-    return new ClientProvider(logger, LOCAL_BASE_PATH, keys, serverGroup);
+    return new ClientProvider(logger, ApiHost.DEVELOPMENT, keys, serverGroup);
   }
 
   public static ClientProvider local(@NonNull Keys keys, String serverGroup) {
     return ClientProvider.local(new DefaultLogger(), keys, serverGroup);
+  }
+
+  public static ClientProvider demo(@NonNull Logger logger, @NonNull Keys keys, String serverGroup) {
+    return new ClientProvider(logger, ApiHost.DEMO, keys, serverGroup);
+  }
+
+  public static ClientProvider demo(@NonNull Keys keys, String serverGroup) {
+    return ClientProvider.demo(new DefaultLogger(), keys, serverGroup);
+  }
+
+  public static ClientProvider production(@NonNull Logger logger, @NonNull Keys keys, String serverGroup) {
+    return new ClientProvider(logger, ApiHost.PRODUCTION, keys, serverGroup);
+  }
+
+  public static ClientProvider production(@NonNull Keys keys, String serverGroup) {
+    return ClientProvider.production(new DefaultLogger(), keys, serverGroup);
   }
 
   /**
@@ -53,9 +67,9 @@ public class ClientProvider {
    */
   private final Map<UUID, PlayerClient> playerClients = new ConcurrentHashMap<>();
 
-  private ClientProvider(Logger logger, String basePath, Keys keys, String serverGroup) {
+  private ClientProvider(Logger logger, ApiHost apiHost, Keys keys, String serverGroup) {
     this.logger = logger;
-    this.basePath = basePath;
+    this.apiHost = apiHost;
     this.keys = keys;
     this.serverGroup = serverGroup;
     this.executorService = Executors.newSingleThreadScheduledExecutor();
@@ -85,7 +99,7 @@ public class ClientProvider {
     }
 
     InternalTokenRefresher tokenRefresher = TokenRefreshers
-        .internal(logger, basePath, keys);
+        .internal(logger, apiHost, keys);
     internalClient = ThreadLocal.withInitial(() -> new InternalClient(tokenRefresher));
     return internalClient.get();
   }
@@ -117,7 +131,7 @@ public class ClientProvider {
     }
 
     ExternalServerTokenRefresher tokenRefresher = TokenRefreshers
-        .externalServer(logger, basePath, keys, serverGroup);
+        .externalServer(logger, apiHost, keys, serverGroup);
     externalServerClient = ThreadLocal.withInitial(() -> new ExternalServerClient(tokenRefresher));
     return externalServerClient.get();
   }
@@ -132,7 +146,7 @@ public class ClientProvider {
     }
 
     ExternalApplicationTokenRefresher tokenRefresher = TokenRefreshers
-        .externalApplication(logger, basePath, keys);
+        .externalApplication(logger, apiHost, keys);
     externalApplicationClient = ThreadLocal.withInitial(() -> new ExternalApplicationClient(tokenRefresher));
     return externalApplicationClient.get();
   }
@@ -147,7 +161,7 @@ public class ClientProvider {
     }
 
     PlayerTokenRefresher tokenRefresher = TokenRefreshers
-        .player(logger, basePath, playerId, this);
+        .player(logger, apiHost, playerId, this);
     PlayerClient playerClient = new PlayerClient(tokenRefresher);
     playerClients.put(playerId, playerClient);
     return playerClient;

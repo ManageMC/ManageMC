@@ -3,6 +3,7 @@ package com.managemc.api.wrapper.refresher;
 import com.managemc.api.ApiException;
 import com.managemc.api.auth.HttpBearerAuth;
 import com.managemc.api.wrapper.ClientProvider;
+import com.managemc.api.wrapper.client.ApiHost;
 import com.managemc.api.wrapper.model.Keys;
 import com.managemc.api.wrapper.model.metadata.AuthMetadataType;
 import com.managemc.api.wrapper.model.metadata.ExternalServerAuthMetadata;
@@ -15,8 +16,8 @@ public class ExternalServerTokenRefresher extends TokenRefresher<ExternalServerA
   private final Keys keys;
   private final String serverGroup;
 
-  ExternalServerTokenRefresher(ClientProvider.Logger logger, String basePath, Keys keys, String serverGroup) {
-    super(logger, basePath);
+  ExternalServerTokenRefresher(ClientProvider.Logger logger, ApiHost apiHost, Keys keys, String serverGroup) {
+    super(logger, apiHost);
 
     this.keys = keys;
     this.serverGroup = serverGroup;
