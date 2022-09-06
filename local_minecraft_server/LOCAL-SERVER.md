@@ -9,7 +9,7 @@ Note: this guide is designed for use on macOS and Linux. It may also work on Win
 
 ## Setup
 
-1. Follow the instructions in our [development guide](../plugins/DEVELOPMENT_GUIDE.md) to prepare your local environment.
+1. Follow the instructions in our [development guide](../docs/DEVELOPMENT_GUIDE.md) to prepare your local environment.
 
 2. Run the BuildTools script with the version of Spigot that you wish to test the plugins on:
 
