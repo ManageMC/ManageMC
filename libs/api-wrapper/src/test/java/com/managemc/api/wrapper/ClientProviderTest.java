@@ -39,7 +39,7 @@ public class ClientProviderTest {
   public void internal_badCredentials_shouldThrowError() {
     Assert.assertThrows(
         TokenRefresher.BadCredentialsException.class,
-        () -> ClientProvider.local(logger, new Keys(INTERNAL_PUBLIC_KEY, "oops"), null).internal().getPingApi().ping()
+        () -> newProvider(INTERNAL_PUBLIC_KEY, "oops", null).internal().getPingApi().ping()
     );
 
     Mockito.verify(logger, Mockito.times(1)).logWarning(TokenRefresher.BAD_CREDS_MESSAGE);
@@ -49,7 +49,7 @@ public class ClientProviderTest {
   public void externalApplication_badCredentials_shouldThrowError() {
     Assert.assertThrows(
         TokenRefresher.BadCredentialsException.class,
-        () -> ClientProvider.local(logger, new Keys(EXTERNAL_PUBLIC_KEY, "oops"), null).externalApplication().getPingApi().ping()
+        () -> newProvider(EXTERNAL_PUBLIC_KEY, "oops", null).externalApplication().getPingApi().ping()
     );
 
     Mockito.verify(logger, Mockito.times(1)).logWarning(TokenRefresher.BAD_CREDS_MESSAGE);
@@ -59,7 +59,7 @@ public class ClientProviderTest {
   public void externalServer_badCredentials_shouldThrowError() {
     Assert.assertThrows(
         TokenRefresher.BadCredentialsException.class,
-        () -> ClientProvider.local(logger, new Keys(EXTERNAL_PUBLIC_KEY, "oops"), SERVER_GROUP).externalServer().getPingApi().ping()
+        () -> newProvider(EXTERNAL_PUBLIC_KEY, "oops", SERVER_GROUP).externalServer().getPingApi().ping()
     );
 
     Mockito.verify(logger, Mockito.times(1)).logWarning(TokenRefresher.BAD_CREDS_MESSAGE);
@@ -67,8 +67,7 @@ public class ClientProviderTest {
 
   @Test
   public void internal_firstCallGeneratesMetadata() throws ApiException {
-    InternalClient client = ClientProvider.local(logger, new Keys(INTERNAL_PUBLIC_KEY, INTERNAL_PRIVATE_KEY), null)
-        .internal();
+    InternalClient client = newProvider(INTERNAL_PUBLIC_KEY, INTERNAL_PRIVATE_KEY, null).internal();
 
     long before = currentTime();
 
@@ -86,8 +85,7 @@ public class ClientProviderTest {
 
   @Test
   public void externalServer_firstCallGeneratesMetadata() throws ApiException {
-    ExternalServerClient client =
-        ClientProvider.local(logger, new Keys(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY), SERVER_GROUP).externalServer();
+    ExternalServerClient client = newProvider(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY, SERVER_GROUP).externalServer();
 
     long before = currentTime();
 
@@ -107,8 +105,7 @@ public class ClientProviderTest {
 
   @Test
   public void externalApplication_firstCallGeneratesMetadata() throws ApiException {
-    ExternalApplicationClient client =
-        ClientProvider.local(logger, new Keys(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY), null).externalApplication();
+    ExternalApplicationClient client = newProvider(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY, null).externalApplication();
 
     long before = currentTime();
 
@@ -127,8 +124,7 @@ public class ClientProviderTest {
 
   @Test
   public void player_firstCallGeneratesMetadata() throws ApiException {
-    PlayerClient client =
-        ClientProvider.local(logger, new Keys(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY), SERVER_GROUP).player(OWNER_UUID);
+    PlayerClient client = newProvider(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY, SERVER_GROUP).player(OWNER_UUID);
 
     long before = currentTime();
 
@@ -150,6 +146,10 @@ public class ClientProviderTest {
     Assert.assertEquals(OWNER_UUID, authMetadata.getPlayer().getUuid());
   }
 
+
+  private ClientProvider newProvider(String publicKey, String privateKey, String serverGroup) {
+    return ClientProvider.demo(logger, new Keys(publicKey, privateKey), serverGroup);
+  }
 
   // we have to floor to a whole 1000, because the API returns a value in seconds (per JWT standard)
   private long currentTime() {

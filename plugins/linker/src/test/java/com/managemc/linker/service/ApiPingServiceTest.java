@@ -28,7 +28,7 @@ public class ApiPingServiceTest {
 
   @Test(expected = TokenRefresher.BadCredentialsException.class)
   public void badCredentials() throws ApiException {
-    ClientProvider clientProvider = ClientProvider.local(
+    ClientProvider clientProvider = ClientProvider.demo(
         Mockito.mock(ClientProvider.Logger.class),
         new Keys(AccountLinkerConfigTest.PUBLIC_KEY, "oops"),
         null
