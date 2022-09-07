@@ -16,7 +16,7 @@ public class AccountLinkerConfigTest implements AccountLinkerConfig {
 
   static {
     CLIENT_PROVIDER = ClientProvider
-        .local(Mockito.mock(ClientProvider.Logger.class), new Keys(PUBLIC_KEY, PRIVATE_KEY), null);
+        .demo(Mockito.mock(ClientProvider.Logger.class), new Keys(PUBLIC_KEY, PRIVATE_KEY), null);
   }
 
   @Override

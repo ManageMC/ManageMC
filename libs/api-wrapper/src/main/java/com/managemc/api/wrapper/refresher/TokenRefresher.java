@@ -6,6 +6,7 @@ import com.managemc.api.ApiClient;
 import com.managemc.api.ApiException;
 import com.managemc.api.api.AuthenticationApi;
 import com.managemc.api.wrapper.ClientProvider;
+import com.managemc.api.wrapper.client.ApiHost;
 import com.managemc.api.wrapper.model.metadata.AuthMetadata;
 import javassist.util.proxy.MethodHandler;
 import lombok.Getter;
@@ -30,9 +31,9 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
   protected final ApiClient client;
   private final ClientProvider.Logger logger;
 
-  public TokenRefresher(ClientProvider.Logger logger, String basePath) {
-    this.client = new ApiClient();
-    this.client.setBasePath(basePath);
+  public TokenRefresher(ClientProvider.Logger logger, ApiHost apiHost) {
+    this.client = new ApiClient()
+        .setServerIndex(apiHost.getServerIndex());
     this.unproxiedAuthApi = new AuthenticationApi(client);
     this.logger = logger;
   }
@@ -48,6 +49,9 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
         logger.logWarning(String.format(BAD_REQUEST_MESSAGE, body));
       }
       throw e.getCause();
+    } catch (BadCredentialsException e) {
+      logger.logWarning(e.getMessage());
+      throw e;
     } finally {
       // helps with testing by making it easy for us to tell if an async request has finished
       // if this behaves unexpectedly, possible causes include a method we are filtering incorrectly

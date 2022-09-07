@@ -6,7 +6,11 @@ info:
   version: 0.1.0
 servers:
 - url: http://localhost:9070/api/v1
-  description: Development server
+  description: Development/test server
+- url: https://api.demo.managemc.com/api/v1
+  description: Demo server
+- url: https://api.managemc.com/api/v1
+  description: Production server
 components:
   securitySchemes:
     user_web:

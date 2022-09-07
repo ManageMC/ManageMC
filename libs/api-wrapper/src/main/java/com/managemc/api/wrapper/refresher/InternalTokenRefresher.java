@@ -3,6 +3,7 @@ package com.managemc.api.wrapper.refresher;
 import com.managemc.api.ApiException;
 import com.managemc.api.auth.HttpBearerAuth;
 import com.managemc.api.wrapper.ClientProvider;
+import com.managemc.api.wrapper.client.ApiHost;
 import com.managemc.api.wrapper.model.Keys;
 import com.managemc.api.wrapper.model.metadata.AuthMetadataType;
 import com.managemc.api.wrapper.model.metadata.InternalAuthMetadata;
@@ -14,8 +15,8 @@ public class InternalTokenRefresher extends TokenRefresher<InternalAuthMetadata>
 
   private final Keys keys;
 
-  InternalTokenRefresher(ClientProvider.Logger logger, String basePath, Keys keys) {
-    super(logger, basePath);
+  InternalTokenRefresher(ClientProvider.Logger logger, ApiHost apiHost, Keys keys) {
+    super(logger, apiHost);
 
     this.keys = keys;
   }

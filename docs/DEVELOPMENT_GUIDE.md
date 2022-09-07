@@ -1,5 +1,7 @@
 # Development Guide
 
+Anyone can contribute to our public code base here. This guide should be sufficient to get you started; if it is not, please open a pull request and/or request improvements.
+
 ## Preliminary Steps
 
 ### Download JDK 8
@@ -16,11 +18,11 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.77-b03, mixed mode)
 
 ### Authenticate with GitHub Packages
 
-Since GitHub Packages does not support unauthorized downloads, even for public resources, you will need to create a personal access token and update your Maven settings to include that token.
+Our libraries are currently published to [GitHub Packages](https://github.com/features/packages). Maven will try to download these packages periodically as you work with our code base, but since GitHub Packages does not support unauthorized downloads, even for public resources, we need to prove to GitHub that you are a real GitHub user. We do this by creating a personal access token and adding it to your Maven settings.
 
 1. Create a GitHub account if you don't already have one
 2. Go [here](https://github.com/settings/tokens) and generate a new token. Set the expiration to `No Expiration` and select only the `read:packages` box. After you generate the token, keep the page open so that you can copy the token later.
-3. Install Maven using your preferred package manager (e.g. `brew install maven`).
+3. Install Maven using your preferred package manager (e.g. `brew install maven`). If you can use the `mvn` command in your terminal, it is most likely already installed.
 4. Locate your Maven user settings file:
 
    ```sh
@@ -54,3 +56,11 @@ Since GitHub Packages does not support unauthorized downloads, even for public r
       </servers>
    </settings>
    ```
+
+## Next Steps
+
+Once you have reached this point, you may begin developing. We have a few other optional guides that may be useful, depending on what you are trying to do:
+
+- architecture overview
+- using our API
+- testing your changes

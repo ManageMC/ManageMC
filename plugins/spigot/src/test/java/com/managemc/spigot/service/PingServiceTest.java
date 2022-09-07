@@ -22,7 +22,7 @@ public class PingServiceTest extends TestBase {
 
   @Test
   public void whenApiKeysWrong_errorMessageAndShutdown() {
-    ClientProvider badProvider = ClientProvider.local(logger, new Keys("oops", "oops"), null);
+    ClientProvider badProvider = ClientProvider.demo(logger, new Keys("oops", "oops"), null);
     ApiPingService service = new SpigotPluginConfigTest(new TestMocks(), badProvider).getApiPingService();
 
     RuntimeException e = Assert.assertThrows(TokenRefresher.BadCredentialsException.class, service::ping);
