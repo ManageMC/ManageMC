@@ -39,7 +39,7 @@ require 'managemc_api'
 AUTHENTICATION_API = ManagemcApi::AuthenticationApi.new
 ```
 
-You can set the API server and base url by setting the `server_index` as follows (sorry; we think this is a weird interface):
+You can configure the base URL and auth token by setting the `server_index` and `access_token` properties as follows:
 
 ```ruby
 ManagemcApi.configure do |config|
@@ -47,8 +47,11 @@ ManagemcApi.configure do |config|
   config.scheme = 'https'
   config.host = 'api.demo.managemc.com'
 
-  # in theory, only this parameter matters
+  # tell the client which server to use
   config.server_index = 1
+
+  # set the access token
+  config.access_token = 'just-your-token-no-http-headers'
 end
 ```
 
