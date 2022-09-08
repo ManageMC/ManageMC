@@ -28,6 +28,7 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.release}</release>
                     <goal>compile</goal>
                 </configuration>
             </plugin>

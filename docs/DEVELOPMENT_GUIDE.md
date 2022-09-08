@@ -4,9 +4,9 @@ Anyone can contribute to our public code base here. This guide should be suffici
 
 ## Preliminary Steps
 
-### Download JDK 8
+### Download JDK 11
 
-[Download](https://www.oracle.com/java/technologies/downloads) the Java 8 development kit (JDK) and [add it](https://www.baeldung.com/java-home-on-windows-7-8-10-mac-os-x-linux) to your environment. You should see output simiar to the following (the version should start with `1.8`):
+[Download](https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html) the Java 11 development kit (JDK) and [add it](https://www.baeldung.com/java-home-on-windows-7-8-10-mac-os-x-linux) to your environment. You should see output simiar to the following (the version should start with `1.8`):
 
 ```txt
 ➜  java -version
@@ -56,6 +56,12 @@ Our libraries are currently published to [GitHub Packages](https://github.com/fe
       </servers>
    </settings>
    ```
+
+### Setup Your IDE
+
+Our team uses IntelliJ, but feel free to use whichever IDE you prefer. Please add any IDE-specific files to the [.gitignore](../.gitignore).
+
+IntelliJ updates sometimes come with minor UI changes, but the process for each version should be similar to the steps below.
 
 ## Next Steps
 
