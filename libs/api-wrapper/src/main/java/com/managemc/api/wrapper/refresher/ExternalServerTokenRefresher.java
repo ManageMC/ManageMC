@@ -5,11 +5,9 @@ import com.managemc.api.auth.HttpBearerAuth;
 import com.managemc.api.wrapper.ClientProvider;
 import com.managemc.api.wrapper.client.ApiHost;
 import com.managemc.api.wrapper.model.Keys;
-import com.managemc.api.wrapper.model.metadata.AuthMetadataType;
 import com.managemc.api.wrapper.model.metadata.ExternalServerAuthMetadata;
+import com.managemc.api.wrapper.model.metadata.AuthMetadataType;
 import org.openapitools.client.model.GenerateExternalServiceTokenInput;
-
-import java.util.Map;
 
 public class ExternalServerTokenRefresher extends TokenRefresher<ExternalServerAuthMetadata> {
 
@@ -51,12 +49,6 @@ public class ExternalServerTokenRefresher extends TokenRefresher<ExternalServerA
   }
 
   private void setAuthMetadataFromToken(String token) {
-    Map<String, Object> authMetadataMap = tokenToJsonMap(token);
-    this.authMetadata = ExternalServerAuthMetadata.builder()
-        .issuedAtMillis(Long.parseLong(authMetadataMap.get("iat").toString()) * 1000)
-        .expiresAtMillis(Long.parseLong(authMetadataMap.get("exp").toString()) * 1000)
-        .serverNetworkId(Long.parseLong(authMetadataMap.get("server_network_id").toString()))
-        .serverGroupId(Long.parseLong(authMetadataMap.get("server_group_id").toString()))
-        .build();
+    this.authMetadata = tokenToSerializedObject(token, ExternalServerAuthMetadata.class);
   }
 }

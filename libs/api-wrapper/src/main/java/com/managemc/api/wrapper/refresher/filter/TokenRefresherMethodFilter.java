@@ -22,6 +22,7 @@ public class TokenRefresherMethodFilter implements MethodFilter {
   @Override
   public boolean isHandled(Method method) {
     return !Arrays.asList(METHODS_TO_IGNORE).contains(method.getName()) &&
-        !method.getName().endsWith("WithHttpInfo");
+        !method.getName().endsWith("WithHttpInfo") &&
+        !method.getName().endsWith("Call");
   }
 }

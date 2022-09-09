@@ -8,7 +8,6 @@ import com.managemc.api.wrapper.model.metadata.AuthMetadataType;
 import com.managemc.api.wrapper.model.metadata.PlayerAuthMetadata;
 import org.openapitools.client.model.GeneratePlayerTokenInput;
 
-import java.util.Map;
 import java.util.UUID;
 
 public class PlayerTokenRefresher extends TokenRefresher<PlayerAuthMetadata> {
@@ -44,23 +43,6 @@ public class PlayerTokenRefresher extends TokenRefresher<PlayerAuthMetadata> {
   }
 
   private void setAuthMetadataFromToken(String token) {
-    Map<String, Object> authMetadataMap = tokenToJsonMap(token);
-
-    @SuppressWarnings("unchecked")
-    Map<String, Object> playerData = (Map<String, Object>) authMetadataMap.get("player");
-
-    PlayerAuthMetadata.Player player = PlayerAuthMetadata.Player.builder()
-        .id(Long.parseLong(playerData.get("id").toString()))
-        .username(playerData.get("username").toString())
-        .uuid(UUID.fromString(playerData.get("uuid").toString()))
-        .build();
-
-    this.authMetadata = PlayerAuthMetadata.builder()
-        .issuedAtMillis(Long.parseLong(authMetadataMap.get("iat").toString()) * 1000)
-        .expiresAtMillis(Long.parseLong(authMetadataMap.get("exp").toString()) * 1000)
-        .serverNetworkId(Long.parseLong(authMetadataMap.get("server_network_id").toString()))
-        .serverGroupId(Long.parseLong(authMetadataMap.get("server_group_id").toString()))
-        .player(player)
-        .build();
+    this.authMetadata = tokenToSerializedObject(token, PlayerAuthMetadata.class);
   }
 }
