@@ -19,7 +19,7 @@ public class AccountLinkerConfigLocal implements AccountLinkerConfig {
   public AccountLinkerConfigLocal(BukkitLogging logger, LocalConfig localConfig) {
     this.logger = logger;
 
-    ClientProvider clientProvider = ClientProvider.local(new ClientProviderLogger(), localConfig.getKeys(), null);
+    ClientProvider clientProvider = ClientProvider.demo(new ClientProviderLogger(), localConfig.getKeys(), null);
     this.apiPingService = new ApiPingService(clientProvider);
     this.accountLinkingService = new AccountLinkingService(logger, clientProvider);
   }

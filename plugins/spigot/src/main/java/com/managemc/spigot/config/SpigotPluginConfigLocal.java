@@ -99,7 +99,7 @@ public class SpigotPluginConfigLocal implements SpigotPluginConfig {
         bukkitWrapper,
         localConfig,
         new PlayerData(),
-        ClientProvider.local(newLogger(logging), localConfig.getKeys(), localConfig.getServerGroup())
+        ClientProvider.demo(newLogger(logging), localConfig.getKeys(), localConfig.getServerGroup())
     );
   }
 

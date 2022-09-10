@@ -29,7 +29,7 @@ public class ManageMCImportPluginConfig {
 
   public ManageMCImportPluginConfig(BukkitLogging logging, LocalConfig localConfig) {
     this.logging = logging;
-    clientProvider = ClientProvider.local(
+    clientProvider = ClientProvider.demo(
         new ClientProviderLogger(),
         localConfig.getKeys(),
         null
