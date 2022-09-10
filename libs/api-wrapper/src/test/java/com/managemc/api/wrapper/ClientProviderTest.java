@@ -69,36 +69,37 @@ public class ClientProviderTest {
   public void internal_firstCallGeneratesMetadata() throws ApiException {
     InternalClient client = newProvider(INTERNAL_PUBLIC_KEY, INTERNAL_PRIVATE_KEY, null).internal();
 
-    long before = currentTime();
+    long before = currentTimeSeconds();
 
     Assert.assertNull(client.getAuthMetadata());
     Assert.assertEquals("pong!", client.getPingApi().ping().getMessage());
 
-    long after = currentTime();
+    long after = currentTimeSeconds();
 
     InternalAuthMetadata authMetadata = client.getAuthMetadata();
     Assert.assertEquals("internal_minecraft", authMetadata.getType().getType());
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() >= before);
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() <= after);
-    Assert.assertTrue(authMetadata.getExpiresAtMillis() > after);
+    Assert.assertTrue(authMetadata.getIat() >= before);
+    Assert.assertTrue(authMetadata.getIat() <= after);
+    Assert.assertTrue(authMetadata.getExp() > after);
   }
 
   @Test
   public void externalServer_firstCallGeneratesMetadata() throws ApiException {
     ExternalServerClient client = newProvider(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY, SERVER_GROUP).externalServer();
 
-    long before = currentTime();
+    long before = currentTimeSeconds();
 
     Assert.assertNull(client.getAuthMetadata());
     Assert.assertEquals("pong!", client.getPingApi().ping().getMessage());
 
-    long after = currentTime();
+    long after = currentTimeSeconds();
 
     ExternalServerAuthMetadata authMetadata = client.getAuthMetadata();
+
     Assert.assertEquals("external_minecraft", authMetadata.getType().getType());
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() >= before);
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() <= after);
-    Assert.assertTrue(authMetadata.getExpiresAtMillis() > after);
+    Assert.assertTrue(authMetadata.getIat() >= before);
+    Assert.assertTrue(authMetadata.getIat() <= after);
+    Assert.assertTrue(authMetadata.getExp() > after);
     Assert.assertEquals(SERVER_NETWORK_ID, authMetadata.getServerNetworkId());
     Assert.assertEquals(SERVER_GROUP_ID, authMetadata.getServerGroupId());
   }
@@ -107,18 +108,18 @@ public class ClientProviderTest {
   public void externalApplication_firstCallGeneratesMetadata() throws ApiException {
     ExternalApplicationClient client = newProvider(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY, null).externalApplication();
 
-    long before = currentTime();
+    long before = currentTimeSeconds();
 
     Assert.assertNull(client.getAuthMetadata());
     Assert.assertEquals("pong!", client.getPingApi().ping().getMessage());
 
-    long after = currentTime();
+    long after = currentTimeSeconds();
 
     ExternalApplicationAuthMetadata authMetadata = client.getAuthMetadata();
     Assert.assertEquals("external_minecraft", authMetadata.getType().getType());
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() >= before);
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() <= after);
-    Assert.assertTrue(authMetadata.getExpiresAtMillis() > after);
+    Assert.assertTrue(authMetadata.getIat() >= before);
+    Assert.assertTrue(authMetadata.getIat() <= after);
+    Assert.assertTrue(authMetadata.getExp() > after);
     Assert.assertEquals(SERVER_NETWORK_ID, authMetadata.getServerNetworkId());
   }
 
@@ -126,18 +127,18 @@ public class ClientProviderTest {
   public void player_firstCallGeneratesMetadata() throws ApiException {
     PlayerClient client = newProvider(EXTERNAL_PUBLIC_KEY, EXTERNAL_PRIVATE_KEY, SERVER_GROUP).player(OWNER_UUID);
 
-    long before = currentTime();
+    long before = currentTimeSeconds();
 
     Assert.assertNull(client.getAuthMetadata());
     Assert.assertEquals("pong!", client.getPingApi().ping().getMessage());
 
-    long after = currentTime();
+    long after = currentTimeSeconds();
 
     PlayerAuthMetadata authMetadata = client.getAuthMetadata();
     Assert.assertEquals("user_minecraft", authMetadata.getType().getType());
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() >= before);
-    Assert.assertTrue(authMetadata.getIssuedAtMillis() <= after);
-    Assert.assertTrue(authMetadata.getExpiresAtMillis() > after);
+    Assert.assertTrue(authMetadata.getIat() >= before);
+    Assert.assertTrue(authMetadata.getIat() <= after);
+    Assert.assertTrue(authMetadata.getExp() > after);
     Assert.assertEquals(SERVER_NETWORK_ID, authMetadata.getServerNetworkId());
     Assert.assertEquals(SERVER_GROUP_ID, authMetadata.getServerGroupId());
     Assert.assertNotNull(authMetadata.getPlayer());
@@ -152,8 +153,8 @@ public class ClientProviderTest {
   }
 
   // we have to floor to a whole 1000, because the API returns a value in seconds (per JWT standard)
-  private long currentTime() {
-    return System.currentTimeMillis() / 1000 * 1000;
+  private long currentTimeSeconds() {
+    return System.currentTimeMillis() / 1000;
   }
 }
 

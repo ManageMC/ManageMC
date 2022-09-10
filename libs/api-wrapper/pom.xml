@@ -17,6 +17,19 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
+    <build>
+        <resources>
+            <resource>
+                <targetPath>.</targetPath>
+                <filtering>true</filtering>
+                <directory>${basedir}</directory>
+                <includes>
+                    <include>demo-api.crt</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
         <!-- ManageMC API client -->
         <dependency>

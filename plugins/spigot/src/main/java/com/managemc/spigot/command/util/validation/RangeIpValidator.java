@@ -2,9 +2,8 @@ package com.managemc.spigot.command.util.validation;
 
 import javax.annotation.Nonnull;
 
-public class RangeIpValidator extends IpV4Validator {
+public class RangeIpValidator {
 
-  @Override
   public boolean isValid(@Nonnull String rangeIp) {
     String[] twoIps = rangeIp.split("-");
     if (twoIps.length != 2) {

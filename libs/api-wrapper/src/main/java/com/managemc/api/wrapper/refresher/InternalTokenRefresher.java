@@ -9,8 +9,6 @@ import com.managemc.api.wrapper.model.metadata.AuthMetadataType;
 import com.managemc.api.wrapper.model.metadata.InternalAuthMetadata;
 import org.openapitools.client.model.GenerateInternalServiceTokenInput;
 
-import java.util.Map;
-
 public class InternalTokenRefresher extends TokenRefresher<InternalAuthMetadata> {
 
   private final Keys keys;
@@ -48,10 +46,6 @@ public class InternalTokenRefresher extends TokenRefresher<InternalAuthMetadata>
   }
 
   private void setAuthMetadataFromToken(String token) {
-    Map<String, Object> authMetadataMap = tokenToJsonMap(token);
-    this.authMetadata = InternalAuthMetadata.builder()
-        .issuedAtMillis(Long.parseLong(authMetadataMap.get("iat").toString()) * 1000)
-        .expiresAtMillis(Long.parseLong(authMetadataMap.get("exp").toString()) * 1000)
-        .build();
+    this.authMetadata = tokenToSerializedObject(token, InternalAuthMetadata.class);
   }
 }

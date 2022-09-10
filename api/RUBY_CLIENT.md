@@ -45,7 +45,7 @@ You can configure the base URL and auth token by setting the `server_index` and 
 ManagemcApi.configure do |config|
   # we don't think these fields actually do anything but just to be safe...
   config.scheme = 'https'
-  config.host = 'api.demo.managemc.com'
+  config.host = 'api-demo.managemc.com'
 
   # tell the client which server to use
   config.server_index = 1
@@ -63,7 +63,7 @@ servers:
   - url: http://localhost:9070/api/v1
     description: Development/test server
   # index 1
-  - url: https://api.demo.managemc.com/api/v1
+  - url: https://api-demo.managemc.com/api/v1
     description: Demo server
   # index 2
   - url: https://api.managemc.com/api/v1

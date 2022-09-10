@@ -9,8 +9,6 @@ import com.managemc.api.wrapper.model.metadata.AuthMetadataType;
 import com.managemc.api.wrapper.model.metadata.ExternalApplicationAuthMetadata;
 import org.openapitools.client.model.GenerateExternalServiceTokenInput;
 
-import java.util.Map;
-
 public class ExternalApplicationTokenRefresher extends TokenRefresher<ExternalApplicationAuthMetadata> {
 
   private final Keys keys;
@@ -48,11 +46,6 @@ public class ExternalApplicationTokenRefresher extends TokenRefresher<ExternalAp
   }
 
   private void setAuthMetadataFromToken(String token) {
-    Map<String, Object> authMetadataMap = tokenToJsonMap(token);
-    this.authMetadata = ExternalApplicationAuthMetadata.builder()
-        .issuedAtMillis(Long.parseLong(authMetadataMap.get("iat").toString()) * 1000)
-        .expiresAtMillis(Long.parseLong(authMetadataMap.get("exp").toString()) * 1000)
-        .serverNetworkId(Long.parseLong(authMetadataMap.get("server_network_id").toString()))
-        .build();
+    this.authMetadata = tokenToSerializedObject(token, ExternalApplicationAuthMetadata.class);
   }
 }

@@ -1,7 +1,6 @@
 package com.managemc.api.wrapper.refresher;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.managemc.api.ApiClient;
 import com.managemc.api.ApiException;
 import com.managemc.api.api.AuthenticationApi;
@@ -11,11 +10,9 @@ import com.managemc.api.wrapper.model.metadata.AuthMetadata;
 import javassist.util.proxy.MethodHandler;
 import lombok.Getter;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Base64;
-import java.util.Map;
 
 public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHandler {
 
@@ -33,7 +30,8 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
 
   public TokenRefresher(ClientProvider.Logger logger, ApiHost apiHost) {
     this.client = new ApiClient()
-        .setServerIndex(apiHost.getServerIndex());
+        .setBasePath(apiHost.getBaseUrl())
+        .setSslCaCert(TokenRefresher.class.getClassLoader().getResourceAsStream(apiHost.getBundledCert()));
     this.unproxiedAuthApi = new AuthenticationApi(client);
     this.logger = logger;
   }
@@ -74,17 +72,12 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
 
   abstract void refreshToken() throws ApiException;
 
-  protected Map<String, Object> tokenToJsonMap(String token) {
+  protected T tokenToSerializedObject(String token, Class<T> clazz) {
     String payload = token.split("\\.")[1];
     byte[] decodedPayloadBytes = Base64.getDecoder().decode(payload);
     String decodedPayload = new String(decodedPayloadBytes);
 
-    ObjectMapper mapper = new ObjectMapper();
-    try {
-      return mapper.readValue(decodedPayload, JSON_MAP_TYPE);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return new Gson().fromJson(decodedPayload, clazz);
   }
 
   private boolean shouldRefresh() {
@@ -93,7 +86,7 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
     }
 
     long thirtySecondsFromNow = System.currentTimeMillis() + THIRTY_SECONDS;
-    return thirtySecondsFromNow > authMetadata.getExpiresAtMillis();
+    return thirtySecondsFromNow > authMetadata.getExp() * 1000;
   }
 
   public static class BadCredentialsException extends RuntimeException {
@@ -101,8 +94,4 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
       super(BAD_CREDS_MESSAGE);
     }
   }
-
-  private static final TypeReference<Map<String, Object>> JSON_MAP_TYPE =
-      new TypeReference<Map<String, Object>>() {
-      };
 }

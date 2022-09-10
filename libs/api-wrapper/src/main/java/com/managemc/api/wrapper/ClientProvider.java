@@ -81,7 +81,7 @@ public class ClientProvider {
     this.executorService.scheduleAtFixedRate(() -> {
       long now = System.currentTimeMillis();
       Set<UUID> playerClientsToRemove = playerClients.entrySet().stream()
-          .filter(entry -> entry.getValue().getAuthMetadata().getExpiresAtMillis() > now)
+          .filter(entry -> entry.getValue().getAuthMetadata().getExp() * 1000 > now)
           .map(Map.Entry::getKey)
           .collect(Collectors.toSet());
 
