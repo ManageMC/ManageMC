@@ -798,17 +798,6 @@ components:
 
         - LOW: user was not very confident that the conclusion is correct
         - HIGH: user was confident that the conclusion is correct
-    UsernameHistory:
-      properties:
-        name:
-          "$ref": "#/components/schemas/PlayerUsername"
-        changed_at:
-          type: integer
-          format: int64
-          description: the epoch time at which the username was changed to this value
-            (blank for initial username)
-      required:
-      - name
     ImportablePlayer:
       properties:
         uuid:
@@ -4447,44 +4436,6 @@ paths:
             Under any of the following conditions:
 
             - we get an unexpected error from Mojang's API other than 404 / Not Found
-  "/players/{uuid}/username_history":
-    get:
-      operationId: fetch_username_history
-      summary: Fetch username history for a player
-      tags:
-      - Players
-      security:
-      - user_web: []
-      - user_mobile: []
-      description: |
-        This endpoint fetches a player's username history directly from Mojang's API. The Mojang API does not
-        support CORS so we can't call it directly from the browser.
-      parameters:
-      - in: path
-        name: uuid
-        schema:
-          type: string
-          format: uuid
-        required: true
-        description: the player's Minecraft ID
-      responses:
-        200:
-          description: player details
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/UsernameHistory"
-        400:
-          "$ref": "#/components/responses/SyntaxError"
-        401:
-          "$ref": "#/components/responses/UnauthenticatedError"
-        500:
-          description: |
-            Under any of the following conditions:
-
-            - we got a non-200 response from Mojang
   "/players/import":
     post:
       operationId: import_players
