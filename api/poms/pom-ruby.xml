@@ -27,7 +27,7 @@
                             <output>${project.basedir}/../generated/ruby</output>
                             <configOptions>
                                 <gemName>managemc_api</gemName>
-                                <gemVersion>0.1.2</gemVersion>
+                                <gemVersion>0.1.3</gemVersion>
                             </configOptions>
                         </configuration>
                     </execution>
