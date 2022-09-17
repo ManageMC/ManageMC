@@ -34,6 +34,14 @@ components:
       scheme: bearer
       bearerFormat: JWT
   parameters:
+    NumericIdentifier:
+      in: path
+      name: id
+      schema:
+        type: integer
+        format: int64
+      required: true
+      description: a record's internal ID
     FlexiblePlayerId:
       in: path
       name: id
@@ -3396,13 +3404,7 @@ paths:
 
         '
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the API key
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -3541,13 +3543,7 @@ paths:
 
         Only in-progress imports accept punishments.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -3586,13 +3582,7 @@ paths:
 
         Only in-progress imports accept punishments.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -3631,13 +3621,7 @@ paths:
 
         Only in-progress imports accept punishments.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -3676,13 +3660,7 @@ paths:
 
         Only in-progress imports accept punishments.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -3722,13 +3700,7 @@ paths:
         punishment import. Only in-progress imports may be completed. Once an import is completed,
         the external consumer will not be able to add punishments to it.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: the updated import
@@ -3765,13 +3737,7 @@ paths:
         Any import may be cancelled. Cancellation causes all imported punishments to be deleted in a
         fully recoverable way.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: the updated import
@@ -3811,13 +3777,7 @@ paths:
 
         If the import is not cancelled, then this action will have no effect.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: the updated import
@@ -3864,13 +3824,7 @@ paths:
         Similarly, punishments that do not have a visibility field (such as warnings) will not
         change.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the punishment import
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -4149,13 +4103,7 @@ paths:
         This endpoint has no access restriction and only retrieves cursory details about server
         groups.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the server network
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: a list of server groups
@@ -4192,13 +4140,7 @@ paths:
         may be modified. Customers will never be able to directly change the server group
         label; use merge_server_groups for that instead.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the server group
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -4317,13 +4259,7 @@ paths:
 
         If the player is not an admin, then this call will be ignored.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player being demoted
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -4482,13 +4418,7 @@ paths:
         Fetch all notes for a player. If the API consumer is a moderator, then "hidden" notes will be
         omitted from the result. The result is sorted by creation time, starting with the most recent.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: array of notes sorted from newest to oldest
@@ -4775,13 +4705,7 @@ paths:
         Players without the special `com.managemc.staff.punishments.shadow.manage` permission will be unable
         to see shadow punishments.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the player's internal ID
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: bans, mutes, and warnings, sorted by creation time starting
@@ -4866,13 +4790,7 @@ paths:
         The player must exist in our database already for it to be watchable. Users can add new
         players to our database manually in the player search UI.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: the updated player watch list, in reverse addition order
@@ -4909,13 +4827,7 @@ paths:
         Stop watching a player. If the player was not on the watch list to begin with, calling
         this endpoint will have no effect and raise no error.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: the updated player watch list, in reverse addition order
@@ -4954,13 +4866,7 @@ paths:
         player has logged out, that data might be wrong. Such cases are corrected
         asynchrouously.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: internal ID of player to fetch login history for
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: the player's login history on the active server, sorted by
@@ -4998,13 +4904,7 @@ paths:
         be derived from `fetch_player_login_history` if the consumer is willing to do a
         Leetcode puzzle.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: internal ID of player to fetch login history for
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -5049,13 +4949,7 @@ paths:
         confidence. Currently all analysis is performed manually, but we may begin
         running analysis automatically in some cases later on.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: internal ID of player to fetch alt accounts for
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: the player's alt accounts on the active server
@@ -5149,13 +5043,7 @@ paths:
         without reporting a problem, causing player sessions to never end. This is corrected
         asynchronously based on server heartbeat analysis.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: |
@@ -5315,13 +5203,7 @@ paths:
       - com.managemc.staff.ips.view
       description: Get geolocation data about an IP address.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: Internal ID of the IP address
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: IP address details
@@ -5516,13 +5398,7 @@ paths:
         Edit the contents of a note. Notes cannot be made hidden once created. Users can only
         edit their own notes.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the note
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -5619,13 +5495,7 @@ paths:
         Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
         players.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the ban
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -5685,13 +5555,7 @@ paths:
         Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
         players.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the mute
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -5746,13 +5610,7 @@ paths:
         Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
         players.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the warning
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -5792,13 +5650,7 @@ paths:
         is acknowledged, the player will be able to resume playing on the server network that issued the
         warning.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the warning
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           "$ref": "#/components/responses/NoOpResponse"
@@ -5844,13 +5696,7 @@ paths:
         Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
         players.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the IP ban
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -6164,13 +6010,7 @@ paths:
 
         Unlinking a player ends all web and mobile sessions involving that player.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           "$ref": "#/components/responses/NoOpResponse"
@@ -6431,13 +6271,7 @@ paths:
         can close their own watch requests. They can also elect to close similar reports (i.e.
         watch requests with status `OPEN` and the same accusee).
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: internal ID of the watch request
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -6483,13 +6317,7 @@ paths:
         and keep the status as it is. The final state of the watch request is reflected in
         the response body.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: internal ID of the watch request
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: The updated watch request
@@ -6625,13 +6453,7 @@ paths:
         - com.managemc.staff.admin
         - com.managemc.staff.accusations.view
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: internal ID of the accusation
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: In-depth data about the accusation
@@ -6723,13 +6545,7 @@ paths:
 
         '
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: internal ID of the accusation
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -6788,13 +6604,7 @@ paths:
         Once a report is closed in this way, it is archived and cannot be changed. It will
         count neither for nor against the accuser and reviewers.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: internal ID of the accusation
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: The updated accusation
@@ -6844,13 +6654,7 @@ paths:
         update the initial verdict instead of creating a new one, effectively preventing this
         conflict from contributing toward their review statistics.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: internal ID of the accusation
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -6948,13 +6752,7 @@ paths:
 
         Fully idempotent.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: Internal ID of the accusation review permit
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           "$ref": "#/components/responses/NoOpResponse"
@@ -6994,13 +6792,7 @@ paths:
         (`ruling_times`, `includes_video_evidence`). Similarly, this endpoint omits the
         `accusee.active_server` field.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: Accusations and watch requests, separately, both in reverse
@@ -7046,13 +6838,7 @@ paths:
 
         All accusations and watch requests will pertain to the active server network only.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: Accusations in reverse creation order
@@ -7249,13 +7035,7 @@ paths:
         this endpoint will fully replace the old ones, so include all those the user intends
         to keep.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: Internal ID of the role
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -7394,13 +7174,7 @@ paths:
 
         '
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        description: internal ID of the permission group
-        required: true
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -7487,13 +7261,7 @@ paths:
         Obtain an explanation of why a player does or does not have a given permission
         on a given server. This powers a debugging tool.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       - in: path
         name: permission_id
         schema:
@@ -7550,13 +7318,7 @@ paths:
         Returns a list of permissions currently assigned to the active player according to the
         database. This endpoint reads directly from the database, not a cache.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           description: Permissions currently assigned to the player
@@ -7655,13 +7417,7 @@ paths:
         and therefore has a chance of being up to one minute out of date relative to what
         users have configured.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       - in: path
         name: server_group_id
         schema:
@@ -7710,13 +7466,7 @@ paths:
         Permissions that are not directly assignable, which are omitted from `fetch_access_configuration`,
         will neither be deleted nor cloned for both players.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player whose permissions should be cloned
+      - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
         required: true
         content:
@@ -7759,13 +7509,7 @@ paths:
         Assign a single role and/or rescope it. As usual, set `server_groups` to an empty array
         to indicate that the role should be scoped throughout the network.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          format: int64
-        required: true
-        description: the internal ID of the player
+      - "$ref": "#/components/parameters/NumericIdentifier"
       - in: path
         name: role_id
         schema:
