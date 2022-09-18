@@ -4401,6 +4401,44 @@ paths:
           "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
+  "/players/{id}":
+    delete:
+      operationId: delete_player
+      summary: Delete a player
+      tags:
+      - Players
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - com.managemc.staff.owner
+      - com.managemc.staff.admin
+      - com.managemc.staff.config.players.manage
+      description: |
+        Delete a player and all information associated with it. This cannot be undone.
+
+        For idempotence, this operation will be quietly ignored if the player is not found.
+      parameters:
+      - "$ref": "#/components/parameters/NumericIdentifier"
+      responses:
+        200:
+          "$ref": "#/components/responses/NoOpResponse"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - player status is neither `INVALID` nor `MANUAL_REVIEW`
+
+            ...or under any of the following more complex conditions, which consumers cannot realistically validate ahead of time:
+
+            - player was not added by the active server network
+            - player has ever joined any Minecraft server managed by ManageMC
+            - player is on a staff member's watch list (on any server network)
+            - player has been accused of rulebreaking (i.e. accusation or watch request) on any server network
   "/players/{id}/notes":
     get:
       operationId: fetch_notes
