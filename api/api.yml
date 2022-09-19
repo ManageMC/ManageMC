@@ -1185,6 +1185,12 @@ components:
             "$ref": "#/components/schemas/CursoryPlayerInfo"
       required:
       - results
+    UpdatePlayerUuidInput:
+      properties:
+        uuid:
+          "$ref": "#/components/schemas/PlayerUuid"
+      required:
+      - uuid
     PlayerWatchList:
       properties:
         watched_players:
@@ -4884,6 +4890,56 @@ paths:
             Under any of the following conditions:
 
             - player does not exist in our database yet
+  "/players/{id}/actions/update_uuid":
+    post:
+      operationId: update_player_uuid
+      summary: Update a player's UUID
+      tags:
+      - Players
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - com.managemc.staff.owner
+      - com.managemc.staff.admin
+      - com.managemc.staff.config.players.manage
+      description: |
+        Manually assign a UUID to a player that requires manual attention. Manual
+        assignment is required when players are not given a UUID (such as during an
+        import from a legacy ban plugin) or if their assigned UUID is determined to
+        be invalid.
+
+        If another player in our database is determined to have the same UUID, then
+        the target player will be "merged" with that player. This cannot be undone.
+        The response will include the merged player's new internal ID.
+      parameters:
+      - "$ref": "#/components/parameters/NumericIdentifier"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdatePlayerUuidInput"
+      responses:
+        200:
+          description: the updated player
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CursoryPlayerInfo"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - player status is neither `INVALID` nor `MANUAL_REVIEW`
+            - player was not added by the active server network
+            - player does not exist in our database
   "/players/{id}/login_history":
     get:
       operationId: fetch_player_login_history
