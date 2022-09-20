@@ -3090,6 +3090,47 @@ components:
       - player_id
       - server_id
       - time_millis
+    AssignInvalidPlayersInput:
+      properties:
+        number_of_players:
+          type: integer
+          format: int32
+          maximum: 50
+          description: number of players to assign
+      required:
+      - number_of_players
+    InvalidPlayer:
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: the player's ManageMC ID
+        uuid:
+          "$ref": "#/components/schemas/PlayerUuid"
+        username:
+          "$ref": "#/components/schemas/PlayerUsername"
+        username_known_at:
+          type: integer
+          format: int64
+          description: |
+            If the player was part of a punishment import and does not have a UUID assigned,
+            this field will be the most recent creation timestamp among imported punishments
+            that reference this player.
+      required:
+      - id
+    InvalidPlayerInfo:
+      properties:
+        total:
+          type: integer
+          format: int32
+          description: total number of players that are invalid and/or lack UUIDs
+        assigned_players:
+          type: array
+          items:
+            "$ref": "#/components/schemas/InvalidPlayer"
+      required:
+      - total
+      - assigned_players
   responses:
     NoOpResponse:
       description: no-op response
@@ -7756,3 +7797,49 @@ paths:
 
             - Server does not exist for active server group
             - `time_millis` is in the future or more than 10 minutes ago
+  "/invalid_players/assignments":
+    post:
+      operationId: assign_invalid_players
+      summary: Assign players to the active user for UUID (re)assignment
+      tags:
+      - Onboarding
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - com.managemc.staff.owner
+      - com.managemc.staff.admin
+      - com.managemc.staff.config.players.manage
+      description: |
+        If a player does not have a UUID or if its UUID is determined to be invalid, the
+        player will be added to a list of players that require manual reconfiguration.
+        A user with appropriate permissions may assign some number of players from that
+        list to themself to avoid collisions with other staff members who are also fixing
+        invalid players.
+
+        Assignment will last for up to one hour, after which the assigned players will be
+        returned to the shared pool for someone else to claim. If the user has already
+        assigned themself some players, then this request will replace all previous
+        assignments.
+
+        If there are no players left to assign, then the `assigned_players` array in the
+        response will be empty.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AssignInvalidPlayersInput"
+      responses:
+        200:
+          description: Information about invalid players
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/InvalidPlayerInfo"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
