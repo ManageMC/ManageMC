@@ -7797,6 +7797,45 @@ paths:
 
             - Server does not exist for active server group
             - `time_millis` is in the future or more than 10 minutes ago
+  "/invalid_players":
+    get:
+      operationId: fetch_invalid_players
+      summary: Fetch players that need manual reconfiguration
+      tags:
+      - Onboarding
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - com.managemc.staff.owner
+      - com.managemc.staff.admin
+      - com.managemc.staff.config.players.manage
+      description: |
+        When players are imported as part of a player or punishment import, they are not
+        validated with Mojang right away. Players are flagged as `INVALID` in two cases:
+
+        - player is imported without a UUID (this happens immediately)
+        - we try to validate the player but Mojang doesn't recognize it (this happens
+          asynchronously)
+
+        When invalid players are detected, it is only possible to correct them manually.
+        This is because Mojang has removed two APIs that would have been helpful for this
+        in the name of player privacy: username-at-time -> UUID and username history.
+
+        This endpoint fetches the total number of players associated with the active
+        server network that need their UUIDs assigned or corrected manually, as well as
+        any players assigned to the active user.
+      responses:
+        200:
+          description: Information about invalid players
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/InvalidPlayerInfo"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
   "/invalid_players/assignments":
     post:
       operationId: assign_invalid_players
