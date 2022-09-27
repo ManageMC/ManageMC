@@ -4484,10 +4484,10 @@ paths:
             Under any of the following conditions:
 
             - player status is neither `INVALID` nor `MANUAL_REVIEW`
+            - player was not added by the active server network
 
             ...or under any of the following more complex conditions, which consumers cannot realistically validate ahead of time:
 
-            - player was not added by the active server network
             - player has ever joined any Minecraft server managed by ManageMC
             - player is on a staff member's watch list (on any server network)
             - player has been accused of rulebreaking (i.e. accusation or watch request) on any server network
