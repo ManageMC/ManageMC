@@ -740,6 +740,11 @@ components:
               Whether the player is linked with a ManageMC user.
 
               Will be null if caller does not have one of the special permissions listed in the endpoint description.
+          imported_by:
+            type: integer
+            format: int64
+            description: The server network, if any, that imported the player through
+              a punishment or player import
         required:
         - id
         - status
