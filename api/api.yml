@@ -116,7 +116,7 @@ components:
     PlayerUuid:
       type: string
       format: uuid
-      pattern: "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$"
+      pattern: "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
       description: 'A globally unique and permanent identifier that Mojang has assigned
         to a Minecraft player.
 
@@ -740,6 +740,11 @@ components:
               Whether the player is linked with a ManageMC user.
 
               Will be null if caller does not have one of the special permissions listed in the endpoint description.
+          imported_by:
+            type: integer
+            format: int64
+            description: The server network, if any, that imported the player through
+              a punishment or player import
         required:
         - id
         - status
@@ -4479,10 +4484,10 @@ paths:
             Under any of the following conditions:
 
             - player status is neither `INVALID` nor `MANUAL_REVIEW`
+            - player was not added by the active server network
 
             ...or under any of the following more complex conditions, which consumers cannot realistically validate ahead of time:
 
-            - player was not added by the active server network
             - player has ever joined any Minecraft server managed by ManageMC
             - player is on a staff member's watch list (on any server network)
             - player has been accused of rulebreaking (i.e. accusation or watch request) on any server network
