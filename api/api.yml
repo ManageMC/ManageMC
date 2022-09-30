@@ -332,6 +332,12 @@ components:
           - PRIVATE
       required:
       - visibility
+    UpdateImportedPunishmentScopeInput:
+      properties:
+        scope:
+          type: array
+          items:
+            "$ref": "#/components/parameters/NumericIdentifier"
     PunishmentImport:
       properties:
         id:
@@ -1720,12 +1726,14 @@ components:
           - SUCCESS
           - TOKEN_INCORRECT
           - ALREADY_LINKED
+          - EMAIL_NOT_VERIFIED
           description: |
             an enum value with the following statuses:
 
             - SUCCESS = Minecraft account successfully linked to user
             - TOKEN_INCORRECT = failed because the token was wrong
             - ALREADY_LINKED = failed because the Minecraft account is linked with a different user
+            - EMAIL_NOT_VERIFIED = failed because the user's email address has not yet been verified
       required:
       - status
     PluginVersionRecommendations:
@@ -3095,15 +3103,53 @@ components:
       - player_id
       - server_id
       - time_millis
-    AssignInvalidPlayersInput:
+    ImportedPlayersStats:
       properties:
-        number_of_players:
+        total:
           type: integer
-          format: int32
-          maximum: 50
-          description: number of players to assign
+          format: int64
+          description: Total number of players created by active server network
+        total_from_server_logins:
+          type: integer
+          format: int64
+          description: Total number of players created by active server network via
+            Minecraft server logins
+        total_from_player_imports:
+          type: integer
+          format: int64
+          description: Total number of players created by active server network via
+            player imports
+        total_from_punishment_imports:
+          type: integer
+          format: int64
+          description: Total number of players created by active server network via
+            player imports
+        total_valid:
+          type: integer
+          format: int64
+          description: Total number of players with `VALID` status
+        total_invalid:
+          type: integer
+          format: int64
+          description: Total number of players with `INVALID`/`MANUAL_REVIEW` status
+        total_fixable:
+          type: integer
+          format: int64
+          description: Total number of invalid players that are not currently assigned
+            to other users
+        total_pending:
+          type: integer
+          format: int64
+          description: Total number of players with `PENDING` status
       required:
-      - number_of_players
+      - total
+      - total_from_server_logins
+      - total_from_player_imports
+      - total_from_punishment_imports
+      - total_valid
+      - total_invalid
+      - total_fixable
+      - total_pending
     InvalidPlayer:
       properties:
         id:
@@ -3123,19 +3169,20 @@ components:
             that reference this player.
       required:
       - id
-    InvalidPlayerInfo:
+    ClaimInvalidPlayerInput:
       properties:
-        total:
+        player_id:
           type: integer
-          format: int32
-          description: total number of players that are invalid and/or lack UUIDs
-        assigned_players:
-          type: array
-          items:
-            "$ref": "#/components/schemas/InvalidPlayer"
-      required:
-      - total
-      - assigned_players
+          format: int64
+          description: a specific player's internal ID
+    ClaimInvalidPlayerResponse:
+      properties:
+        player:
+          "$ref": "#/components/schemas/InvalidPlayer"
+        assignment_expires_at:
+          type: integer
+          format: int64
+          description: Epoch millis at which player assignment ends
   responses:
     NoOpResponse:
       description: no-op response
@@ -3899,7 +3946,53 @@ paths:
             - import not found
             - import belongs to a different server network
             - import is not completed
-            - visibility not recognized
+  "/punishment_imports/{id}/actions/update_scope":
+    post:
+      operationId: update_imported_punishment_scope
+      summary: Update the scope of punishments associated with an import
+      tags:
+      - Onboarding
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - com.managemc.staff.owner
+      - com.managemc.staff.admin
+      - com.managemc.staff.config.imports.manage
+      description: |
+        If customers are importing punishments from third party plugins and
+        have not configured said plugins to run on a single database, they
+        may end up having multiple sources to import from, each representing
+        one server. In this case, the customer will want to rescope imported
+        punishments to reflect the original server constraints.
+
+        Leaving the `scope` field blank or passing an empty array will make
+        the punishments globally scoped.
+      parameters:
+      - "$ref": "#/components/parameters/NumericIdentifier"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateImportedPunishmentScopeInput"
+      responses:
+        200:
+          "$ref": "#/components/responses/NoOpResponse"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - import not found
+            - import belongs to a different server network
+            - import is not completed
+            - one or more server group(s) not found for active server network
   "/server_networks":
     get:
       operationId: fetch_server_networks
@@ -4385,9 +4478,6 @@ paths:
       summary: Create a player within our database
       tags:
       - Players
-      security:
-      - user_web: []
-      - user_mobile: []
       description: |
         We call Mojang's API to validate that the player is real, skipping asynchronous validation. We expect users
         in our web/mobile apps to use this endpoint occasionally, but it won't be called so often that performance
@@ -5212,9 +5302,6 @@ paths:
       summary: Search for players by username
       tags:
       - Players
-      security:
-      - user_web: []
-      - user_mobile: []
       description: 'Matches usernames that contain the user input exactly in any position.
 
         '
@@ -7802,10 +7889,37 @@ paths:
 
             - Server does not exist for active server group
             - `time_millis` is in the future or more than 10 minutes ago
-  "/invalid_players":
+  "/imported_players":
     get:
-      operationId: fetch_invalid_players
-      summary: Fetch players that need manual reconfiguration
+      operationId: fetch_imported_players
+      summary: Fetch stats about players imported by the active server network
+      tags:
+      - Onboarding
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - com.managemc.staff.owner
+      - com.managemc.staff.admin
+      - com.managemc.staff.config.players.manage
+      description: 'Powers the player overview tab in the configuration dashboard.
+
+        '
+      responses:
+        200:
+          description: Stats about imported players
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ImportedPlayersStats"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
+  "/invalid_players/actions/claim":
+    post:
+      operationId: claim_invalid_player
+      summary: Claim a player in need of manual reconfiguration
       tags:
       - Onboarding
       security:
@@ -7824,27 +7938,43 @@ paths:
           asynchronously)
 
         When invalid players are detected, it is only possible to correct them manually.
-        This is because Mojang has removed two APIs that would have been helpful for this
-        in the name of player privacy: username-at-time -> UUID and username history.
+        This is because Mojang has removed any APIs that would have been helpful for this
+        in the name of player privacy.
 
-        This endpoint fetches the total number of players associated with the active
-        server network that need their UUIDs assigned or corrected manually, as well as
-        any players assigned to the active user.
+        This endpoint fetches an invalid player and assigns it to the active user for a
+        limited time. After that time expires, if the player has not been reconfigured,
+        the player will be returned to the shared pool for another user to claim.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ClaimInvalidPlayerInput"
       responses:
         200:
-          description: Information about invalid players
+          description: An invalid player, if one is available
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/InvalidPlayerInfo"
+                "$ref": "#/components/schemas/ClaimInvalidPlayerResponse"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
         403:
           "$ref": "#/components/responses/PermissionDeniedError"
-  "/invalid_players/assignments":
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - player does not exist
+            - player status forbids claiming
+            - player was not imported by the active server network
+            - player is already claimed
+  "/invalid_players/actions/unclaim":
     post:
-      operationId: assign_invalid_players
-      summary: Assign players to the active user for UUID (re)assignment
+      operationId: unclaim_invalid_player
+      summary: Release the active user's assigned player
       tags:
       - Onboarding
       security:
@@ -7855,34 +7985,23 @@ paths:
       - com.managemc.staff.admin
       - com.managemc.staff.config.players.manage
       description: |
-        If a player does not have a UUID or if its UUID is determined to be invalid, the
-        player will be added to a list of players that require manual reconfiguration.
-        A user with appropriate permissions may assign some number of players from that
-        list to themself to avoid collisions with other staff members who are also fixing
-        invalid players.
+        When players are imported as part of a player or punishment import, they are not
+        validated with Mojang right away. Players are flagged as `INVALID` in two cases:
 
-        Assignment will last for up to one hour, after which the assigned players will be
-        returned to the shared pool for someone else to claim. If the user has already
-        assigned themself some players, then this request will replace all previous
-        assignments.
+        - player is imported without a UUID (this happens immediately)
+        - we try to validate the player but Mojang doesn't recognize it (this happens
+          asynchronously)
 
-        If there are no players left to assign, then the `assigned_players` array in the
-        response will be empty.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/AssignInvalidPlayersInput"
+        When invalid players are detected, it is only possible to correct them manually.
+        This is because Mojang has removed any APIs that would have been helpful for this
+        in the name of player privacy.
+
+        This endpoint releases the active user's currently assigned player so that it may
+        be claimed by another user. Call this endpoint when the user exits the "fix player"
+        dialog.
       responses:
         200:
-          description: Information about invalid players
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/InvalidPlayerInfo"
-        400:
-          "$ref": "#/components/responses/SyntaxError"
+          "$ref": "#/components/responses/NoOpResponse"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
         403:
