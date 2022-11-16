@@ -9,10 +9,10 @@ import java.util.Optional;
 
 public class LocalConfig {
 
-  public static final String PUBLIC_KEY_KEY = "public_key";
-  public static final String PRIVATE_KEY_KEY = "private_key";
-  public static final String SERVER_GROUP_KEY = "group";
-  public static final String SERVER_NAME_KEY = "name";
+  public static final String PUBLIC_KEY_KEY = "MMC_PUBLIC_KEY";
+  public static final String PRIVATE_KEY_KEY = "MMC_PRIVATE_KEY";
+  public static final String SERVER_GROUP_KEY = "MMC_GROUP";
+  public static final String SERVER_NAME_KEY = "MMC_NAME";
   public static final String DEFAULT_SERVER_NAME = "Unnamed Server";
 
   @Getter
