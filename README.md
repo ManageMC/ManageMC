@@ -1,9 +1,8 @@
 # ManageMC
 
-Welcome to [ManageMC](https://managemc.com/)'s public repository, which contains our documentation portal and the open source components of our software.
+Welcome to [ManageMC](https://managemc.com)'s public repository, which contains the open source components of our software.
 
 ## Contents
 
+- [Development Guide](https://docs.managemc.com/guides/developers/development-guide)
 - [License](LICENSE)
-- [API](api/API.md)
-- [Local Minecraft Server](local_minecraft_server/LOCAL-SERVER.md) (for testing)
