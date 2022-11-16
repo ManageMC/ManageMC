@@ -1,4 +1,4 @@
 # Client-side configuration for ManageMC Linker Plugin
 
-public_key:
-private_key:
+MMC_PUBLIC_KEY:
+MMC_PRIVATE_KEY:
