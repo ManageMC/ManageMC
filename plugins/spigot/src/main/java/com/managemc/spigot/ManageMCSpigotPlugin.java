@@ -3,7 +3,7 @@ package com.managemc.spigot;
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.refresher.TokenRefresher;
 import com.managemc.plugins.bukkit.BukkitWrapper;
-import com.managemc.plugins.config.FileBasedLocalConfigLoader;
+import com.managemc.plugins.config.FlexibleLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
 import com.managemc.plugins.logging.BukkitLogging;
 import com.managemc.spigot.command.processor.CmdMMC;
@@ -26,6 +26,7 @@ public class ManageMCSpigotPlugin extends JavaPlugin {
 
   private static final String DEFAULT_CONFIG_FILENAME = "default-config.yml";
   private static final String CONFIG_FILENAME = "ManageMC.yml";
+  private static final String[] KEYS = new String[]{LocalConfig.PUBLIC_KEY_KEY, LocalConfig.PRIVATE_KEY_KEY, LocalConfig.SERVER_GROUP_KEY, LocalConfig.SERVER_NAME_KEY};
 
   private SpigotPluginConfig config;
 
@@ -88,7 +89,8 @@ public class ManageMCSpigotPlugin extends JavaPlugin {
   private SpigotPluginConfig buildConfig(BukkitLogging logging, BukkitWrapper bukkitWrapper) throws IOException {
     String version = new VersionDiscerner(logging).determineVersion();
 
-    LocalConfigLoader configLoader = new FileBasedLocalConfigLoader(
+    LocalConfigLoader configLoader = new FlexibleLocalConfigLoader(
+        KEYS,
         bukkitWrapper.getDataFolder(),
         CONFIG_FILENAME,
         Optional

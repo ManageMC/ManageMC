@@ -8,7 +8,7 @@ import com.managemc.importer.command.base.CommandBase;
 import com.managemc.importer.config.LocalConfig;
 import com.managemc.importer.config.ManageMCImportPluginConfig;
 import com.managemc.plugins.bukkit.BukkitWrapper;
-import com.managemc.plugins.config.FileBasedLocalConfigLoader;
+import com.managemc.plugins.config.FlexibleLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
 import com.managemc.plugins.logging.BukkitLogging;
 import lombok.SneakyThrows;
@@ -34,7 +34,8 @@ public class ManageMCImporterPlugin extends JavaPlugin {
     String configFilePath = bukkitWrapper.getDataFolder() + "/" + CONFIG_FILENAME;
 
     try {
-      LocalConfigLoader configLoader = new FileBasedLocalConfigLoader(
+      LocalConfigLoader configLoader = new FlexibleLocalConfigLoader(
+          new String[]{LocalConfig.PUBLIC_KEY_KEY, LocalConfig.PRIVATE_KEY_KEY},
           bukkitWrapper.getDataFolder(),
           CONFIG_FILENAME,
           Optional
