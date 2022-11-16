@@ -1,6 +1,6 @@
 # Client-side configuration for ManageMC
 
-# Your public and private keys, which may be copied and pasted from https://managemc.com/config#credentials.
+# Your public and private keys, which may be copied and pasted from https://managemc.com/manage/config#credentials.
 # Anyone with access to these keys has the same power as your Minecraft server on ManageMC, so be sure not
 # to share them with hooligans you do not trust.
 public_key:
