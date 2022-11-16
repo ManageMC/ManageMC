@@ -7,7 +7,7 @@ import com.managemc.linker.config.AccountLinkerConfig;
 import com.managemc.linker.config.AccountLinkerConfigLocal;
 import com.managemc.linker.model.LocalConfig;
 import com.managemc.plugins.bukkit.BukkitWrapper;
-import com.managemc.plugins.config.FileBasedLocalConfigLoader;
+import com.managemc.plugins.config.FlexibleLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,7 +29,8 @@ public class ManageMCLinkerPlugin extends JavaPlugin {
     String configFilePath = bukkitWrapper.getDataFolder() + "/" + CONFIG_FILENAME;
 
     try {
-      LocalConfigLoader configLoader = new FileBasedLocalConfigLoader(
+      LocalConfigLoader configLoader = new FlexibleLocalConfigLoader(
+          new String[]{LocalConfig.PUBLIC_KEY_KEY, LocalConfig.PRIVATE_KEY_KEY},
           bukkitWrapper.getDataFolder(),
           CONFIG_FILENAME,
           Optional
