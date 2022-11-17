@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public class LocalConfig {
 
-  public static final String PUBLIC_KEY_KEY = "public_key";
-  public static final String PRIVATE_KEY_KEY = "private_key";
+  public static final String PUBLIC_KEY_KEY = "MMC_PUBLIC_KEY";
+  public static final String PRIVATE_KEY_KEY = "MMC_PRIVATE_KEY";
 
   @Getter
   private final Keys keys;

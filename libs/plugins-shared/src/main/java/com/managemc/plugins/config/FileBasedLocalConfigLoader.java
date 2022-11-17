@@ -1,12 +1,11 @@
 package com.managemc.plugins.config;
 
+import com.managemc.plugins.config.helper.InputStreamReader;
 import lombok.SneakyThrows;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class FileBasedLocalConfigLoader implements LocalConfigLoader {
 
@@ -17,7 +16,7 @@ public class FileBasedLocalConfigLoader implements LocalConfigLoader {
   private final String defaultContents;
 
   public FileBasedLocalConfigLoader(File dataFolder, String fileName, InputStream defaultContents) {
-    this(dataFolder, fileName, readInputStream(defaultContents));
+    this(dataFolder, fileName, InputStreamReader.readInputStream(defaultContents));
   }
 
   public FileBasedLocalConfigLoader(File dataFolder, String fileName, String defaultContents) {
@@ -51,14 +50,6 @@ public class FileBasedLocalConfigLoader implements LocalConfigLoader {
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
         writer.write(defaultContents);
       }
-    }
-  }
-
-
-  @SneakyThrows
-  private static String readInputStream(InputStream inputStream) {
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-      return reader.lines().collect(Collectors.joining("\n")) + "\n";
     }
   }
 }
