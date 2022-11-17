@@ -23,9 +23,6 @@
                 <targetPath>.</targetPath>
                 <filtering>true</filtering>
                 <directory>${basedir}</directory>
-                <includes>
-                    <include>demo-api.crt</include>
-                </includes>
             </resource>
         </resources>
     </build>

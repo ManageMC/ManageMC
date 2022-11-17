@@ -29,9 +29,7 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
   private final ClientProvider.Logger logger;
 
   public TokenRefresher(ClientProvider.Logger logger, ApiHost apiHost) {
-    this.client = new ApiClient()
-        .setBasePath(apiHost.getBaseUrl())
-        .setSslCaCert(TokenRefresher.class.getClassLoader().getResourceAsStream(apiHost.getBundledCert()));
+    this.client = new ApiClient().setBasePath(apiHost.getBaseUrl());
     this.unproxiedAuthApi = new AuthenticationApi(client);
     this.logger = logger;
   }
