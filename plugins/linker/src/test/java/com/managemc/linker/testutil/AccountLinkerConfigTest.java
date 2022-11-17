@@ -1,5 +1,6 @@
 package com.managemc.linker.testutil;
 
+import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
 import com.managemc.api.wrapper.model.Keys;
 import com.managemc.linker.config.AccountLinkerConfig;
@@ -17,6 +18,11 @@ public class AccountLinkerConfigTest implements AccountLinkerConfig {
   static {
     CLIENT_PROVIDER = ClientProvider
         .demo(Mockito.mock(ClientProvider.Logger.class), new Keys(PUBLIC_KEY, PRIVATE_KEY), null);
+    try {
+      CLIENT_PROVIDER.internal().getPingApi().ping();
+    } catch (ApiException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
