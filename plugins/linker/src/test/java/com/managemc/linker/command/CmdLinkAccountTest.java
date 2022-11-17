@@ -29,6 +29,7 @@ public class CmdLinkAccountTest {
   private static final String UNLINKED_UUID = "98b7a77b-cd65-4f72-ad91-a6c399f1921e";
   private static final String HCLEWK_TOKEN = "1_ghj567";
   private static final String BENNEY_TOKEN = "4_poi765";
+  private static final String UNVERIFIED_TOKEN = "6_abc123";
   private static final String BENNEY_UUID = "132a6196-f571-4ec4-bf08-486037cafa96";
 
   private CmdLinkAccount command;
@@ -75,6 +76,12 @@ public class CmdLinkAccountTest {
   public void alreadyLinked() {
     awaitWebServiceResponse(() -> onCommand(randoPlayer, HCLEWK_TOKEN));
     Mockito.verify(randoPlayer).sendMessage(AccountLinkingService.ALREADY_LINKED_MSG);
+  }
+
+  @Test
+  public void unverifiedEmail() {
+    awaitWebServiceResponse(() -> onCommand(unlinkedPlayer, UNVERIFIED_TOKEN));
+    Mockito.verify(unlinkedPlayer).sendMessage(AccountLinkingService.UNVERIFIED_EMAIL_MSG);
   }
 
   @Test
