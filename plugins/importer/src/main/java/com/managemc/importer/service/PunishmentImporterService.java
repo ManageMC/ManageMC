@@ -2,20 +2,16 @@ package com.managemc.importer.service;
 
 import com.managemc.importer.command.base.CommandBaseAsync;
 import com.managemc.importer.data.ImportJobTracker;
-import com.managemc.importer.data.cache.AdvancedBanPunishmentsCache;
-import com.managemc.importer.data.cache.MaxBansPunishmentCache;
-import com.managemc.importer.data.cache.PunishmentsCache;
-import com.managemc.importer.data.cache.VanillaPunishmentsCache;
-import com.managemc.importer.reader.AdvancedBanReader;
-import com.managemc.importer.reader.MaxBansPlusReader;
-import com.managemc.importer.reader.VanillaBanReader;
-import com.managemc.importer.reader.VanillaIpBanReader;
+import com.managemc.importer.data.cache.*;
+import com.managemc.importer.reader.*;
 import com.managemc.importer.reader.source.AdvancedBanDb;
 import com.managemc.importer.reader.source.MaxBansPlusDb;
 import com.managemc.importer.service.helper.PunishmentImporter;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+
+import java.io.File;
 
 public class PunishmentImporterService {
 
@@ -114,6 +110,24 @@ public class PunishmentImporterService {
         importer,
         () -> reader.read().forEach(punishmentsCache::add)
     );
+  }
+
+  public void importEssentialsX(CommandSender sender, File dataFolder) {
+    EssentialsPunishmentsCache punishmentsCache = new EssentialsPunishmentsCache();
+    PunishmentImporter importer = newPunishmentImporter(punishmentsCache.getBaseCache());
+    VanillaBanReader banReader = new VanillaBanReader();
+    VanillaIpBanReader ipBanReader = new VanillaIpBanReader();
+    EssentialsReader essentialsReader = new EssentialsReader(dataFolder);
+
+    runImportTask(
+        sender,
+        punishmentsCache.getBaseCache(),
+        importer,
+        () -> {
+          banReader.read().forEach(punishmentsCache::add);
+          ipBanReader.read().forEach(punishmentsCache::add);
+          essentialsReader.read().forEach(punishmentsCache::add);
+        });
   }
 
   private PunishmentImporter newPunishmentImporter(PunishmentsCache punishmentsCache) {
