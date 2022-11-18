@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
@@ -45,6 +46,10 @@ public class BukkitWrapper {
 
   public void registerListener(Listener listener) {
     plugin.getServer().getPluginManager().registerEvents(listener, plugin);
+  }
+
+  public Plugin getOtherPlugin(String pluginName) {
+    return plugin.getServer().getPluginManager().getPlugin(pluginName);
   }
 
   @Nullable
