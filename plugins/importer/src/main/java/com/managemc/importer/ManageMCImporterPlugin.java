@@ -44,7 +44,7 @@ public class ManageMCImporterPlugin extends JavaPlugin {
       );
 
       LocalConfig localConfig = new LocalConfig(configLoader.load());
-      ManageMCImportPluginConfig config = new ManageMCImportPluginConfig(logger, localConfig);
+      ManageMCImportPluginConfig config = new ManageMCImportPluginConfig(bukkitWrapper, logger, localConfig);
 
       registerCommand(new CmdImport(logger, config));
       registerCommand(new CmdJob(logger, config.getJobStatusService()));
