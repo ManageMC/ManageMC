@@ -2,6 +2,7 @@ package com.managemc.importer.translation;
 
 import com.managemc.plugins.util.RegexConstants;
 import org.maxgamer.maxbans.orm.Restriction;
+import org.maxgamer.maxbans.orm.Tenant;
 import org.maxgamer.maxbans.orm.User;
 import org.openapitools.client.model.*;
 
@@ -14,8 +15,8 @@ public class MaxBansTypeTranslator {
   public static ImportableBanOrMute toBanOrMute(Restriction punishment) {
     return new ImportableBanOrMute()
         .reason(punishment.getReason())
-        .offender(buildOffender(punishment))
-        .issuer(buildUser(punishment.getSource()))
+        .offender(buildTenant(punishment.getTenant()))
+        .issuer(buildTenant(punishment.getSource()))
         .visibility(PunishmentVisibility.PUBLIC)
         .issuedAtMillis(punishment.getCreated().toEpochMilli())
         .durationMillis(buildDuration(punishment))
@@ -28,7 +29,7 @@ public class MaxBansTypeTranslator {
         .minIpv4Address(punishment.getTenant().getName())
         .maxIpv4Address(punishment.getTenant().getName())
         .reason(punishment.getReason())
-        .issuer(buildUser(punishment.getSource()))
+        .issuer(buildTenant(punishment.getSource()))
         .visibility(PunishmentVisibility.PUBLIC)
         .issuedAtMillis(punishment.getCreated().toEpochMilli())
         .durationMillis(buildDuration(punishment))
@@ -39,36 +40,30 @@ public class MaxBansTypeTranslator {
   public static ImportableWarning toWarning(Restriction punishment) {
     return new ImportableWarning()
         .reason(punishment.getReason())
-        .offender(buildOffender(punishment))
-        .issuer(buildUser(punishment.getSource()))
+        .offender(buildTenant(punishment.getTenant()))
+        .issuer(buildTenant(punishment.getSource()))
         .issuedAtMillis(punishment.getCreated().toEpochMilli())
         .pardon(buildPardon(punishment))
         .source(SOURCE);
   }
 
-  /**
-   * MaxBans does not guarantee that the id (UUID) field on the User table is
-   * correct. There is an edge case in which, in offline mode, the plugin will
-   * assign a random UUID to the player. Thus, to be certain of the integrity
-   * of the data we import, we ignore the UUID and perform player UUID
-   * resolution even though it may not be necessary in every case.
-   */
-
-  private static ImportablePunishmentPlayer buildOffender(Restriction punishment) {
-    return new ImportablePunishmentPlayer()
-        .username(punishment.getTenant().getName());
-  }
-
-  private static ImportablePunishmentPlayer buildUser(User user) {
-    if (user == null) {
+  private static ImportablePunishmentPlayer buildTenant(Tenant tenant) {
+    if (tenant == null) {
       return null;
     }
 
-    if (!user.getName().matches(RegexConstants.USERNAME_REGEX)) {
+    if (!tenant.getName().matches(RegexConstants.USERNAME_REGEX)) {
       return null;
     }
 
-    return new ImportablePunishmentPlayer().username(user.getName());
+    ImportablePunishmentPlayer player = new ImportablePunishmentPlayer()
+        .username(tenant.getName());
+
+    if (tenant instanceof User) {
+      return player.uuid(((User) tenant).getId());
+    }
+
+    return player;
   }
 
   private static Long buildDuration(Restriction punishment) {
@@ -87,6 +82,6 @@ public class MaxBansTypeTranslator {
     return new ImportablePunishmentPardon()
         .pardonedAtMillis(punishment.getRevokedAt().toEpochMilli())
         .details(PARDON_DETAILS)
-        .pardoner(buildUser(punishment.getRevoker()));
+        .pardoner(buildTenant(punishment.getRevoker()));
   }
 }
