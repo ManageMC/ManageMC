@@ -2,6 +2,7 @@ package com.managemc.spigot.command.processor;
 
 import com.managemc.spigot.command.handler.CmdPlayersCreateHandler;
 import com.managemc.spigot.command.handler.base.CommandHandlerAsync;
+import com.managemc.spigot.command.processor.tabcompletion.NoOpTabCompleter;
 import com.managemc.spigot.command.util.CommandProcessorAsync;
 import com.managemc.spigot.command.util.CommandUsage;
 import com.managemc.spigot.command.util.ProcessedCommandArguments;
@@ -20,7 +21,7 @@ public class CmdPlayersCreate extends CommandProcessorAsync {
    * about.
    */
   public CmdPlayersCreate(SpigotPluginConfig config) {
-    super(config.getLogging(), CommandUsage.PLAYERS_CREATE, (sender, args) -> new ArrayList<>());
+    super(config.getLogging(), CommandUsage.PLAYERS_CREATE, new NoOpTabCompleter());
     this.config = config;
   }
 
