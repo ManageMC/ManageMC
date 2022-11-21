@@ -4960,6 +4960,7 @@ paths:
       security:
       - user_web: []
       - user_mobile: []
+      - user_minecraft: []
       x-permissions:
       - com.managemc.staff.owner
       - com.managemc.staff.admin
@@ -4972,7 +4973,7 @@ paths:
         The player must exist in our database already for it to be watchable. Users can add new
         players to our database manually in the player search UI.
       parameters:
-      - "$ref": "#/components/parameters/NumericIdentifier"
+      - "$ref": "#/components/parameters/FlexiblePlayerId"
       responses:
         200:
           description: the updated player watch list, in reverse addition order
@@ -5001,6 +5002,7 @@ paths:
       security:
       - user_web: []
       - user_mobile: []
+      - user_minecraft: []
       x-permissions:
       - com.managemc.staff.owner
       - com.managemc.staff.admin
@@ -5009,7 +5011,7 @@ paths:
         Stop watching a player. If the player was not on the watch list to begin with, calling
         this endpoint will have no effect and raise no error.
       parameters:
-      - "$ref": "#/components/parameters/NumericIdentifier"
+      - "$ref": "#/components/parameters/FlexiblePlayerId"
       responses:
         200:
           description: the updated player watch list, in reverse addition order
@@ -5333,6 +5335,7 @@ paths:
       security:
       - user_web: []
       - user_mobile: []
+      - user_minecraft: []
       x-permissions:
       - com.managemc.staff.owner
       - com.managemc.staff.admin
