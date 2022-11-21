@@ -9,6 +9,7 @@ import com.managemc.spigot.command.util.validation.IpV4Validator;
 import com.managemc.spigot.command.util.validation.RangeIpValidator;
 import com.managemc.spigot.util.permissions.PermissibleAction;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public class CommandAssertions {
   public static final String NO_PERMANENT_PUNISHMENTS_MSG = "You don't have permission to issue permanent punishments";
   public static final String MOJANG_RATE_LIMIT_MSG = "Could not find player due to Mojang's rate limit";
   public static final String UUID_RESOLUTION_UNEXPECTED_MSG = "Player UUID resolution failed for unexpected reasons";
+  public static final String ONLY_PLAYERS_MESSAGE = "Only players can execute this command";
   private static final IpV4Validator IP_V4_VALIDATOR = new IpV4Validator();
   private static final RangeIpValidator RANGE_IP_VALIDATOR = new RangeIpValidator();
 
@@ -52,6 +54,13 @@ public class CommandAssertions {
     } else {
       assertValidIpAddress(ipAddressOrRange);
     }
+  }
+
+  public static Player assertPlayerSender(CommandSender sender) {
+    if (sender instanceof Player) {
+      return (Player) sender;
+    }
+    throw new CommandValidationException(ONLY_PLAYERS_MESSAGE, false);
   }
 
   public static void checkPermissions(PermissibleAction action, CommandSender sender, String errorMessage) {
