@@ -33,7 +33,7 @@ public class CmdImportTest {
   public void invalidImportType() {
     onCommand("oops");
     Mockito.verify(sender).sendMessage(ChatColor.RED +
-        "Invalid argument 'oops'. Must be one of: [VANILLA, ADVANCED_BAN, MAX_BANS_PLUS]");
+        "Invalid argument 'oops'. Must be one of: [VANILLA, ADVANCED_BAN, MAX_BANS_PLUS, ESSENTIALS_X]");
     Mockito.verify(sender).sendMessage(USAGE_MESSAGE);
     Mockito.verify(sender, Mockito.times(2)).sendMessage((String) ArgumentMatchers.any());
   }
