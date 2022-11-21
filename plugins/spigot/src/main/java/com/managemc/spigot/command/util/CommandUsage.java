@@ -8,4 +8,7 @@ public class CommandUsage {
   public static final String MUTES_CREATE = "/mmc mutes create <username> [reason] [details] [flags]";
   public static final String PUNISHMENTS_PARDON = "/mmc punishments pardon <ID...> [details]";
   public static final String WARNINGS_CREATE = "/mmc warnings create <username> [reason (can be multiple words)]";
+  public static final String WATCHLIST_SHOW = "/mmc watchlist show";
+  public static final String WATCHLIST_ADD = "/mmc watchlist add <username>";
+  public static final String WATCHLIST_REMOVE = "/mmc watchlist remove <username>";
 }
