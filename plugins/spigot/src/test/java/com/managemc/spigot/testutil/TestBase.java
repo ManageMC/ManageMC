@@ -39,6 +39,8 @@ public abstract class TestBase {
   protected static final UUID JACOB_UUID = TestConstants.JACOB_UUID;
   protected static final String PHYLLIS_USERNAME = TestConstants.PHYLLIS_USERNAME;
   protected static final UUID PHYLLIS_UUID = TestConstants.PHYLLIS_UUID;
+  protected static final String PLS_USERNAME = "pls";
+  protected static final UUID PLS_UUID = UUID.fromString("5de82748-dbea-4db9-9027-2edfe6d861e3");
 
   protected SpigotPluginConfigTest config;
   @Mock
@@ -164,6 +166,12 @@ public abstract class TestBase {
     Mockito.verify(sender, ONCE).sendMessage(ChatColor.RED + message);
     Mockito.verify(sender, ONCE).sendMessage(ChatColor.RED + "Usage: " + usageMessage);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
+    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+  }
+
+  protected void assertSemantic(String message) {
+    Mockito.verify(sender, ONCE).sendMessage(ChatColor.RED + message);
+    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
   }
 
