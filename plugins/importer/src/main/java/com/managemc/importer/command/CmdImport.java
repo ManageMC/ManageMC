@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 
 public class CmdImport extends CommandBaseAsync {
 
-  static final String USAGE = "/import <source [VANILLA | ADVANCED_BAN | MAX_BANS_PLUS]>";
+  static final String USAGE = "/import <source [VANILLA | ADVANCED_BAN | MAX_BANS_PLUS | ESSENTIALS_X]>";
   static final String DESCRIPTION = "Asynchronously import punishments to ManageMC from a supported external source";
 
   private static final CommandBuilder COMMAND_BUILDER = CommandBuilder.builder()

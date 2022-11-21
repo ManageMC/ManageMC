@@ -5,10 +5,14 @@ import com.managemc.importer.command.base.CommandAssertions;
 import com.managemc.importer.command.base.CommandValidationException;
 import com.managemc.importer.config.ManageMCImportPluginConfig;
 import com.managemc.importer.service.PunishmentImporterService;
+import com.managemc.plugins.bukkit.BukkitWrapper;
 import org.bukkit.command.CommandSender;
+
+import java.io.File;
 
 public class CmdImportHandler extends AsyncCommandHandler {
 
+  private final BukkitWrapper bukkitWrapper;
   private final PunishmentImporterService importerService;
   private final String advancedBanMainClass;
   private final String maxBansMainClass;
@@ -16,11 +20,13 @@ public class CmdImportHandler extends AsyncCommandHandler {
   private CmdImportHandler(
       CommandSender sender,
       String[] args,
+      BukkitWrapper bukkitWrapper,
       PunishmentImporterService importerService,
       String advancedBanMainClass,
       String maxBansMainClass
   ) {
     super(sender, args);
+    this.bukkitWrapper = bukkitWrapper;
     this.importerService = importerService;
     this.advancedBanMainClass = advancedBanMainClass;
     this.maxBansMainClass = maxBansMainClass;
@@ -34,6 +40,7 @@ public class CmdImportHandler extends AsyncCommandHandler {
     return new CmdImportHandler(
         sender,
         args,
+        config.getBukkitWrapper(),
         config.getImporterService(),
         config.getAdvancedBanMainClass(),
         config.getMaxBansMainClass()
@@ -61,6 +68,10 @@ public class CmdImportHandler extends AsyncCommandHandler {
       case MAX_BANS_PLUS:
         importerService.importMaxBans(sender);
         return;
+      case ESSENTIALS_X:
+        File dataFolder = bukkitWrapper.getOtherPlugin("Essentials").getDataFolder();
+        importerService.importEssentialsX(sender, dataFolder);
+        return;
     }
 
     throw new RuntimeException("Unexpected punishment source: " + source);
@@ -84,6 +95,16 @@ public class CmdImportHandler extends AsyncCommandHandler {
             maxBansMainClass
         );
         break;
+      case ESSENTIALS_X:
+        assertPresenceOfOtherPlugin("Essentials");
+        break;
+    }
+  }
+
+  private void assertPresenceOfOtherPlugin(String plugin) {
+    if (bukkitWrapper.getOtherPlugin(plugin) == null) {
+      String message = String.format("Plugin expected but not found: %s", plugin);
+      throw new CommandValidationException(message, false);
     }
   }
 
@@ -105,5 +126,6 @@ public class CmdImportHandler extends AsyncCommandHandler {
     VANILLA,
     ADVANCED_BAN,
     MAX_BANS_PLUS,
+    ESSENTIALS_X
   }
 }

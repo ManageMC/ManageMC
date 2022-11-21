@@ -8,7 +8,7 @@ import lombok.Getter;
 public class VanillaPunishmentsCache {
 
   @Getter
-  private final PunishmentsCache baseCache;
+  protected final PunishmentsCache baseCache;
 
   public VanillaPunishmentsCache() {
     this.baseCache = new PunishmentsCache();

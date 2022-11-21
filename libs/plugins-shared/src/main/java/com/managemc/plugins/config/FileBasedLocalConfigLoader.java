@@ -5,6 +5,8 @@ import lombok.SneakyThrows;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class FileBasedLocalConfigLoader implements LocalConfigLoader {
@@ -30,7 +32,7 @@ public class FileBasedLocalConfigLoader implements LocalConfigLoader {
     createConfigFileIfNecessary();
     Yaml yaml = new Yaml();
 
-    try (InputStream inputStream = new FileInputStream(configFilePath())) {
+    try (InputStream inputStream = Files.newInputStream(Paths.get(configFilePath()))) {
       return yaml.load(inputStream);
     } catch (IOException e) {
       String message = String.format(INVALID_YAML_MESSAGE, configFilePath());

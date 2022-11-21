@@ -36,55 +36,47 @@ import java.util.stream.IntStream;
 @RunWith(MockitoJUnitRunner.class)
 public class CmdImportVanillaTest extends TestsWithServiceClient {
 
-  private static final String VANILLA_BANLIST_FILENAME = "banned-players.json";
-  private static final String VANILLA_IP_BANLIST_FILENAME = "banned-ips.json";
+  protected static final String VANILLA_BANLIST_FILENAME = "banned-players.json";
+  protected static final String VANILLA_IP_BANLIST_FILENAME = "banned-ips.json";
 
-  private static final Gson GSON = new Gson();
+  protected static final Gson GSON = new Gson();
 
-  private static final long IMPORT_ID = 826;
+  protected static final long IMPORT_ID = 826;
 
-  private static final String DEFAULT_IP = "1.2.3.4";
-  private static final String DEFAULT_UUID = "f5eaefb6-60ec-475a-a66a-2c5ceb34a8a0";
-  private static final String DEFAULT_NAME = "JacobCrofts";
-  private static final String DEFAULT_CREATED = "2018-11-23 13:59:45 -0800";
-  private static final String DEFAULT_SOURCE = "SomeRandomAdmin";
-  private static final String DEFAULT_EXPIRES = "2019-06-01 13:59:45 -0800";
-  private static final String DEFAULT_REASON = "cheating and stuff";
+  protected String ip;
+  protected String uuid;
+  protected String name;
+  protected String created;
+  protected String source;
+  protected String expires;
+  protected String reason;
 
-  private String ip;
-  private String uuid;
-  private String name;
-  private String created;
-  private String source;
-  private String expires;
-  private String reason;
-
-  private UUID expectedOffenderUuid;
-  private boolean expectIssuer;
-  private String expectedIssuerUsername;
-  private Long expectedDuration;
-  private Long expectedIssuedAt;
+  protected UUID expectedOffenderUuid;
+  protected boolean expectIssuer;
+  protected String expectedIssuerUsername;
+  protected Long expectedDuration;
+  protected Long expectedIssuedAt;
 
   @Mock
-  private BukkitLogging logging;
+  protected BukkitLogging logging;
   @Mock
-  private ManageMCImportPluginConfig config;
+  protected ManageMCImportPluginConfig config;
   @Mock
-  private OnboardingApiService onboardingApiService;
+  protected OnboardingApiService onboardingApiService;
   @Mock
-  private CommandSender sender;
+  protected CommandSender sender;
   @Mock
-  private ImportJobTracker jobTracker;
+  protected ImportJobTracker jobTracker;
 
   @Before
-  public void setup() throws ApiException {
-    ip = DEFAULT_IP;
-    uuid = DEFAULT_UUID;
-    name = DEFAULT_NAME;
-    created = DEFAULT_CREATED;
-    source = DEFAULT_SOURCE;
-    expires = DEFAULT_EXPIRES;
-    reason = DEFAULT_REASON;
+  public void setupVanilla() throws ApiException {
+    ip = "1.2.3.4";
+    uuid = "f5eaefb6-60ec-475a-a66a-2c5ceb34a8a0";
+    name = "JacobCrofts";
+    created = "2018-11-23 13:59:45 -0800";
+    source = "SomeRandomAdmin";
+    expires = "2019-06-01 13:59:45 -0800";
+    reason = "cheating and stuff";
 
     expectedOffenderUuid = UUID.fromString(uuid);
     expectIssuer = true;
@@ -96,7 +88,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
   }
 
   @After
-  public void cleanup() throws IOException {
+  public void cleanupVanilla() throws IOException {
     File banList = new File(VANILLA_BANLIST_FILENAME);
     File ipBanList = new File(VANILLA_IP_BANLIST_FILENAME);
     if (banList.exists()) {
@@ -124,14 +116,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
   @Test
   public void noBanLists() {
     // edge case: no ban lists found
-    awaitAsyncCommand(this::onCommand);
-
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
-    Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
-    Mockito.verify(sender).sendMessage(PunishmentImporterService.NO_PUNISHMENTS_FOUND_MESSAGE);
-    Mockito.verify(sender, Mockito.times(3)).sendMessage((String) ArgumentMatchers.any());
-
-    Mockito.verifyNoInteractions(onboardingApiService);
+    assertNoPunishmentsFound();
   }
 
   @Test
@@ -374,7 +359,18 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
   }
 
 
-  private void assertThatBanWasImported() throws ApiException {
+  protected void assertNoPunishmentsFound() {
+    awaitAsyncCommand(this::onCommand);
+
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
+    Mockito.verify(sender).sendMessage(PunishmentImporterService.NO_PUNISHMENTS_FOUND_MESSAGE);
+    Mockito.verify(sender, Mockito.times(3)).sendMessage((String) ArgumentMatchers.any());
+
+    Mockito.verifyNoInteractions(onboardingApiService);
+  }
+
+  protected void assertThatBanWasImported() throws ApiException {
     Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
@@ -408,7 +404,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
     Mockito.verify(jobTracker).trackJob(Mockito.any());
   }
 
-  private void assertThatIpBanWasImported() throws ApiException {
+  protected void assertThatIpBanWasImported() throws ApiException {
     Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
@@ -440,7 +436,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
     Mockito.verify(jobTracker).trackJob(Mockito.any());
   }
 
-  private void assertThatImportFailed() {
+  protected void assertThatImportFailed() {
     Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
@@ -452,7 +448,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
     Mockito.verify(jobTracker).trackJob(Mockito.any());
   }
 
-  private void writeBanToFile() throws IOException {
+  protected void writeBanToFile() throws IOException {
     VanillaBan[] bans = new VanillaBan[]{
         VanillaBan.builder()
             .uuid(uuid)
@@ -468,7 +464,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
     FileUtils.write(banInput, GSON.toJson(bans), "UTF-8");
   }
 
-  private void writeIpBanToFile() throws IOException {
+  protected void writeIpBanToFile() throws IOException {
     VanillaIpBan[] ipBans = new VanillaIpBan[]{
         VanillaIpBan.builder()
             .ip(ip)
@@ -483,7 +479,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
     FileUtils.write(ipBanInput, GSON.toJson(ipBans), "UTF-8");
   }
 
-  private void onCommand() {
+  protected void onCommand() {
     PunishmentImporterService service = new PunishmentImporterService(
         logging,
         Mockito.mock(AdvancedBanDb.class),

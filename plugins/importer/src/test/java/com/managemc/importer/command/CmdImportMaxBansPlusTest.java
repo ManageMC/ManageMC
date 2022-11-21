@@ -58,9 +58,12 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
   private String issuerUsername;
   private String revokerUsername;
   private String offenderUsernameOrIp;
+  private UUID offenderUuid;
 
   private String expectedIssuerUsername;
+  private UUID expectedIssuerUuid;
   private String expectedRevokerUsername;
+  private UUID expectedRevokerUuid;
 
   private List<Ban> bans;
   private List<Mute> mutes;
@@ -77,9 +80,12 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
     issuerUsername = null;
     revokerUsername = null;
     offenderUsernameOrIp = "JacobCrofts";
+    offenderUuid = UUID.randomUUID();
 
     expectedIssuerUsername = null;
+    expectedIssuerUuid = UUID.randomUUID();
     expectedRevokerUsername = null;
+    expectedRevokerUuid = UUID.randomUUID();
 
     bans = new ArrayList<>();
     mutes = new ArrayList<>();
@@ -511,20 +517,20 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
   private ImportablePunishmentPlayer expectedIssuer() {
     return expectedIssuerUsername == null
         ? null
-        : new ImportablePunishmentPlayer().username(expectedIssuerUsername).uuid(null);
+        : new ImportablePunishmentPlayer().username(expectedIssuerUsername).uuid(expectedIssuerUuid);
   }
 
   private ImportablePunishmentPlayer expectedOffender() {
     return new ImportablePunishmentPlayer()
         .username(offenderUsernameOrIp)
-        .uuid(null);
+        .uuid(offenderUuid);
   }
 
   private ImportablePunishmentPardon expectedPardon() {
     if (revokedAt != null) {
       ImportablePunishmentPlayer pardoner = expectedRevokerUsername == null
           ? null
-          : new ImportablePunishmentPlayer().username(expectedRevokerUsername).uuid(null);
+          : new ImportablePunishmentPlayer().username(expectedRevokerUsername).uuid(expectedRevokerUuid);
       return new ImportablePunishmentPardon()
           .pardoner(pardoner)
           .pardonedAtMillis(revokedAt)
@@ -534,14 +540,18 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
   }
 
   private MockBan buildBan() {
+    Tenant tenant = offenderUsernameOrIp.contains("\\.") ?
+        new Address(offenderUsernameOrIp) :
+        new User(offenderUuid, offenderUsernameOrIp);
+
     return MockBan.builder()
         .created(Instant.ofEpochMilli(created))
         .expiresAt(expiresAt == null ? null : Instant.ofEpochMilli(expiresAt))
         .revokedAt(revokedAt == null ? null : Instant.ofEpochMilli(revokedAt))
         .reason(reason)
-        .source(issuerUsername == null ? null : new User(UUID.randomUUID(), issuerUsername))
-        .revoker(revokerUsername == null ? null : new User(UUID.randomUUID(), revokerUsername))
-        .tenant(new User(UUID.randomUUID(), offenderUsernameOrIp))
+        .source(issuerUsername == null ? null : new User(expectedIssuerUuid, issuerUsername))
+        .revoker(revokerUsername == null ? null : new User(expectedRevokerUuid, revokerUsername))
+        .tenant(tenant)
         .build();
   }
 
@@ -551,9 +561,9 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
         .expiresAt(expiresAt == null ? null : Instant.ofEpochMilli(expiresAt))
         .revokedAt(revokedAt == null ? null : Instant.ofEpochMilli(revokedAt))
         .reason(reason)
-        .source(issuerUsername == null ? null : new User(UUID.randomUUID(), issuerUsername))
-        .revoker(revokerUsername == null ? null : new User(UUID.randomUUID(), revokerUsername))
-        .tenant(new User(UUID.randomUUID(), offenderUsernameOrIp))
+        .source(issuerUsername == null ? null : new User(expectedIssuerUuid, issuerUsername))
+        .revoker(revokerUsername == null ? null : new User(expectedRevokerUuid, revokerUsername))
+        .tenant(new User(offenderUuid, offenderUsernameOrIp))
         .build();
   }
 
@@ -563,9 +573,9 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
         .expiresAt(expiresAt == null ? null : Instant.ofEpochMilli(expiresAt))
         .revokedAt(revokedAt == null ? null : Instant.ofEpochMilli(revokedAt))
         .reason(reason)
-        .source(issuerUsername == null ? null : new User(UUID.randomUUID(), issuerUsername))
-        .revoker(revokerUsername == null ? null : new User(UUID.randomUUID(), revokerUsername))
-        .tenant(new User(UUID.randomUUID(), offenderUsernameOrIp))
+        .source(issuerUsername == null ? null : new User(expectedIssuerUuid, issuerUsername))
+        .revoker(revokerUsername == null ? null : new User(expectedRevokerUuid, revokerUsername))
+        .tenant(new User(offenderUuid, offenderUsernameOrIp))
         .build();
   }
 

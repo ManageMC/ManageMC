@@ -9,11 +9,14 @@ import com.managemc.importer.reader.source.MaxBansPlusDbImpl;
 import com.managemc.importer.service.JobStatusService;
 import com.managemc.importer.service.OnboardingApiService;
 import com.managemc.importer.service.PunishmentImporterService;
+import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.logging.BukkitLogging;
 import lombok.Getter;
 
 public class ManageMCImportPluginConfig {
 
+  @Getter
+  private final BukkitWrapper bukkitWrapper;
   private final BukkitLogging logging;
 
   @Getter
@@ -27,7 +30,12 @@ public class ManageMCImportPluginConfig {
   @Getter
   private final JobStatusService jobStatusService;
 
-  public ManageMCImportPluginConfig(BukkitLogging logging, LocalConfig localConfig) {
+  public ManageMCImportPluginConfig(
+      BukkitWrapper bukkitWrapper,
+      BukkitLogging logging,
+      LocalConfig localConfig
+  ) {
+    this.bukkitWrapper = bukkitWrapper;
     this.logging = logging;
     clientProvider = ClientProvider.demo(
         new ClientProviderLogger(),
