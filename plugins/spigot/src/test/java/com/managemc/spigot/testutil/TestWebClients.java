@@ -15,6 +15,7 @@ public class TestWebClients {
       TestConstants.KITPVP_LABEL
   );
 
+  @Deprecated // use TestBase#mockClients instead
   public static ClientProvider mockClients() {
     InternalClient internalClient = Mockito.mock(InternalClient.class);
     ExternalServerClient externalClient = Mockito.mock(ExternalServerClient.class);

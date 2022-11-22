@@ -9,6 +9,7 @@ public class TestConstants {
   public static final String KITPVP_LABEL = "KitPvP";
   public static final String SERVER_NAME = "kit 01.us";
   public static final String MANAGEMC_VERSION = "2.0.0";
+  public static final long NETWORK_ID = 1;
   public static final long KITPVP_ID = 1;
   public static final long SERVER_ID = 1;
 
