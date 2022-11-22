@@ -43,6 +43,8 @@ public interface SpigotPluginConfig {
 
   LoginLogoutService getLoginLogoutService();
 
+  WatchlistService getWatchlistService();
+
   PlayerData getPlayerData();
 
   PermissionsManager getPermissionsManager();

@@ -39,10 +39,17 @@ public class PluginMessageFormatter {
     return this;
   }
 
+  @Deprecated // caution: unusually hot garbage in a class that is also mostly garbage
   public PluginMessageFormatter line(String text) {
     applyIndent();
     builder.append(AQUA).append(ChatColor.stripColor(text));
     applyNewline();
+    return this;
+  }
+
+  public PluginMessageFormatter newline() {
+    builder.append("\n").append(AQUA);
+    applyIndent();
     return this;
   }
 

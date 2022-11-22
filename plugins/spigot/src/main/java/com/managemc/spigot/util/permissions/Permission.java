@@ -18,6 +18,7 @@ public enum Permission {
   PUNISHMENTS_LENGTH_MED("com.managemc.staff.punishments.length.medium"),
   PUNISHMENTS_LENGTH_LONG("com.managemc.staff.punishments.length.long"),
   PUNISHMENTS_LENGTH_PERM("com.managemc.staff.punishments.length.permanent"),
+  MANAGE_WATCHLIST("com.managemc.staff.watchlist.manage"),
   ;
 
   @Getter

@@ -19,6 +19,7 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
   private static final long THIRTY_SECONDS = 30 * 1000;
   public static final String BAD_CREDS_MESSAGE = "Invalid public/private key configured for application";
   private static final String BAD_REQUEST_MESSAGE = "A request to ManageMC's API returned a non-success status. Response body: %s";
+  private static final int CONNECTION_TIMEOUT = 20_000;
 
   @Getter
   protected T authMetadata;
@@ -29,7 +30,7 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
   private final ClientProvider.Logger logger;
 
   public TokenRefresher(ClientProvider.Logger logger, ApiHost apiHost) {
-    this.client = new ApiClient().setBasePath(apiHost.getBaseUrl());
+    this.client = new ApiClient().setBasePath(apiHost.getBaseUrl()).setConnectTimeout(CONNECTION_TIMEOUT);
     this.unproxiedAuthApi = new AuthenticationApi(client);
     this.logger = logger;
   }

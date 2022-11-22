@@ -9,7 +9,7 @@ import org.junit.function.ThrowingRunnable;
 
 public class CommandNodeMapTest extends TestBase {
 
-  private static final String BASE_OPTIONS = "[bans, ipbans, mutes, players, punishments, warnings]";
+  private static final String BASE_OPTIONS = "[bans, ipbans, mutes, players, punishments, warnings, watchlist]";
 
   private CommandNodeMap nodeMap;
 

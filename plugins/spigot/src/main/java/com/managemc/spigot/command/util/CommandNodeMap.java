@@ -103,6 +103,29 @@ public class CommandNodeMap implements TabCompleter {
               }}
           )
           .build());
+
+      add(CommandNode.builder()
+          .keyword("watchlist")
+          .action(PermissibleAction.MANAGE_WATCHLIST)
+          .children(
+              new HashSet<CommandNode>() {{
+                add(CommandNode.builder().keyword("show")
+                    .handler(new CmdWatchlistShow(config))
+                    .action(PermissibleAction.MANAGE_WATCHLIST)
+                    .build());
+
+                add(CommandNode.builder().keyword("add")
+                    .handler(new CmdWatchlistAdd(config))
+                    .action(PermissibleAction.MANAGE_WATCHLIST)
+                    .build());
+
+                add(CommandNode.builder().keyword("remove")
+                    .handler(new CmdWatchlistRemove(config))
+                    .action(PermissibleAction.MANAGE_WATCHLIST)
+                    .build());
+              }}
+          )
+          .build());
     }};
   }
 
