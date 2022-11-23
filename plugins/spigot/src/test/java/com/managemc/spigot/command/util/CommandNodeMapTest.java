@@ -9,7 +9,7 @@ import org.junit.function.ThrowingRunnable;
 
 public class CommandNodeMapTest extends TestBase {
 
-  private static final String BASE_OPTIONS = "[bans, ipbans, mutes, players, punishments, warnings, watchlist]";
+  private static final String BASE_OPTIONS = "[bans, ipbans, mutes, players, punishments, reports, warnings, watchlist]";
 
   private CommandNodeMap nodeMap;
 
@@ -31,7 +31,7 @@ public class CommandNodeMapTest extends TestBase {
     stubPlayerSenderWithPermissions();
 
     assertThrowsException(
-        "Please supply an action or resource to your command. Valid options are: [players]",
+        "Please supply an action or resource to your command. Valid options are: [players, reports]",
         () -> nodeMap.searchForHandler(sender, new String[]{})
     );
   }
@@ -49,7 +49,7 @@ public class CommandNodeMapTest extends TestBase {
     stubPlayerSenderWithPermissions();
 
     assertThrowsException(
-        "Invalid keyword \"oops\". Valid option(s) are: [players]",
+        "Invalid keyword \"oops\". Valid option(s) are: [players, reports]",
         () -> getHandlerUsage("oops")
     );
   }
@@ -227,7 +227,7 @@ public class CommandNodeMapTest extends TestBase {
   public void onTabComplete_playerSender_noPermissions_noArgs() {
     stubPlayerSenderWithPermissions();
 
-    Assert.assertEquals("[players]", onTabComplete());
+    Assert.assertEquals("[players, reports]", onTabComplete());
   }
 
   @Test
