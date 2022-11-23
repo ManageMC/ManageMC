@@ -30,11 +30,11 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("get")
-                    .handler(new CmdPunishmentsGet(config))
+                    .handler(new CmdHistory(config))
                     .action(PermissibleAction.FETCH_PUNISHMENT_HISTORY)
                     .build());
                 add(CommandNode.builder().keyword("pardon")
-                    .handler(new CmdPunishmentsPardon(config))
+                    .handler(new CmdPardon(config))
                     .action(PermissibleAction.PARDON_POSSIBLY)
                     .build());
               }}
@@ -46,7 +46,7 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("create")
-                    .handler(new CmdPlayersCreate(config))
+                    .handler(new CmdCreatePlayer(config))
                     .build());
               }}
           )
@@ -58,7 +58,7 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("create")
-                    .handler(new CmdBansCreate(config))
+                    .handler(new CmdBan(config))
                     .action(PermissibleAction.BAN_PLAYER)
                     .build());
               }}
@@ -71,7 +71,7 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("create")
-                    .handler(new CmdMutesCreate(config))
+                    .handler(new CmdMute(config))
                     .action(PermissibleAction.MUTE_PLAYER)
                     .build());
               }}
@@ -84,7 +84,7 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("create")
-                    .handler(new CmdWarningsCreate(config))
+                    .handler(new CmdWarn(config))
                     .action(PermissibleAction.WARN_PLAYER)
                     .build());
               }}
@@ -97,7 +97,7 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("create")
-                    .handler(new CmdIpBansCreate(config))
+                    .handler(new CmdBanIp(config))
                     .action(PermissibleAction.IP_BAN_PLAYER)
                     .build());
               }}
@@ -110,17 +110,17 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("show")
-                    .handler(new CmdWatchlistShow(config))
+                    .handler(new CmdWatchlist(config))
                     .action(PermissibleAction.MANAGE_WATCHLIST)
                     .build());
 
                 add(CommandNode.builder().keyword("add")
-                    .handler(new CmdWatchlistAdd(config))
+                    .handler(new CmdWatch(config))
                     .action(PermissibleAction.MANAGE_WATCHLIST)
                     .build());
 
                 add(CommandNode.builder().keyword("remove")
-                    .handler(new CmdWatchlistRemove(config))
+                    .handler(new CmdUnwatch(config))
                     .action(PermissibleAction.MANAGE_WATCHLIST)
                     .build());
               }}
@@ -133,7 +133,7 @@ public class CommandNodeMap implements TabCompleter {
           .children(
               new HashSet<CommandNode>() {{
                 add(CommandNode.builder().keyword("create")
-                    .handler(new CmdReportsCreate(config))
+                    .handler(new CmdReport(config))
                     .action(null)
                     .build());
               }}
