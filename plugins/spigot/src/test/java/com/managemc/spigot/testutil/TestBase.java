@@ -2,6 +2,7 @@ package com.managemc.spigot.testutil;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
+import com.managemc.api.wrapper.client.*;
 import com.managemc.spigot.command.util.CommandNodeMap;
 import com.managemc.spigot.command.util.CommandProcessorAsync;
 import com.managemc.spigot.command.util.punishments.PlayerUuidResolver;
@@ -15,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -47,11 +49,16 @@ public abstract class TestBase {
   protected CommandSender sender;
   @Mock
   private PlayerUuidResolver uuidResolver;
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  protected ClientProvider mockClients;
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  protected PlayerClient playerClient;
 
   @Before
   public final void abstractBefore() throws ApiException {
     config = new SpigotPluginConfigTest(new TestMocks(), TestWebClients.CLIENT_PROVIDER);
     config.setUuidResolver(uuidResolver);
+    Mockito.when(mockClients.player(Mockito.any())).thenReturn(playerClient);
 
     // make sure that we have connected to the service at least once
     // the first request takes a while to execute

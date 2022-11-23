@@ -86,6 +86,9 @@ public class SpigotPluginConfigLocal implements SpigotPluginConfig {
   private WatchlistService watchlistService;
   @Getter
   @Setter
+  private ReportsService reportsService;
+  @Getter
+  @Setter
   private NoteService noteService;
   @Getter
   @Setter
@@ -140,6 +143,7 @@ public class SpigotPluginConfigLocal implements SpigotPluginConfig {
     this.noteService = new NoteService(this);
     this.createPlayerService = new CreatePlayerService(this);
     this.watchlistService = new WatchlistService(clientProvider);
+    this.reportsService = new ReportsService(this);
 
     // tasks
     this.periodicHeartbeatSender = new PeriodicHeartbeatSender(logging, bukkitWrapper, heartbeatService);

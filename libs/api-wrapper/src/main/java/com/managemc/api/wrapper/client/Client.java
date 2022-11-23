@@ -21,6 +21,8 @@ public abstract class Client<T extends AuthMetadata> {
   @Getter
   private final AccountsApi accountsApi;
   @Getter
+  private final AccusationsApi accusationsApi;
+  @Getter
   private final HeartbeatsApi heartbeatsApi;
   @Getter
   private final NotesApi notesApi;
@@ -45,6 +47,7 @@ public abstract class Client<T extends AuthMetadata> {
     this.pingApi = generateProxyApi(PingApi.class);
     this.authenticationApi = generateProxyApi(AuthenticationApi.class);
     this.accountsApi = generateProxyApi(AccountsApi.class);
+    this.accusationsApi = generateProxyApi(AccusationsApi.class);
     this.heartbeatsApi = generateProxyApi(HeartbeatsApi.class);
     this.notesApi = generateProxyApi(NotesApi.class);
     this.onboardingApi = generateProxyApi(OnboardingApi.class);

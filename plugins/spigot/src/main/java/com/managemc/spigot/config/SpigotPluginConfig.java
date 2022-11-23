@@ -45,6 +45,8 @@ public interface SpigotPluginConfig {
 
   WatchlistService getWatchlistService();
 
+  ReportsService getReportsService();
+
   PlayerData getPlayerData();
 
   PermissionsManager getPermissionsManager();

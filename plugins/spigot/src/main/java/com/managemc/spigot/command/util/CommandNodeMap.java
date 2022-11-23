@@ -126,6 +126,19 @@ public class CommandNodeMap implements TabCompleter {
               }}
           )
           .build());
+
+      add(CommandNode.builder()
+          .keyword("reports")
+          .action(null)
+          .children(
+              new HashSet<CommandNode>() {{
+                add(CommandNode.builder().keyword("create")
+                    .handler(new CmdReportsCreate(config))
+                    .action(null)
+                    .build());
+              }}
+          )
+          .build());
     }};
   }
 

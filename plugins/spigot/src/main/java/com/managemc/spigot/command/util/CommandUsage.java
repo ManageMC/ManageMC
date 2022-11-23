@@ -11,4 +11,5 @@ public class CommandUsage {
   public static final String WATCHLIST_SHOW = "/mmc watchlist show";
   public static final String WATCHLIST_ADD = "/mmc watchlist add <username>";
   public static final String WATCHLIST_REMOVE = "/mmc watchlist remove <username>";
+  public static final String REPORTS_CREATE = "/mmc reports create <username> [...reason]";
 }
