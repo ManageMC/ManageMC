@@ -1,8 +1,7 @@
 package com.managemc.spigot.command.processor;
 
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
-import com.managemc.spigot.command.util.CommandNodeMap;
-import com.managemc.spigot.command.util.CommandUsage;
 import com.managemc.spigot.command.util.punishments.model.ResolvedPlayer;
 import com.managemc.spigot.service.WatchlistService;
 import com.managemc.spigot.testutil.TestBase;
@@ -26,50 +25,50 @@ public class CmdUnwatchTest extends TestBase {
 
   @Test
   public void notEnoughArgs() {
-    onCommand();
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.WATCHLIST_REMOVE);
+    onCommand(false);
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void tooManyArgs() {
-    onCommand("oops", "lmao");
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.WATCHLIST_REMOVE);
+    onCommand(false, "oops", "lmao");
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void whenSender_isNotPlayer() {
     sender = Mockito.mock(CommandSender.class);
-    onCommand("example_player");
-    assertSemantic(CommandAssertions.ONLY_PLAYERS_MESSAGE);
+    onCommand(true, "example_player");
+    expectAbort(CommandAssertions.ONLY_PLAYERS_MESSAGE);
   }
 
   @Test
   public void invalidUsername() {
-    onCommand("@@@");
-    assertSyntactic("Invalid username @@@", CommandUsage.WATCHLIST_REMOVE);
+    onCommand(false, "@@@");
+    expectAbort("Invalid username @@@");
   }
 
   @Test
   public void noPermissions() {
     stubPlayerSenderWithPermissions(PHYLLIS_UUID, Permission.BAN_WEB);
-    onCommand();
-    assertSemantic(CommandNodeMap.NO_PERMS_MSG);
+    onCommand(true);
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
   public void playerNotFound() {
     stubResolvedPlayer("soup", UUID.randomUUID(), ResolvedPlayer.Status.ONLINE_RECENTLY);
-    awaitAsyncCommand(() -> onCommand("soup"));
+    awaitAsyncCommand(() -> onCommand(true, "soup"));
 
-    assertSemantic(WatchlistService.PLAYER_NOT_FOUND);
+    expectAbort(WatchlistService.PLAYER_NOT_FOUND);
   }
 
   @Test
   public void playerNotResolved() {
     stubResolvedPlayer("oopsy_da1sy__", UUID.randomUUID(), ResolvedPlayer.Status.HTTP_NOT_FOUND);
-    awaitAsyncCommand(() -> onCommand("oopsy_da1sy__"));
+    awaitAsyncCommand(() -> onCommand(true, "oopsy_da1sy__"));
 
-    assertSemantic(CommandAssertions.NOT_FOUND_MSG);
+    expectAbort(CommandAssertions.NOT_FOUND_MSG);
   }
 
   @Captor
@@ -78,7 +77,7 @@ public class CmdUnwatchTest extends TestBase {
   @Test
   public void success_online() {
     stubResolvedPlayer(PHYLLIS_USERNAME, PHYLLIS_UUID, ResolvedPlayer.Status.ONLINE_RECENTLY);
-    awaitAsyncCommand(() -> this.onCommand(PHYLLIS_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, PHYLLIS_USERNAME));
 
     Mockito.verify(sender).sendMessage(message.capture());
     String sentMessage = message.getValue();
@@ -88,11 +87,8 @@ public class CmdUnwatchTest extends TestBase {
   }
 
 
-  private void onCommand(String... args) {
-    String[] argsIncludingBaseCommand = new String[2 + args.length];
-    argsIncludingBaseCommand[0] = "watchlist";
-    argsIncludingBaseCommand[1] = "remove";
-    System.arraycopy(args, 0, argsIncludingBaseCommand, 2, argsIncludingBaseCommand.length - 2);
-    new CmdMMC(config).onCommand(sender, argsIncludingBaseCommand);
+  private void onCommand(boolean noSyntaxError, String... args) {
+    CommandExecutorAsync cmd = new CmdUnwatch(config);
+    Assert.assertEquals(noSyntaxError, cmd.onCommand(sender, command, "", args));
   }
 }

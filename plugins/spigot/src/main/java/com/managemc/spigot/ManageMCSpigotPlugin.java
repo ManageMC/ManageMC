@@ -6,15 +6,16 @@ import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.config.FlexibleLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
 import com.managemc.plugins.logging.BukkitLogging;
-import com.managemc.spigot.command.processor.CmdMMC;
-import com.managemc.spigot.command.util.CommandNodeMap;
+import com.managemc.spigot.command.processor.*;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import com.managemc.spigot.config.SpigotPluginConfigLocal;
 import com.managemc.spigot.config.helper.VersionDiscerner;
 import com.managemc.spigot.config.model.LocalConfig;
 import com.managemc.spigot.listener.Listeners;
 import com.managemc.spigot.util.BatchKickPlayersOnDisable;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -107,8 +108,22 @@ public class ManageMCSpigotPlugin extends JavaPlugin {
   }
 
   private void registerCommands(SpigotPluginConfig config) {
-    PluginCommand command = Objects.requireNonNull(getCommand("mmc"));
-    command.setExecutor(new CmdMMC(config));
-    command.setTabCompleter(new CommandNodeMap(config));
+    registerCommand("report", new CmdReport(config));
+    registerCommand("create-player", new CmdCreatePlayer(config));
+    registerCommand("ban", new CmdBan(config));
+    registerCommand("mute", new CmdMute(config));
+    registerCommand("warn", new CmdWarn(config));
+    registerCommand("ban-ip", new CmdBanIp(config));
+    registerCommand("history", new CmdHistory(config));
+    registerCommand("pardon", new CmdPardon(config));
+    registerCommand("watchlist", new CmdWatchlist(config));
+    registerCommand("watch", new CmdWatch(config));
+    registerCommand("unwatch", new CmdUnwatch(config));
+  }
+
+  private <T extends TabCompleter & CommandExecutor> void registerCommand(String cmd, T executor) {
+    PluginCommand command = Objects.requireNonNull(getCommand(cmd));
+    command.setExecutor(executor);
+    command.setTabCompleter(executor);
   }
 }

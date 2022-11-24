@@ -1,6 +1,6 @@
 package com.managemc.spigot.command.util.punishments;
 
-import com.managemc.spigot.command.util.CommandValidationException;
+import com.managemc.plugins.command.AbortCommand;
 import com.managemc.spigot.util.TimeHelper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -164,7 +164,7 @@ public class DurationStringParserTest {
 
 
   private void assertThrowsException(String message, ThrowingRunnable runnable) {
-    CommandValidationException ex = Assert.assertThrows(CommandValidationException.class, runnable);
+    AbortCommand ex = Assert.assertThrows(AbortCommand.class, runnable);
     Assert.assertEquals(message, ex.getMessage());
   }
 }

@@ -1,9 +1,9 @@
 package com.managemc.spigot.command.handler;
 
 import com.managemc.api.ApiException;
+import com.managemc.plugins.command.AbortCommand;
 import com.managemc.spigot.command.handler.base.CommandHandlerAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
-import com.managemc.spigot.command.util.CommandValidationException;
 import com.managemc.spigot.command.util.ProcessedCommandArguments;
 import com.managemc.spigot.command.util.punishments.PunishmentFlags;
 import com.managemc.spigot.command.util.punishments.PunishmentMessageSender;
@@ -82,10 +82,10 @@ public class CmdBanIpHandler extends CommandHandlerAsync {
     CommandAssertions.assertValidUsername(args.get(0));
     Player offender = config.getBukkitWrapper().getOnlineOrRecentlyOnlinePlayer(args.get(0));
     if (offender == null) {
-      throw new CommandValidationException(OFFLINE_MSG, false);
+      throw AbortCommand.withoutUsageMessage(OFFLINE_MSG);
     }
     if (offender.getAddress() == null) {
-      throw new CommandValidationException(NO_IP_MSG, false);
+      throw AbortCommand.withoutUsageMessage(NO_IP_MSG);
     }
 
     return offender.getAddress().getAddress().getHostAddress();

@@ -2,9 +2,8 @@ package com.managemc.spigot.testutil;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
-import com.managemc.api.wrapper.client.*;
-import com.managemc.spigot.command.util.CommandNodeMap;
-import com.managemc.spigot.command.util.CommandProcessorAsync;
+import com.managemc.api.wrapper.client.PlayerClient;
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.punishments.PlayerUuidResolver;
 import com.managemc.spigot.command.util.punishments.model.ResolvedPlayer;
 import com.managemc.spigot.config.SpigotPluginConfigTest;
@@ -24,7 +23,10 @@ import org.mockito.verification.VerificationMode;
 import org.openapitools.client.model.BanOrMute;
 import org.openapitools.client.model.PunishmentVisibility;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,8 @@ public abstract class TestBase {
   protected SpigotPluginConfigTest config;
   @Mock
   protected CommandSender sender;
+  @Mock
+  protected Command command;
   @Mock
   private PlayerUuidResolver uuidResolver;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -81,17 +85,17 @@ public abstract class TestBase {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    await().atMost(10, TimeUnit.SECONDS).until(() -> ClientProvider.COMPLETED_REQUESTS.get() > completedRequests);
+    await().atMost(20, TimeUnit.SECONDS).until(() -> ClientProvider.COMPLETED_REQUESTS.get() > completedRequests);
   }
 
   protected void awaitAsyncCommand(VoidFunctionPossiblyThrowingException function) {
-    long completedRequests = CommandProcessorAsync.COMPLETED_ASYNC_COMMANDS.get();
+    long completedRequests = CommandExecutorAsync.COMPLETED_COMMANDS.get();
     try {
       function.apply();
     } catch (Exception e) {
       e.printStackTrace();
     }
-    await().atMost(10, TimeUnit.SECONDS).until(() -> CommandProcessorAsync.COMPLETED_ASYNC_COMMANDS.get() > completedRequests);
+    await().atMost(20, TimeUnit.SECONDS).until(() -> CommandExecutorAsync.COMPLETED_COMMANDS.get() > completedRequests);
   }
 
   protected void stubOnlinePlayers(String... usernames) {
@@ -169,23 +173,14 @@ public abstract class TestBase {
     }
   }
 
-  protected void assertSyntactic(String message, String usageMessage) {
-    Mockito.verify(sender, ONCE).sendMessage(ChatColor.RED + message);
-    Mockito.verify(sender, ONCE).sendMessage(ChatColor.RED + "Usage: " + usageMessage);
-    Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+  protected void expectAbort(String message) {
+    expectSingleMessage(ChatColor.RED + message);
   }
 
-  protected void assertSemantic(String message) {
-    Mockito.verify(sender, ONCE).sendMessage(ChatColor.RED + message);
+  protected void expectSingleMessage(String message) {
+    Mockito.verify(sender).sendMessage(message);
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
-  }
-
-  protected String onTabComplete(String... args) {
-    List<String> tabCompletions = new CommandNodeMap(config)
-        .onTabComplete(sender, Mockito.mock(Command.class), "irrelevant", args);
-    return Optional.ofNullable(tabCompletions).map(items -> "[" + String.join(", ", items) + "]").orElse(null);
   }
 
   protected void issueMute(boolean shadow, String reason, Long expiresAt) {

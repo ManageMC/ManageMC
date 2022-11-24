@@ -1,8 +1,7 @@
 package com.managemc.spigot.command.processor;
 
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
-import com.managemc.spigot.command.util.CommandNodeMap;
-import com.managemc.spigot.command.util.CommandUsage;
 import com.managemc.spigot.command.util.punishments.model.ResolvedPlayer;
 import com.managemc.spigot.service.WatchlistService;
 import com.managemc.spigot.testutil.TestBase;
@@ -26,59 +25,59 @@ public class CmdWatchTest extends TestBase {
 
   @Test
   public void notEnoughArgs() {
-    onCommand();
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.WATCHLIST_ADD);
+    onCommand(false);
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void tooManyArgs() {
-    onCommand("oops", "lmao");
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.WATCHLIST_ADD);
+    onCommand(false, "oops", "lmao");
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void whenSender_isNotPlayer() {
     sender = Mockito.mock(CommandSender.class);
-    onCommand("example_player");
-    assertSemantic(CommandAssertions.ONLY_PLAYERS_MESSAGE);
+    onCommand(true, "example_player");
+    expectAbort(CommandAssertions.ONLY_PLAYERS_MESSAGE);
   }
 
   @Test
   public void invalidUsername() {
-    onCommand("@@@");
-    assertSyntactic("Invalid username @@@", CommandUsage.WATCHLIST_ADD);
+    onCommand(false, "@@@");
+    expectAbort("Invalid username @@@");
   }
 
   @Test
   public void noPermissions() {
     stubPlayerSenderWithPermissions(PHYLLIS_UUID, Permission.BAN_WEB);
-    onCommand();
-    assertSemantic(CommandNodeMap.NO_PERMS_MSG);
+    onCommand(true);
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
   public void playerNotFound() {
     stubResolvedPlayer("soup", UUID.randomUUID(), ResolvedPlayer.Status.ONLINE_RECENTLY);
-    awaitAsyncCommand(() -> onCommand("soup"));
+    awaitAsyncCommand(() -> onCommand(true, "soup"));
 
-    assertSemantic(WatchlistService.PLAYER_NOT_FOUND);
+    expectAbort(WatchlistService.PLAYER_NOT_FOUND);
   }
 
   @Test
   public void playerNotResolved() {
     stubResolvedPlayer("oopsy_da1sy__", UUID.randomUUID(), ResolvedPlayer.Status.HTTP_NOT_FOUND);
-    awaitAsyncCommand(() -> onCommand("oopsy_da1sy__"));
+    awaitAsyncCommand(() -> onCommand(true, "oopsy_da1sy__"));
 
-    assertSemantic(CommandAssertions.NOT_FOUND_MSG);
+    expectAbort(CommandAssertions.NOT_FOUND_MSG);
   }
 
   @Test
   public void watchlistTooBig() {
     stubPlayerSenderWithPermissions(UUID.fromString("4b0d433d-1916-4627-9638-62c84c67001a"), Permission.MANAGE_WATCHLIST);
     stubResolvedPlayer("Supermod", UUID.fromString("b22612df-42d4-4b8d-b502-3f5d007a99ca"), ResolvedPlayer.Status.HTTP_OK);
-    awaitAsyncCommand(() -> onCommand("Supermod"));
+    awaitAsyncCommand(() -> onCommand(true, "Supermod"));
 
-    assertSemantic(WatchlistService.WATCHLIST_TOO_BIG);
+    expectAbort(WatchlistService.WATCHLIST_TOO_BIG);
   }
 
   @Captor
@@ -87,7 +86,7 @@ public class CmdWatchTest extends TestBase {
   @Test
   public void success_online() {
     stubResolvedPlayer(PLS_USERNAME, PLS_UUID, ResolvedPlayer.Status.ONLINE_RECENTLY);
-    awaitAsyncCommand(() -> this.onCommand("pls"));
+    awaitAsyncCommand(() -> this.onCommand(true, "pls"));
 
     Mockito.verify(sender).sendMessage(message.capture());
     String sentMessage = message.getValue();
@@ -96,11 +95,8 @@ public class CmdWatchTest extends TestBase {
   }
 
 
-  private void onCommand(String... args) {
-    String[] argsIncludingBaseCommand = new String[2 + args.length];
-    argsIncludingBaseCommand[0] = "watchlist";
-    argsIncludingBaseCommand[1] = "add";
-    System.arraycopy(args, 0, argsIncludingBaseCommand, 2, argsIncludingBaseCommand.length - 2);
-    new CmdMMC(config).onCommand(sender, argsIncludingBaseCommand);
+  private void onCommand(boolean noSyntaxError, String... args) {
+    CommandExecutorAsync cmd = new CmdWatch(config);
+    Assert.assertEquals(noSyntaxError, cmd.onCommand(sender, command, "", args));
   }
 }

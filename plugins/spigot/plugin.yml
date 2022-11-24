@@ -1,8 +1,41 @@
 name: ManageMC
 main: com.managemc.spigot.ManageMCSpigotPlugin
 version: 0.1.0-SNAPSHOT
+description: Cloud-based player management and data analytics
+author: jacob@managemc.com
+website: managemc.com
 api-version: 1.19
 commands:
-  mmc:
-    description: Root command for ManageMC
-    usage: /mmc <resource> <action> [...other args]
+  report:
+    description: Report a player for breaking the rules
+    usage: "/report <username> [...reason]\nhttps://docs.managemc.com/commands/report-command/"
+  create-player:
+    description: Add a player to ManageMC's database
+    usage: "/create-player <username>\nhttps://docs.managemc.com/commands/create-player/"
+  ban:
+    description: Ban a player
+    usage: "/ban <username> [reason] [...details] [...flags]\nhttps://docs.managemc.com/commands/punishments/ban/"
+  mute:
+    description: Mute a player
+    usage: "/mute <username> [reason] [...details] [...flags]\nhttps://docs.managemc.com/commands/punishments/mute/"
+  warn:
+    description: Kick and warn a player
+    usage: "/warn <username> [reason] [...details]\nhttps://docs.managemc.com/commands/punishments/warn/"
+  ban-ip:
+    description: Ban an IP address
+    usage: "/ban-ip <username | ip-address | ip-range> [reason] [...details] [...flags]\nhttps://docs.managemc.com/commands/punishments/ban-ip/"
+  history:
+    description: Fetch punishment history for a player
+    usage: "/history <username>\nhttps://docs.managemc.com/commands/punishments/history/"
+  pardon:
+    description: Pardon punishments by internal ID
+    usage: "/pardon <...IDs> [...reason]\nhttps://docs.managemc.com/commands/punishments/pardon/"
+  watchlist:
+    description: Fetch your watchlist
+    usage: "/watchlist\nhttps://docs.managemc.com/commands/watchlist/watchlist/"
+  watch:
+    description: Add a player to your watchlist
+    usage: "/watch <username>\nhttps://docs.managemc.com/commands/watchlist/watch/"
+  unwatch:
+    description: Remove a player from your watchlist
+    usage: "/unwatch <username>\nhttps://docs.managemc.com/commands/watchlist/unwatch/"

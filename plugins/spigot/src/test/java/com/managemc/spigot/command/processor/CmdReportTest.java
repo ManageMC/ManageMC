@@ -1,9 +1,8 @@
 package com.managemc.spigot.command.processor;
 
 import com.managemc.api.wrapper.model.metadata.ExternalServerAuthMetadata;
-import com.managemc.spigot.command.handler.CmdReportHandler;
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
-import com.managemc.spigot.command.util.CommandUsage;
 import com.managemc.spigot.command.util.punishments.model.ResolvedPlayer;
 import com.managemc.spigot.testutil.TestBase;
 import com.managemc.spigot.testutil.TestConstants;
@@ -11,6 +10,7 @@ import lombok.SneakyThrows;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -48,27 +48,27 @@ public class CmdReportTest extends TestBase {
 
   @Test
   public void notEnoughArgs() {
-    onCommand();
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.REPORTS_CREATE);
+    onCommand(false);
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void whenSender_isNotPlayer() {
     sender = Mockito.mock(CommandSender.class);
-    onCommand(JACOB_USERNAME);
-    assertSemantic(CommandAssertions.ONLY_PLAYERS_MESSAGE);
+    onCommand(true, JACOB_USERNAME);
+    expectAbort(CommandAssertions.ONLY_PLAYERS_MESSAGE);
   }
 
   @Test
   public void invalidUsername() {
-    onCommand("@@@");
-    assertSyntactic("Invalid username @@@", CommandUsage.REPORTS_CREATE);
+    onCommand(false, "@@@");
+    expectAbort("Invalid username @@@");
   }
 
   @Test
   public void selfReport() {
-    onCommand("aUntPHylliS");
-    assertSemantic(CmdReportHandler.NO_SELF_REPORTS);
+    onCommand(true, "aUntPHylliS");
+    expectAbort(CmdReport.NO_SELF_REPORTS);
   }
 
   @Test
@@ -76,7 +76,7 @@ public class CmdReportTest extends TestBase {
     stubJacobOnline();
     evaluateNewReport(JACOB_USERNAME);
 
-    Mockito.verify(sender).sendMessage(CmdReportHandler.SUCCESS_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.SUCCESS_MSG);
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
   }
 
@@ -86,7 +86,7 @@ public class CmdReportTest extends TestBase {
     expectedSummary = "hmmm";
 
     evaluateNewReport(JACOB_USERNAME, "hmmm");
-    Mockito.verify(sender).sendMessage(CmdReportHandler.SUCCESS_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.SUCCESS_MSG);
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
   }
 
@@ -96,25 +96,23 @@ public class CmdReportTest extends TestBase {
     expectedSummary = "nobody cares mate";
 
     evaluateNewReport(JACOB_USERNAME, "nobody", "cares", "mate");
-    Mockito.verify(sender).sendMessage(CmdReportHandler.SUCCESS_MSG);
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    expectSingleMessage(CmdReport.SUCCESS_MSG);
   }
 
   @Test
   public void onlineAccused_realExample() {
     stubJacobOnline();
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME));
 
-    Mockito.verify(sender).sendMessage(CmdReportHandler.SUCCESS_MSG);
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    expectSingleMessage(CmdReport.SUCCESS_MSG);
   }
 
   @Test
   public void offlineAccused_fakePlayer() {
     stubResolvedPlayer("ili1i1il_il__i", UUID.randomUUID(), ResolvedPlayer.Status.HTTP_NOT_FOUND);
-    awaitAsyncCommand(() -> onCommand("ili1i1il_il__i"));
+    awaitAsyncCommand(() -> onCommand(true, "ili1i1il_il__i"));
 
-    assertSemantic(CommandAssertions.NOT_FOUND_MSG);
+    expectAbort(CommandAssertions.NOT_FOUND_MSG);
   }
 
   @Test
@@ -123,8 +121,8 @@ public class CmdReportTest extends TestBase {
 
     expectedDistance = null;
     evaluateNewReport(JACOB_USERNAME);
-    Mockito.verify(sender).sendMessage(CmdReportHandler.OFFLINE_MSG);
-    Mockito.verify(sender).sendMessage(CmdReportHandler.SUCCESS_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.OFFLINE_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.SUCCESS_MSG);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
   }
 
@@ -135,8 +133,8 @@ public class CmdReportTest extends TestBase {
     expectedDistance = null;
     expectedSummary = "ayy lmao";
     evaluateNewReport(JACOB_USERNAME, "ayy", "lmao");
-    Mockito.verify(sender).sendMessage(CmdReportHandler.OFFLINE_MSG);
-    Mockito.verify(sender).sendMessage(CmdReportHandler.SUCCESS_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.OFFLINE_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.SUCCESS_MSG);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
   }
 
@@ -145,10 +143,10 @@ public class CmdReportTest extends TestBase {
     stubResolvedPlayer(JACOB_USERNAME, JACOB_UUID, ResolvedPlayer.Status.HTTP_OK);
 
     expectedDistance = null;
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME));
 
-    Mockito.verify(sender).sendMessage(CmdReportHandler.OFFLINE_MSG);
-    Mockito.verify(sender).sendMessage(CmdReportHandler.SUCCESS_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.OFFLINE_MSG);
+    Mockito.verify(sender).sendMessage(CmdReport.SUCCESS_MSG);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
   }
 
@@ -170,7 +168,7 @@ public class CmdReportTest extends TestBase {
     Mockito.when(authMetadata.getServerNetworkId()).thenReturn(TestConstants.NETWORK_ID);
     Mockito.when(config.getClientProvider().externalServer().getAuthMetadata()).thenReturn(authMetadata);
 
-    awaitAsyncCommand(() -> onCommand(args));
+    awaitAsyncCommand(() -> onCommand(true, args));
 
     CreateWatchRequestInput expected = new CreateWatchRequestInput()
         .accuseeUuid(expectedUuid)
@@ -181,11 +179,8 @@ public class CmdReportTest extends TestBase {
     Mockito.verify(playerClient.getAccusationsApi()).createWatchRequest(expected);
   }
 
-  private void onCommand(String... args) {
-    String[] argsIncludingBaseCommand = new String[2 + args.length];
-    argsIncludingBaseCommand[0] = "reports";
-    argsIncludingBaseCommand[1] = "create";
-    System.arraycopy(args, 0, argsIncludingBaseCommand, 2, argsIncludingBaseCommand.length - 2);
-    new CmdMMC(config).onCommand(sender, argsIncludingBaseCommand);
+  private void onCommand(boolean noSyntaxError, String... args) {
+    CommandExecutorAsync cmd = new CmdReport(config);
+    Assert.assertEquals(noSyntaxError, cmd.onCommand(sender, command, "", args));
   }
 }

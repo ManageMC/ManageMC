@@ -1,10 +1,8 @@
 package com.managemc.spigot.command.processor;
 
 import com.managemc.api.wrapper.ClientProvider;
-import com.managemc.spigot.command.handler.CmdPardonHandler;
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
-import com.managemc.spigot.command.util.CommandNodeMap;
-import com.managemc.spigot.command.util.CommandUsage;
 import com.managemc.spigot.service.PardonService;
 import com.managemc.spigot.state.PardonablePunishmentData;
 import com.managemc.spigot.state.model.MuteData;
@@ -25,20 +23,20 @@ public class CmdPardonTest extends TestBase {
 
   @Test
   public void noArgs() {
-    onCommand();
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.PUNISHMENTS_PARDON);
+    onCommand(false);
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void invalidPunishmentId1() {
-    onCommand("OOPS-1");
-    assertSyntactic(CmdPardonHandler.BAD_ID_MESSAGE, CommandUsage.PUNISHMENTS_PARDON);
+    onCommand(false, "OOPS-1");
+    expectAbort(CmdPardon.BAD_ID_MESSAGE);
   }
 
   @Test
   public void invalidPunishmentId2() {
-    onCommand("BAN-");
-    assertSyntactic(CmdPardonHandler.BAD_ID_MESSAGE, CommandUsage.PUNISHMENTS_PARDON);
+    onCommand(false, "BAN-");
+    expectAbort(CmdPardon.BAD_ID_MESSAGE);
   }
 
   @Test
@@ -46,16 +44,15 @@ public class CmdPardonTest extends TestBase {
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-0");
     Assert.assertEquals(1, config.getPardonablePunishmentData().getPunishmentIdsKnownToSender(sender).size());
 
-    awaitAsyncCommand(() -> onCommand("BAN-0"));
-    Mockito.verify(sender).sendMessage(PardonService.NOT_FOUND_MESSAGE);
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "BAN-0"));
+    expectSingleMessage(PardonService.NOT_FOUND_MESSAGE);
 
     Assert.assertEquals(1, config.getPardonablePunishmentData().getPunishmentIdsKnownToSender(sender).size());
   }
 
   @Test
   public void inactivePunishment() {
-    awaitAsyncCommand(() -> onCommand("BAN-10"));
+    awaitAsyncCommand(() -> onCommand(true, "BAN-10"));
     Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
     Mockito.verify(sender).sendMessage(PardonService.INACTIVE_PUNISHMENTS_WARNING);
     Mockito.verify(sender, Mockito.times(2)).sendMessage(Mockito.anyString());
@@ -72,9 +69,8 @@ public class CmdPardonTest extends TestBase {
     Assert.assertEquals(2, punishmentData.getPunishmentIdsKnownToSender(sender).size());
     Assert.assertEquals(2, punishmentData.getPunishmentIdsKnownToSender(randomUuid).size());
 
-    awaitAsyncCommand(() -> onCommand("BAN-9"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "BAN-9"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
 
     Assert.assertEquals(1, punishmentData.getPunishmentIdsKnownToSender(sender).size());
     Assert.assertEquals("ban-10", punishmentData.getPunishmentIdsKnownToSender(sender).get(0));
@@ -84,16 +80,14 @@ public class CmdPardonTest extends TestBase {
 
   @Test
   public void happyPath_lowerCaseTypeMultipleIdsWithDetails() {
-    awaitAsyncCommand(() -> onCommand("ban-9", "ban-36", "why", "not"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 2));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ban-9", "ban-36", "why", "not"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 2));
   }
 
   @Test
   public void happyPath_offenderWithNoUsername() {
-    awaitAsyncCommand(() -> onCommand("ban-36"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ban-36"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
@@ -102,7 +96,7 @@ public class CmdPardonTest extends TestBase {
     Mockito.when(webClients.externalServer()).thenThrow(new RuntimeException());
     config.setClientProvider(webClients);
 
-    awaitAsyncCommand(() -> onCommand("BAN-1"));
+    awaitAsyncCommand(() -> onCommand(true, "BAN-1"));
     Mockito.verify(sender).sendMessage(ChatColor.DARK_RED + "Unexpected plugin exception");
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
   }
@@ -111,122 +105,112 @@ public class CmdPardonTest extends TestBase {
   public void playerSender_ownerPermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.OWNER);
 
-    awaitAsyncCommand(() -> onCommand("ban-36"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ban-36"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_adminPermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.ADMIN);
 
-    awaitAsyncCommand(() -> onCommand("ban-36"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ban-36"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_banInGamePermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.BAN_IN_GAME);
 
-    awaitAsyncCommand(() -> onCommand("ban-36"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ban-36"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_banWebPermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.BAN_WEB);
 
-    awaitAsyncCommand(() -> onCommand("ban-36"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ban-36"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_banInsufficientPerms() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID);
 
-    onCommand("ban-36");
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandNodeMap.NO_PERMS_MSG);
+    onCommand(true, "ban-36");
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
   public void playerSender_muteInGamePermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.MUTE_IN_GAME);
 
-    awaitAsyncCommand(() -> onCommand("mute-10"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "mute-10"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_muteWebPermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.MUTE_WEB);
 
-    awaitAsyncCommand(() -> onCommand("mute-10"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "mute-10"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_muteInsufficientPerms() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID);
 
-    onCommand("mute-10");
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandNodeMap.NO_PERMS_MSG);
+    onCommand(true, "mute-10");
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
   public void playerSender_warningInGamePermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.WARN_IN_GAME);
 
-    awaitAsyncCommand(() -> onCommand("warning-5"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "warning-5"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_warningWebPermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.WARN_WEB);
 
-    awaitAsyncCommand(() -> onCommand("warning-5"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "warning-5"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_warningInsufficientPerms() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID);
 
-    onCommand("warning-5");
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandNodeMap.NO_PERMS_MSG);
+    onCommand(true, "warning-5");
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
   public void playerSender_ipBanInGamePermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.IP_BAN_IN_GAME);
 
-    awaitAsyncCommand(() -> onCommand("ip_ban-1"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ip_ban-1"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_ipBanWebPermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.IP_BAN_WEB);
 
-    awaitAsyncCommand(() -> onCommand("ip_ban-1"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ip_ban-1"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_ipBanInsufficientPerms() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID);
 
-    onCommand("ip_ban-1");
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandNodeMap.NO_PERMS_MSG);
+    onCommand(true, "ip_ban-1");
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   // ID 28 just happens to be an IP range ban.
@@ -234,26 +218,24 @@ public class CmdPardonTest extends TestBase {
   public void playerSender_ipRangeBanInGamePermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.IP_BAN_IN_GAME);
 
-    awaitAsyncCommand(() -> onCommand("ip_ban-28"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ip_ban-28"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_ipRangeBanWebPermission() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID, Permission.IP_BAN_WEB);
 
-    awaitAsyncCommand(() -> onCommand("ip_ban-28"));
-    Mockito.verify(sender).sendMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    awaitAsyncCommand(() -> onCommand(true, "ip_ban-28"));
+    expectSingleMessage(String.format(PardonService.SUCCESS_MESSAGE, 1));
   }
 
   @Test
   public void playerSender_ipRangeBanInsufficientPerms() {
     stubPlayerSenderWithPermissions(TestConstants.JACOB_UUID);
 
-    onCommand("ip_ban-28");
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandNodeMap.NO_PERMS_MSG);
+    onCommand(true, "ip_ban-28");
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
@@ -261,9 +243,9 @@ public class CmdPardonTest extends TestBase {
     sender = Mockito.mock(Player.class);
     Mockito.when(((Player) sender).getUniqueId()).thenReturn(TestConstants.PHYLLIS_UUID);
     Mockito.when(sender.hasPermission(Mockito.anyString())).thenReturn(true);
-    awaitAsyncCommand(() -> onCommand("ip_ban-28"));
+    awaitAsyncCommand(() -> onCommand(true, "ip_ban-28"));
 
-    Mockito.verify(sender).sendMessage(TextConstants.INSUFFICIENT_PERMS);
+    expectSingleMessage(TextConstants.INSUFFICIENT_PERMS);
   }
 
   @Test
@@ -280,7 +262,7 @@ public class CmdPardonTest extends TestBase {
     Assert.assertNotNull(config.getMuteManager().getMuteData(offlinePlayer.getUniqueId()));
     Assert.assertNotNull(config.getMuteManager().getMuteData(irrelevantPlayer.getUniqueId()));
 
-    awaitAsyncCommand(() -> onCommand("mute-10", "mute-11"));
+    awaitAsyncCommand(() -> onCommand(true, "mute-10", "mute-11"));
 
     Assert.assertNull(config.getMuteManager().getMuteData(onlinePlayer.getUniqueId()));
     Assert.assertNull(config.getMuteManager().getMuteData(offlinePlayer.getUniqueId()));
@@ -292,11 +274,8 @@ public class CmdPardonTest extends TestBase {
   }
 
 
-  private void onCommand(String... args) {
-    String[] argsIncludingBaseCommand = new String[2 + args.length];
-    argsIncludingBaseCommand[0] = "punishments";
-    argsIncludingBaseCommand[1] = "pardon";
-    System.arraycopy(args, 0, argsIncludingBaseCommand, 2, argsIncludingBaseCommand.length - 2);
-    new CmdMMC(config).onCommand(sender, argsIncludingBaseCommand);
+  private void onCommand(boolean noSyntaxError, String... args) {
+    CommandExecutorAsync cmd = new CmdPardon(config);
+    Assert.assertEquals(noSyntaxError, cmd.onCommand(sender, command, "", args));
   }
 }

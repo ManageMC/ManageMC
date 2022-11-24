@@ -2,7 +2,7 @@ package com.managemc.spigot.service;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
-import com.managemc.spigot.command.util.CommandValidationException;
+import com.managemc.plugins.command.AbortCommand;
 import org.bukkit.entity.Player;
 import org.openapitools.client.model.PlayerWatchList;
 
@@ -30,9 +30,9 @@ public class WatchlistService {
     } catch (ApiException e) {
       if (e.getCode() == 422) {
         if (e.getResponseBody().contains("Player not found")) {
-          throw new CommandValidationException(PLAYER_NOT_FOUND, false);
+          throw AbortCommand.withoutUsageMessage(PLAYER_NOT_FOUND);
         } else if (e.getResponseBody().contains("Watchlist already at max size")) {
-          throw new CommandValidationException(WATCHLIST_TOO_BIG, false);
+          throw AbortCommand.withoutUsageMessage(WATCHLIST_TOO_BIG);
         }
       }
       throw e;
@@ -44,7 +44,7 @@ public class WatchlistService {
       return provider.player(sender.getUniqueId()).getPlayersApi().unwatchPlayer(playerId.toString());
     } catch (ApiException e) {
       if (e.getCode() == 422) {
-        throw new CommandValidationException(PLAYER_NOT_FOUND, false);
+        throw AbortCommand.withoutUsageMessage(PLAYER_NOT_FOUND);
       }
       throw e;
     }

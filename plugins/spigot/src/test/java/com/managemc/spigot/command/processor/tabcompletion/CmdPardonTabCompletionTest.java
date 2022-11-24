@@ -1,212 +1,223 @@
 package com.managemc.spigot.command.processor.tabcompletion;
 
+import com.managemc.plugins.command.CommandExecutorAsync;
+import com.managemc.spigot.command.processor.CmdPardon;
 import com.managemc.spigot.testutil.TestBase;
 import com.managemc.spigot.util.permissions.Permission;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 public class CmdPardonTabCompletionTest extends TestBase {
 
   @Test
-  public void onTabComplete_noArgs() {
-    Assert.assertEquals("[ban-, ip_ban-, mute-, warning-]", onTabComplete("punishments", "pardon", ""));
+  public void noArgs() {
+    Assert.assertEquals("[ban-, ip_ban-, mute-, warning-]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_noArgs_withKnownIds() {
+  public void noArgs_withKnownIds() {
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-6");
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-2");
 
-    Assert.assertEquals("[ban-2, mute-6]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[ban-2, mute-6]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_noArgs_trailingSpace() {
-    Assert.assertEquals("[ban-, ip_ban-, mute-, warning-]", onTabComplete("punishments", "pardon", ""));
+  public void noArgs_trailingSpace() {
+    Assert.assertEquals("[ban-, ip_ban-, mute-, warning-]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_noArgs_trailingSpace_withKnownIds() {
+  public void noArgs_trailingSpace_withKnownIds() {
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-6");
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-2");
 
-    Assert.assertEquals("[ban-2, mute-6]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[ban-2, mute-6]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_oneArg_fullMatch() {
-    Assert.assertEquals("[ban-]", onTabComplete("punishments", "pardon", "ban-"));
+  public void oneArg_fullMatch() {
+    Assert.assertEquals("[ban-]", tabComplete("ban-"));
   }
 
   @Test
-  public void onTabComplete_oneArg_fullMatch_differentCase() {
-    Assert.assertEquals("[ban-]", onTabComplete("punishments", "pardon", "BAN-"));
+  public void oneArg_fullMatch_differentCase() {
+    Assert.assertEquals("[ban-]", tabComplete("BAN-"));
   }
 
   @Test
-  public void onTabComplete_oneArg_partialMatch() {
-    Assert.assertEquals("[ban-]", onTabComplete("punishments", "pardon", "ba"));
+  public void oneArg_partialMatch() {
+    Assert.assertEquals("[ban-]", tabComplete("ba"));
   }
 
   @Test
-  public void onTabComplete_oneArg_partialMatch_withKnownIds() {
+  public void oneArg_partialMatch_withKnownIds() {
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-6");
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-2");
 
-    Assert.assertEquals("[ban-2]", onTabComplete("punishments", "pardon", "ba"));
+    Assert.assertEquals("[ban-2]", tabComplete("ba"));
   }
 
   @Test
-  public void onTabComplete_oneArg_partialMatch_trailingSpace() {
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", "ba", ""));
+  public void oneArg_partialMatch_trailingSpace() {
+    Assert.assertEquals("[]", tabComplete("ba", ""));
   }
 
   @Test
-  public void onTabComplete_oneArg_noMatches() {
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", "oops"));
+  public void oneArg_noMatches() {
+    Assert.assertEquals("[]", tabComplete("oops"));
   }
 
   @Test
-  public void onTabComplete_oneArg_matchDefaultOnly() {
-    Assert.assertEquals("[ip_ban-]", onTabComplete("punishments", "pardon", "ip"));
+  public void oneArg_matchDefaultOnly() {
+    Assert.assertEquals("[ip_ban-]", tabComplete("ip"));
   }
 
   @Test
-  public void onTabComplete_oneArg_matchDefaultOnly_whenKnownIdsExist() {
+  public void oneArg_matchDefaultOnly_whenKnownIdsExist() {
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-6");
 
-    Assert.assertEquals("[ip_ban-]", onTabComplete("punishments", "pardon", "ip"));
+    Assert.assertEquals("[ip_ban-]", tabComplete("ip"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_fullMatch_lastArgValidButUnknown() {
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", "BAN-1", "mute-6"));
+  public void twoArgs_fullMatch_lastArgValidButUnknown() {
+    Assert.assertEquals("[]", tabComplete("BAN-1", "mute-6"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_fullMatch_lastArgKnown() {
+  public void twoArgs_fullMatch_lastArgKnown() {
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-6");
 
-    Assert.assertEquals("[mute-6]", onTabComplete("punishments", "pardon", "BAN-1", "Mute-6"));
+    Assert.assertEquals("[mute-6]", tabComplete("BAN-1", "Mute-6"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_fullMatch_trailingSpace() {
+  public void twoArgs_fullMatch_trailingSpace() {
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-6");
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-2");
 
-    Assert.assertEquals("[ban-2]", onTabComplete("punishments", "pardon", "BAN-1", "mute-6", ""));
+    Assert.assertEquals("[ban-2]", tabComplete("BAN-1", "mute-6", ""));
   }
 
   @Test
-  public void onTabComplete_twoArgs_lastOneMatchesDefaultOnly() {
-    Assert.assertEquals("[ip_ban-]", onTabComplete("punishments", "pardon", "ip_ban-123", "ip"));
+  public void twoArgs_lastOneMatchesDefaultOnly() {
+    Assert.assertEquals("[ip_ban-]", tabComplete("ip_ban-123", "ip"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_lastOneMatchesDefaultOnly_withKnownIdsPresent() {
+  public void twoArgs_lastOneMatchesDefaultOnly_withKnownIdsPresent() {
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-2");
 
-    Assert.assertEquals("[ip_ban-]", onTabComplete("punishments", "pardon", "ip_ban-123", "ip"));
+    Assert.assertEquals("[ip_ban-]", tabComplete("ip_ban-123", "ip"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_partialMatch() {
-    Assert.assertEquals("[ban-]", onTabComplete("punishments", "pardon", "ban-1", "ba"));
+  public void twoArgs_partialMatch() {
+    Assert.assertEquals("[ban-]", tabComplete("ban-1", "ba"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_partialMatch_withKnownIds() {
+  public void twoArgs_partialMatch_withKnownIds() {
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-677");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-678");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-679");
 
-    Assert.assertEquals("[ip_ban-677, ip_ban-678]", onTabComplete("punishments", "pardon", "ip_ban-679", "ip_ban-67"));
+    Assert.assertEquals("[ip_ban-677, ip_ban-678]", tabComplete("ip_ban-679", "ip_ban-67"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_partialMatch_trailingSpace() {
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", "ban-1", "i", ""));
+  public void twoArgs_partialMatch_trailingSpace() {
+    Assert.assertEquals("[]", tabComplete("ban-1", "i", ""));
   }
 
   @Test
-  public void onTabComplete_twoArgs_firstOneInvalid() {
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", "oops", "ban-"));
+  public void twoArgs_firstOneInvalid() {
+    Assert.assertEquals("[]", tabComplete("oops", "ban-"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_secondOneInvalid() {
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", "ban-1", "oops"));
+  public void twoArgs_secondOneInvalid() {
+    Assert.assertEquals("[]", tabComplete("ban-1", "oops"));
   }
 
   @Test
-  public void onTabComplete_twoArgs_secondOneInvalid_trailingSpace() {
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", "ban-1", "oops", ""));
+  public void twoArgs_secondOneInvalid_trailingSpace() {
+    Assert.assertEquals("[]", tabComplete("ban-1", "oops", ""));
   }
 
   @Test
-  public void onTabComplete_playerSender_noPermissions() {
+  public void playerSender_noPermissions() {
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-1");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "WARNING-1");
     stubPlayerSenderWithPermissions();
 
-    Assert.assertEquals("[]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_playerSender_banPermissionOnly() {
+  public void playerSender_banPermissionOnly() {
     stubPlayerSenderWithPermissions(Permission.BAN_IN_GAME);
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-1");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "WARNING-1");
 
-    Assert.assertEquals("[ban-1]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[ban-1]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_playerSender_mutePermissionOnly() {
+  public void playerSender_mutePermissionOnly() {
     stubPlayerSenderWithPermissions(Permission.MUTE_IN_GAME);
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-1");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "WARNING-1");
 
-    Assert.assertEquals("[mute-1]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[mute-1]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_playerSender_ipBanPermissionOnly() {
+  public void playerSender_ipBanPermissionOnly() {
     stubPlayerSenderWithPermissions(Permission.IP_BAN_WEB);
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-1");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "WARNING-1");
 
-    Assert.assertEquals("[ip_ban-1]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[ip_ban-1]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_playerSender_warningPermissionOnly() {
+  public void playerSender_warningPermissionOnly() {
     stubPlayerSenderWithPermissions(Permission.WARN_WEB);
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-1");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "WARNING-1");
 
-    Assert.assertEquals("[warning-1]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[warning-1]", tabComplete(""));
   }
 
   @Test
-  public void onTabComplete_playerSender_allRelevantPermissions() {
+  public void playerSender_allRelevantPermissions() {
     stubPlayerSenderWithPermissions(Permission.ADMIN);
     config.getPardonablePunishmentData().addPunishment(sender, "BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "MUTE-1");
     config.getPardonablePunishmentData().addPunishment(sender, "IP_BAN-1");
     config.getPardonablePunishmentData().addPunishment(sender, "WARNING-1");
 
-    Assert.assertEquals("[ban-1, ip_ban-1, mute-1, warning-1]", onTabComplete("punishments", "pardon", ""));
+    Assert.assertEquals("[ban-1, ip_ban-1, mute-1, warning-1]", tabComplete(""));
+  }
+
+
+  private String tabComplete(String... args) {
+    CommandExecutorAsync cmd = new CmdPardon(config);
+    List<String> completions = cmd.onTabComplete(sender, command, "", args);
+    return "[" + String.join(", ", completions) + "]";
   }
 }

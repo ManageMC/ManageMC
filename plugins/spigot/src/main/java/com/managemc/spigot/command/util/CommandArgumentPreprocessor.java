@@ -55,7 +55,7 @@ public class CommandArgumentPreprocessor {
    * - quotes not connected to any word may be interpreted as starting or ending quotes
    * - we don't support quotes within quotes (use single quotes within double quotes instead)
    */
-  private static String[] processDoubleQuotes(String[] args) {
+  public static String[] processDoubleQuotes(String[] args) {
     List<String> processedArgs = new ArrayList<>();
 
     List<String> tempChunkedArgs = new ArrayList<>();

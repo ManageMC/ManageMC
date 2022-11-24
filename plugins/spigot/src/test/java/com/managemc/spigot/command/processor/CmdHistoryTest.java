@@ -1,9 +1,7 @@
 package com.managemc.spigot.command.processor;
 
-import com.managemc.spigot.command.handler.CmdHistoryHandler;
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
-import com.managemc.spigot.command.util.CommandNodeMap;
-import com.managemc.spigot.command.util.CommandUsage;
 import com.managemc.spigot.command.util.punishments.model.ResolvedPlayer;
 import com.managemc.spigot.testutil.TestBase;
 import com.managemc.spigot.testutil.TestConstants;
@@ -31,65 +29,58 @@ public class CmdHistoryTest extends TestBase {
 
   @Test
   public void noArgs() {
-    onCommand();
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.PUNISHMENTS_GET);
+    onCommand(false);
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void tooManyArgs() {
-    onCommand("ayy", "lmao");
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.PUNISHMENTS_GET);
+    onCommand(false, "ayy", "lmao");
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void invalidUsername() {
-    onCommand("@@@");
-    assertSyntactic("Invalid username @@@", CommandUsage.PUNISHMENTS_GET);
+    onCommand(false, "@@@");
+    expectAbort("Invalid username @@@");
   }
 
   @Test
   public void onlineRecently() {
     stubResolvedPlayer(TestConstants.JACOB_USERNAME, TestConstants.JACOB_UUID, ResolvedPlayer.Status.ONLINE_RECENTLY);
-    awaitAsyncCommand(() -> onCommand(TestConstants.JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, TestConstants.JACOB_USERNAME));
 
-    Mockito.verify(sender).sendMessage(String.format(CmdHistoryHandler.NO_PUNISHMENTS_MESSAGE, JACOB_USERNAME));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectSingleMessage(String.format(CmdHistory.NO_PUNISHMENTS_MESSAGE, JACOB_USERNAME));
   }
 
   @Test
   public void offlineButReal() {
     stubResolvedPlayer(TestConstants.JACOB_USERNAME, TestConstants.JACOB_UUID, ResolvedPlayer.Status.HTTP_OK);
-    awaitAsyncCommand(() -> onCommand(TestConstants.JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, TestConstants.JACOB_USERNAME));
 
-    Mockito.verify(sender).sendMessage(String.format(CmdHistoryHandler.NO_PUNISHMENTS_MESSAGE, JACOB_USERNAME));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectSingleMessage(String.format(CmdHistory.NO_PUNISHMENTS_MESSAGE, JACOB_USERNAME));
   }
 
   @Test
   public void offlineNotFound() {
     stubResolvedPlayer(TestConstants.JACOB_USERNAME, TestConstants.JACOB_UUID, ResolvedPlayer.Status.HTTP_NOT_FOUND);
-    awaitAsyncCommand(() -> onCommand(TestConstants.JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, TestConstants.JACOB_USERNAME));
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.NOT_FOUND_MSG);
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectAbort(CommandAssertions.NOT_FOUND_MSG);
   }
 
   @Test
   public void offlineRateLimitExceeded() {
     stubResolvedPlayer(TestConstants.JACOB_USERNAME, TestConstants.JACOB_UUID, ResolvedPlayer.Status.HTTP_RATE_LIMIT_EXCEEDED);
-    awaitAsyncCommand(() -> onCommand(TestConstants.JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, TestConstants.JACOB_USERNAME));
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.MOJANG_RATE_LIMIT_MSG);
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    expectAbort(CommandAssertions.MOJANG_RATE_LIMIT_MSG);
   }
 
   @Test
   public void offlineHttpUnexpected() {
     stubResolvedPlayer(TestConstants.JACOB_USERNAME, TestConstants.JACOB_UUID, ResolvedPlayer.Status.HTTP_UNEXPECTED);
-    awaitAsyncCommand(() -> onCommand(TestConstants.JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, TestConstants.JACOB_USERNAME));
 
     Mockito.verify(sender).sendMessage(ChatColor.DARK_RED + "Unexpected plugin exception");
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
@@ -99,7 +90,7 @@ public class CmdHistoryTest extends TestBase {
   @Test
   public void offlineUuidResolverClientException() {
     stubResolvedPlayer(TestConstants.JACOB_USERNAME, TestConstants.JACOB_UUID, ResolvedPlayer.Status.CLIENT_EXCEPTION);
-    awaitAsyncCommand(() -> onCommand(TestConstants.JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, TestConstants.JACOB_USERNAME));
 
     Mockito.verify(sender).sendMessage(ChatColor.DARK_RED + "Unexpected plugin exception");
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
@@ -109,11 +100,9 @@ public class CmdHistoryTest extends TestBase {
   @Test
   public void apiNotFound() {
     stubOffender(UUID.randomUUID());
-    awaitAsyncCommand(() -> onCommand(OFFENDER_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, OFFENDER_USERNAME));
 
-    Mockito.verify(sender).sendMessage(String.format(TextConstants.Commands.Punishment.PUNISHMENT_404, OFFENDER_USERNAME));
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectSingleMessage(String.format(TextConstants.Commands.Punishment.PUNISHMENT_404, OFFENDER_USERNAME));
   }
 
   @Test
@@ -122,7 +111,7 @@ public class CmdHistoryTest extends TestBase {
     UUID invalidUuid = Mockito.mock(UUID.class);
     Mockito.when(invalidUuid.toString()).thenReturn("ayy lmao");
     stubOffender(invalidUuid);
-    awaitAsyncCommand(() -> onCommand(OFFENDER_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, OFFENDER_USERNAME));
 
     Mockito.verify(sender).sendMessage(ChatColor.DARK_RED + "Unexpected plugin exception");
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
@@ -140,9 +129,9 @@ public class CmdHistoryTest extends TestBase {
     Assert.assertEquals(3, config.getPardonablePunishmentData().getPunishmentIdsKnownToSender(sender).size());
 
     stubOffender(OFFENDER_UUID);
-    awaitAsyncCommand(() -> onCommand(OFFENDER_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, OFFENDER_USERNAME));
     Mockito.verify(sender).sendMessage(Mockito.contains("Punishment History for " + OFFENDER_USERNAME));
-    Mockito.verify(sender, Mockito.times(1)).sendMessage(Mockito.anyString());
+    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
 
     // 6 unique punishments plus two fake ones we added earlier
@@ -154,11 +143,9 @@ public class CmdHistoryTest extends TestBase {
     stubOffender(OFFENDER_UUID);
     sender = Mockito.mock(Player.class);
     Mockito.when(sender.hasPermission(Mockito.anyString())).thenReturn(false);
-    onCommand(OFFENDER_USERNAME);
+    onCommand(true, OFFENDER_USERNAME);
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandNodeMap.NO_PERMS_MSG);
-    Mockito.verify(sender, Mockito.times(1)).sendMessage(Mockito.anyString());
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
@@ -167,11 +154,9 @@ public class CmdHistoryTest extends TestBase {
     sender = Mockito.mock(Player.class);
     Mockito.when(sender.hasPermission(Mockito.anyString())).thenReturn(true);
     Mockito.when(((Player) sender).getUniqueId()).thenReturn(TestConstants.PHYLLIS_UUID);
-    awaitAsyncCommand(() -> onCommand(OFFENDER_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, OFFENDER_USERNAME));
 
-    Mockito.verify(sender).sendMessage(TextConstants.INSUFFICIENT_PERMS);
-    Mockito.verify(sender, Mockito.times(1)).sendMessage(Mockito.anyString());
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectSingleMessage(TextConstants.INSUFFICIENT_PERMS);
   }
 
 
@@ -179,11 +164,8 @@ public class CmdHistoryTest extends TestBase {
     stubResolvedPlayer(OFFENDER_USERNAME, uuid, ResolvedPlayer.Status.ONLINE_RECENTLY);
   }
 
-  private void onCommand(String... args) {
-    String[] argsIncludingBaseCommand = new String[2 + args.length];
-    argsIncludingBaseCommand[0] = "punishments";
-    argsIncludingBaseCommand[1] = "get";
-    System.arraycopy(args, 0, argsIncludingBaseCommand, 2, argsIncludingBaseCommand.length - 2);
-    new CmdMMC(config).onCommand(sender, argsIncludingBaseCommand);
+  private void onCommand(boolean noSyntaxError, String... args) {
+    CommandExecutorAsync cmd = new CmdHistory(config);
+    Assert.assertEquals(noSyntaxError, cmd.onCommand(sender, command, "", args));
   }
 }

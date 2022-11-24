@@ -1,7 +1,7 @@
 package com.managemc.spigot.command.processor;
 
+import com.managemc.plugins.command.AbortCommand;
 import com.managemc.spigot.command.util.CommandNodeMap;
-import com.managemc.spigot.command.util.CommandValidationException;
 import com.managemc.spigot.command.util.CommandWrapping;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import lombok.NonNull;
@@ -47,7 +47,7 @@ public class CmdMMC implements CommandExecutor {
     CommandNodeMap.ProcessorNode node;
     try {
       node = commandNodes.searchForHandler(sender, args);
-    } catch (CommandValidationException e) {
+    } catch (AbortCommand e) {
       sender.sendMessage(ChatColor.RED + e.getMessage());
       return;
     }

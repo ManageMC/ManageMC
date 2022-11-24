@@ -2,14 +2,10 @@ package com.managemc.spigot.command.processor;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.api.PunishmentsApi;
-import com.managemc.api.wrapper.ClientProvider;
-import com.managemc.spigot.command.handler.CmdBanIpHandler;
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
-import com.managemc.spigot.command.util.CommandNodeMap;
-import com.managemc.spigot.command.util.CommandUsage;
 import com.managemc.spigot.testutil.TestBase;
 import com.managemc.spigot.testutil.TestConstants;
-import com.managemc.spigot.testutil.TestWebClients;
 import com.managemc.spigot.util.KickMessages;
 import com.managemc.spigot.util.TextConstants;
 import com.managemc.spigot.util.permissions.Permission;
@@ -42,40 +38,39 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void notEnoughArgs() {
-    onCommand();
-    assertSyntactic(CommandAssertions.WRONG_NUM_ARGS, CommandUsage.IPBANS_CREATE);
+    onCommand(false);
+    expectAbort(CommandAssertions.WRONG_NUM_ARGS);
   }
 
   @Test
   public void syntacticallyInvalidUsername() {
-    onCommand("not-a-valid-username");
-    assertSyntactic("Invalid username not-a-valid-username", CommandUsage.IPBANS_CREATE);
+    onCommand(false, "not-a-valid-username");
+    expectAbort("Invalid username not-a-valid-username");
   }
 
   @Test
   public void syntacticallyInvalidIpAddress() {
-    onCommand("256.0.0.0");
-    assertSyntactic("Invalid IPv4 address 256.0.0.0", CommandUsage.IPBANS_CREATE);
+    onCommand(false, "256.0.0.0");
+    expectAbort("Invalid IPv4 address 256.0.0.0");
   }
 
   @Test
   public void syntacticallyInvalidIpAddressRange() {
-    onCommand("255.0.0.0-256.0.0.0");
-    assertSyntactic("Invalid IP address range 255.0.0.0-256.0.0.0", CommandUsage.IPBANS_CREATE);
+    onCommand(false, "255.0.0.0-256.0.0.0");
+    expectAbort("Invalid IP address range 255.0.0.0-256.0.0.0");
   }
 
   @Test
   public void offenderOffline() {
     Mockito.when(config.getBukkitWrapper().getOnlineOrRecentlyOnlinePlayer(JACOB_USERNAME)).thenReturn(null);
-    onCommand(JACOB_USERNAME);
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CmdBanIpHandler.OFFLINE_MSG);
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    onCommand(true, JACOB_USERNAME);
+    expectAbort(CmdBanIp.OFFLINE_MSG);
   }
 
   @Test
   public void offenderOfflineButCached() {
     Mockito.when(offender.isOnline()).thenReturn(false);
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender, NEVER).kickPlayer(Mockito.anyString());
@@ -88,15 +83,14 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void offenderIpAddressIsNull() {
     Mockito.when(offender.getAddress()).thenReturn(null);
-    onCommand(JACOB_USERNAME);
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CmdBanIpHandler.NO_IP_MSG);
-    Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    onCommand(true, JACOB_USERNAME);
+    expectAbort(CmdBanIp.NO_IP_MSG);
   }
 
   @Test
   public void playerSender_ownerPermission() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.OWNER);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5"));
 
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned 1.3.4.5"));
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
@@ -109,7 +103,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void playerSender_adminPermission() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.ADMIN);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5", "--shadow"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--shadow"));
 
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned 1.3.4.5"));
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
@@ -118,7 +112,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void playerSender_inGamePermission() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_IN_GAME);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--duration=8h"));
 
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned 1.3.4.5"));
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
@@ -127,7 +121,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void playerSender_WebPermission() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_WEB);
-    awaitAsyncCommand(() -> onCommand("--duration=8h", "1.3.4.5"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--duration=8h"));
 
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned 1.3.4.5"));
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
@@ -136,16 +130,15 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void playerSender_mediumLengthTooLong() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_IN_GAME);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5", "--duration=24h1m"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--duration=24h1m"));
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.PUNISHMENT_TOO_LONG_MSG);
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectAbort(CommandAssertions.PUNISHMENT_TOO_LONG_MSG);
   }
 
   @Test
   public void playerSender_mediumLengthNotTooLong() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_IN_GAME, Permission.PUNISHMENTS_LENGTH_MED);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5", "--duration=24h1m"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--duration=24h1m"));
 
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned 1.3.4.5"));
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
@@ -154,16 +147,15 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void playerSender_longLengthTooLong() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_IN_GAME, Permission.PUNISHMENTS_LENGTH_MED);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5", "--duration=7d1m"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--duration=7d1m"));
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.PUNISHMENT_TOO_LONG_MSG);
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectAbort(CommandAssertions.PUNISHMENT_TOO_LONG_MSG);
   }
 
   @Test
   public void playerSender_longLengthNotTooLong() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_IN_GAME, Permission.PUNISHMENTS_LENGTH_LONG);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5", "--duration=7d1m"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--duration=7d1m"));
 
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned 1.3.4.5"));
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
@@ -172,16 +164,15 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void playerSender_permanentLengthTooLong() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_WEB, Permission.PUNISHMENTS_LENGTH_LONG);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5"));
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.NO_PERMANENT_PUNISHMENTS_MSG);
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectAbort(CommandAssertions.NO_PERMANENT_PUNISHMENTS_MSG);
   }
 
   @Test
   public void playerSender_permanentLengthNotTooLong() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_WEB, Permission.PUNISHMENTS_LENGTH_PERM);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5"));
 
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned 1.3.4.5"));
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
@@ -190,19 +181,17 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void playerSender_noPermsForShadow() {
     stubPlayerSenderWithPermissions(JACOB_UUID, Permission.IP_BAN_WEB, Permission.PUNISHMENTS_LENGTH_PERM);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5", "--shadow"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5", "--shadow"));
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.NO_SHADOW_PUNISHMENTS_MSG);
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectAbort(CommandAssertions.NO_SHADOW_PUNISHMENTS_MSG);
   }
 
   @Test
   public void playerSender_noPerms() {
     stubPlayerSenderWithPermissions(JACOB_UUID);
-    onCommand("1.3.4.5");
+    onCommand(true, "1.3.4.5");
 
-    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandNodeMap.NO_PERMS_MSG);
-    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
   }
 
   @Test
@@ -210,40 +199,40 @@ public class CmdBanIpTest extends TestBase {
     sender = Mockito.mock(Player.class);
     Mockito.when(((Player) sender).getUniqueId()).thenReturn(TestConstants.PHYLLIS_UUID);
     Mockito.when(sender.hasPermission(Mockito.anyString())).thenReturn(true);
-    awaitAsyncCommand(() -> onCommand("1.3.4.5"));
+    awaitAsyncCommand(() -> onCommand(true, "1.3.4.5"));
 
-    Mockito.verify(sender).sendMessage(TextConstants.INSUFFICIENT_PERMS);
+    expectSingleMessage(TextConstants.INSUFFICIENT_PERMS);
     Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
   }
 
   @Test
   public void errorMessageFromServiceRequest() throws ApiException {
-    ClientProvider webClients = TestWebClients.mockClients();
     PunishmentsApi punishmentsApi = Mockito.mock(PunishmentsApi.class);
-    Mockito.when(webClients.externalServer().getPunishmentsApi()).thenReturn(punishmentsApi);
+    Mockito.when(mockClients.externalServer().getPunishmentsApi()).thenReturn(punishmentsApi);
     Mockito.when(punishmentsApi.createIpBan(Mockito.anyString(), Mockito.any())).thenThrow(new ApiException());
-    config.setClientProvider(webClients);
+    config.setClientProvider(mockClients);
 
-    awaitAsyncCommand(() -> onCommand("1.2.3.4", "cheating"));
+    awaitAsyncCommand(() -> onCommand(true, "1.2.3.4", "cheating"));
     Mockito.verify(sender).sendMessage(ChatColor.DARK_RED + "Unexpected plugin exception");
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
+    Mockito.verify(config.getLogging(), ONCE).logStackTrace(Mockito.any());
   }
 
   @Test
   public void invalidDurationString() {
-    onCommand(JACOB_USERNAME, "cheating", "--duration=24");
-    assertSyntactic("Invalid duration \"24\" (example: --duration=24h)", CommandUsage.IPBANS_CREATE);
+    onCommand(false, JACOB_USERNAME, "cheating", "--duration=24");
+    expectAbort("Invalid duration \"24\" (example: --duration=24h)");
   }
 
   @Test
   public void emptyDurationString() {
-    onCommand(JACOB_USERNAME, "cheating", "--duration=");
-    assertSyntactic("Invalid duration \"\" (example: --duration=24h)", CommandUsage.IPBANS_CREATE);
+    onCommand(false, JACOB_USERNAME, "cheating", "--duration=");
+    expectAbort("Invalid duration \"\" (example: --duration=24h)");
   }
 
   @Test
   public void successMessage_username_temp_withReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -254,7 +243,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_temp_withReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -265,7 +254,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_username_local_temp_withReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--local", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--local", "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -276,7 +265,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_local_temp_withReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--local", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--local", "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -287,7 +276,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_username_temp_noReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -298,7 +287,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_temp_noReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -307,7 +296,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_username_local_temp_noReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "--local", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "--local", "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -316,7 +305,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_local_temp_noReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "--local", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "--local", "--duration=8h"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -325,7 +314,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_username_perm_withReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -335,7 +324,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_perm_withReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -345,7 +334,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_username_local_perm_withReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--local"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--local"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -355,7 +344,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_local_perm_withReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--local"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--local"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -364,7 +353,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_username_perm_noReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -374,7 +363,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_perm_noReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -384,7 +373,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_username_local_perm_noReason() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "--local"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "--local"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -394,7 +383,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_ip_local_perm_noReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "--local"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "--local"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -404,7 +393,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void visiblePunishmentBroadcastMessage_username_temp() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--broadcast", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--broadcast", "--duration=8h"));
     Mockito.verify(config.getBukkitWrapper()).broadcastMessage(ChatColor.GRAY + "JacobCrofts has been banned");
     Mockito.verify(config.getBukkitWrapper(), ONCE).broadcastMessage(Mockito.any());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -414,7 +403,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void visiblePunishmentBroadcastMessage_ip_temp() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--broadcast", "--duration=8h"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--broadcast", "--duration=8h"));
     Mockito.verify(config.getBukkitWrapper()).broadcastMessage(ChatColor.GRAY + "JacobCrofts has been banned");
     Mockito.verify(config.getBukkitWrapper(), ONCE).broadcastMessage(Mockito.any());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -424,7 +413,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void visiblePunishmentBroadcastMessage_username_perm() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--broadcast"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--broadcast"));
     Mockito.verify(config.getBukkitWrapper()).broadcastMessage(ChatColor.GRAY + "JacobCrofts has been banned");
     Mockito.verify(config.getBukkitWrapper(), ONCE).broadcastMessage(Mockito.any());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -434,7 +423,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void visiblePunishmentBroadcastMessage_ip_perm() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--broadcast"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--broadcast"));
     Mockito.verify(config.getBukkitWrapper()).broadcastMessage(ChatColor.GRAY + "JacobCrofts has been banned");
     Mockito.verify(config.getBukkitWrapper(), ONCE).broadcastMessage(Mockito.any());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
@@ -444,7 +433,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void invisiblePunishment_noBroadcastMessage_username() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating"));
     Mockito.verify(config.getBukkitWrapper(), NEVER).broadcastMessage(Mockito.any());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
     Mockito.verify(offender).kickPlayer(Mockito.contains("reason: cheating"));
@@ -453,7 +442,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void invisiblePunishment_noBroadcastMessage_ip() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating"));
     Mockito.verify(config.getBukkitWrapper(), NEVER).broadcastMessage(Mockito.any());
     Mockito.verify(offender).kickPlayer(Mockito.contains(KickMessages.BAN_MESSAGE));
     Mockito.verify(offender).kickPlayer(Mockito.contains("reason: cheating"));
@@ -462,7 +451,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void bothVisibleAndShadowFlags_username() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--broadcast", "--shadow"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--broadcast", "--shadow"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.BROADCAST_FLAG_IGNORED_MESSAGE);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -473,7 +462,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void bothVisibleAndShadowFlags_ip() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--broadcast", "--shadow"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--broadcast", "--shadow"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.BROADCAST_FLAG_IGNORED_MESSAGE);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -484,7 +473,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void bothVisibleAndPrivateFlags_username() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--broadcast", "--private"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--broadcast", "--private"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.BROADCAST_FLAG_IGNORED_MESSAGE);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -496,7 +485,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void bothVisibleAndPrivateFlags_ip() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--broadcast", "--private"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--broadcast", "--private"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.BROADCAST_FLAG_IGNORED_MESSAGE);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -508,7 +497,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void bothShadowAndPrivateFlags_username() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--shadow", "--private"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--shadow", "--private"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.PRIVATE_FLAG_REDUNDANT_MESSAGE);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -519,7 +508,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void bothShadowAndPrivateFlags_ip() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--shadow", "--private"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--shadow", "--private"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.PRIVATE_FLAG_REDUNDANT_MESSAGE);
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -530,7 +519,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void visibleShadowAndPrivateFlags_username() {
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "cheating", "--broadcast", "--private", "--shadow"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "cheating", "--broadcast", "--private", "--shadow"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.BROADCAST_FLAG_IGNORED_MESSAGE);
     Mockito.verify(sender).sendMessage(TextConstants.Commands.PRIVATE_FLAG_REDUNDANT_MESSAGE);
@@ -542,7 +531,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void visibleShadowAndPrivateFlags_ip() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "cheating", "--broadcast", "--private", "--shadow"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "cheating", "--broadcast", "--private", "--shadow"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender).sendMessage(TextConstants.Commands.BROADCAST_FLAG_IGNORED_MESSAGE);
     Mockito.verify(sender).sendMessage(TextConstants.Commands.PRIVATE_FLAG_REDUNDANT_MESSAGE);
@@ -554,7 +543,7 @@ public class CmdBanIpTest extends TestBase {
 
   @Test
   public void successMessage_multiWordReason() {
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "\"cheating", "and", "stuff\"", "etc"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "\"cheating", "and", "stuff\"", "etc"));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, ONCE).sendMessage(Mockito.anyString());
   }
@@ -562,7 +551,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void multipleAffectedPlayers_visible_username() {
     setMultipleOnlinePlayers();
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME, "--broadcast"));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME, "--broadcast"));
     Mockito.verify(sender).sendMessage(ChatColor.YELLOW + "More than one online player will be affected by this IP ban");
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -580,7 +569,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void multipleAffectedPlayers_visible_ip() {
     setMultipleOnlinePlayers();
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS, "--broadcast"));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS, "--broadcast"));
     Mockito.verify(sender).sendMessage(ChatColor.YELLOW + "More than one online player will be affected by this IP ban");
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -598,7 +587,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void multipleAffectedPlayers_invisible_username() {
     setMultipleOnlinePlayers();
-    awaitAsyncCommand(() -> onCommand(JACOB_USERNAME));
+    awaitAsyncCommand(() -> onCommand(true, JACOB_USERNAME));
     Mockito.verify(sender).sendMessage(ChatColor.YELLOW + "More than one online player will be affected by this IP ban");
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -614,7 +603,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void multipleAffectedPlayers_invisible_ip() {
     setMultipleOnlinePlayers();
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS));
     Mockito.verify(sender).sendMessage(ChatColor.YELLOW + "More than one online player will be affected by this IP ban");
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS));
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -630,7 +619,7 @@ public class CmdBanIpTest extends TestBase {
   @Test
   public void rangeIpBan() {
     setMultipleOnlinePlayers();
-    awaitAsyncCommand(() -> onCommand(IP_ADDRESS_RANGE_COVERING_PLAYER));
+    awaitAsyncCommand(() -> onCommand(true, IP_ADDRESS_RANGE_COVERING_PLAYER));
     Mockito.verify(sender).sendMessage(Mockito.contains("Successfully IP-banned " + IP_ADDRESS_RANGE_COVERING_PLAYER));
     Mockito.verify(sender).sendMessage(ChatColor.YELLOW + "More than one online player will be affected by this IP ban");
     Mockito.verify(sender, TWICE).sendMessage(Mockito.anyString());
@@ -646,14 +635,6 @@ public class CmdBanIpTest extends TestBase {
     Mockito.verify(nullIpPlayer, NEVER).kickPlayer(Mockito.anyString());
   }
 
-
-  private void onCommand(String... args) {
-    String[] argsIncludingBaseCommand = new String[2 + args.length];
-    argsIncludingBaseCommand[0] = "ipbans";
-    argsIncludingBaseCommand[1] = "create";
-    System.arraycopy(args, 0, argsIncludingBaseCommand, 2, argsIncludingBaseCommand.length - 2);
-    new CmdMMC(config).onCommand(sender, argsIncludingBaseCommand);
-  }
 
   private void setMultipleOnlinePlayers() {
     // one player with the same ip address
@@ -675,5 +656,10 @@ public class CmdBanIpTest extends TestBase {
     Mockito.when(socketAddress.getAddress()).thenReturn(inetAddress);
     Mockito.when(inetAddress.getHostAddress()).thenReturn(address);
     Mockito.when(player.getAddress()).thenReturn(socketAddress);
+  }
+
+  private void onCommand(boolean noSyntaxError, String... args) {
+    CommandExecutorAsync cmd = new CmdBanIp(config);
+    Assert.assertEquals(noSyntaxError, cmd.onCommand(sender, command, "", args));
   }
 }

@@ -1,8 +1,6 @@
 package com.managemc.spigot.command.processor.tabcompletion;
 
 import com.managemc.spigot.command.util.CommandFlag;
-import com.managemc.spigot.command.util.ProcessedCommandArguments;
-import com.managemc.spigot.command.util.SimplifiedTabCompleter;
 import com.managemc.spigot.util.permissions.PermissibleAction;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -10,7 +8,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FlagsTabCompleter implements SimplifiedTabCompleter {
+public class FlagsTabCompleter {
 
   private final Map<String, Set<String>> incompatibilities = new HashMap<>();
   private final Map<String, PermissibleAction> permissionRequirements = new HashMap<>();
@@ -31,15 +29,28 @@ public class FlagsTabCompleter implements SimplifiedTabCompleter {
     return this;
   }
 
-  @Override
-  public List<String> onTabComplete(CommandSender sender, ProcessedCommandArguments args) {
-    List<CommandFlag> filteredFlags = args.getExpectedFlags().stream()
-        .filter((expectedFlag) -> !args.hasFlag(expectedFlag.getFlag()))
+  public List<String> onTabComplete(Collection<CommandFlag> flags, CommandSender sender, String[] args) {
+    Set<String> argsSet = Arrays.stream(args)
+        .map(arg -> {
+          String[] split = arg.split("=");
+          return split[0].equals(arg) ? arg : split[0] + "=";
+        })
+        .collect(Collectors.toSet());
+
+    Map<String, CommandFlag> flagsByLabel = flags.stream()
+        .collect(Collectors.toMap(CommandFlag::getFlag, f -> f));
+
+
+    List<CommandFlag> filteredFlags = flags.stream()
+        .filter((expectedFlag) -> !argsSet.contains(expectedFlag.toString()))
+        .filter((expectedFlag) -> !argsSet.contains(expectedFlag.aliasToString()))
         .filter((expectedFlag) -> Optional
             .ofNullable(incompatibilities.get(expectedFlag.getFlag()))
             .orElse(Collections.emptySet())
-            .stream().noneMatch(args::hasFlag))
-        .collect(Collectors.toList());
+            .stream().noneMatch(incompat -> {
+              CommandFlag flag = flagsByLabel.get(incompat);
+              return argsSet.contains(flag.toString()) || argsSet.contains(flag.aliasToString());
+            })).collect(Collectors.toList());
 
     if (sender instanceof Player) {
       filteredFlags = filteredFlags.stream()
@@ -50,11 +61,11 @@ public class FlagsTabCompleter implements SimplifiedTabCompleter {
           .collect(Collectors.toList());
     }
 
-    if (args.isFinishedTyping()) {
+    String lastArg = args[args.length - 1];
+
+    if (lastArg.equals("")) {
       return filteredFlags.stream().map(CommandFlag::toString).sorted().collect(Collectors.toList());
     }
-
-    String lastArg = args.lastArg();
 
     return filteredFlags.stream()
         .filter(flag -> flag.toString().startsWith(lastArg) || flag.aliasToString().startsWith(lastArg))
