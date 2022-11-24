@@ -10,6 +10,9 @@ import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.config.FlexibleLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
 import com.managemc.plugins.logging.BukkitLogging;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
@@ -43,9 +46,7 @@ public class ManageMCLinkerPlugin extends JavaPlugin {
 
       config.getApiPingService().ping();
 
-      Objects
-          .requireNonNull(getCommand("link"))
-          .setExecutor(new CmdLinkAccount(logger, config.getAccountLinkingService()));
+      registerCommand("link", new CmdLinkAccount(logger, config.getAccountLinkingService()));
     } catch (LocalConfig.IncompleteConfigException e) {
       logger.logInfo("Welcome to ManageMC! Please fill out the local config file at " + configFilePath + ".");
       logger.logInfo("Shutting down because local config is incomplete...");
@@ -59,5 +60,11 @@ public class ManageMCLinkerPlugin extends JavaPlugin {
       logger.logWarning("Shutting down due to an unexpected error...");
       bukkitWrapper.disable();
     }
+  }
+
+  private <T extends TabCompleter & CommandExecutor> void registerCommand(String cmd, T executor) {
+    PluginCommand command = Objects.requireNonNull(getCommand(cmd));
+    command.setExecutor(executor);
+    command.setTabCompleter(executor);
   }
 }
