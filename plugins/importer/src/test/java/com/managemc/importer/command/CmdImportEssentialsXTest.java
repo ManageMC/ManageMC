@@ -1,6 +1,5 @@
 package com.managemc.importer.command;
 
-import com.managemc.api.ApiException;
 import com.managemc.importer.TestWebClients;
 import com.managemc.importer.reader.model.VanillaBan;
 import com.managemc.importer.reader.model.VanillaIpBan;
@@ -88,7 +87,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
   }
 
   @Test
-  public void defaultExample()  {
+  public void defaultExample() {
     writeMuteToFile(expectedOffenderUuid, name, reason, before + expectedDuration);
 
     awaitAsyncCommand(this::onCommand);
@@ -96,7 +95,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
   }
 
   @Test
-  public void permanentMute()  {
+  public void permanentMute() {
     writeMuteToFile(expectedOffenderUuid, name, reason, 0);
     expectedDuration = null;
 
@@ -105,7 +104,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
   }
 
   @Test
-  public void noUsername()  {
+  public void noUsername() {
     writeMuteToFile(expectedOffenderUuid, null, reason, before + expectedDuration);
     expectedOffenderUsername = null;
 
@@ -114,7 +113,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
   }
 
   @Test
-  public void noReason()  {
+  public void noReason() {
     writeMuteToFile(expectedOffenderUuid, name, null, before + expectedDuration);
     expectedReason = null;
 
@@ -283,6 +282,6 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
     Mockito.when(config.getImporterService()).thenReturn(service);
     Mockito.when(config.getBukkitWrapper()).thenReturn(wrapper);
 
-    new CmdImport(logging, config).execute(sender, "nobodycares", new String[]{"essentials_x"});
+    new CmdImport(logging, config).onCommand(sender, command, "", new String[]{"essentials_x"});
   }
 }

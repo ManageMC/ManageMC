@@ -2,7 +2,7 @@ package com.managemc.importer;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
-import com.managemc.importer.command.base.CommandBaseAsync;
+import com.managemc.plugins.command.CommandExecutorAsync;
 import org.junit.Before;
 
 import java.util.concurrent.TimeUnit;
@@ -24,13 +24,13 @@ public abstract class TestsWithServiceClient {
   }
 
   protected void awaitAsyncCommand(VoidFunctionPossiblyThrowingException function) {
-    long completedRequests = CommandBaseAsync.COMPLETED_ASYNC_COMMANDS.get();
+    long completedRequests = CommandExecutorAsync.COMPLETED_COMMANDS.get();
     try {
       function.apply();
     } catch (Exception e) {
       e.printStackTrace();
     }
-    await().atMost(10, TimeUnit.SECONDS).until(() -> CommandBaseAsync.COMPLETED_ASYNC_COMMANDS.get() > completedRequests);
+    await().atMost(10, TimeUnit.SECONDS).until(() -> CommandExecutorAsync.COMPLETED_COMMANDS.get() > completedRequests);
   }
 
   @FunctionalInterface

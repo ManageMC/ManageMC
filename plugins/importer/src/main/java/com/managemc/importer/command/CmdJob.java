@@ -1,32 +1,24 @@
 package com.managemc.importer.command;
 
-import com.managemc.importer.command.base.CommandAssertions;
-import com.managemc.importer.command.base.CommandBaseSync;
-import com.managemc.importer.command.base.CommandBuilder;
+import com.managemc.importer.command.util.CommandAssertions;
 import com.managemc.importer.service.JobStatusService;
+import com.managemc.plugins.command.CommandExecutorSync;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.command.CommandSender;
 
-public class CmdJob extends CommandBaseSync {
+import java.util.List;
 
-  static final String USAGE = "/job <action (one of LIST, STATUS)> [job id for STATUS only]";
-  static final String DESCRIPTION = "List all punishment import jobs or get the status of a job.";
-
-  private static final CommandBuilder COMMAND_BUILDER = CommandBuilder.builder()
-      .description(DESCRIPTION)
-      .name("job")
-      .usage(USAGE)
-      .build();
+public class CmdJob extends CommandExecutorSync {
 
   private final JobStatusService jobStatusService;
 
   public CmdJob(BukkitLogging logging, JobStatusService jobStatusService) {
-    super(COMMAND_BUILDER, logging);
+    super(logging);
     this.jobStatusService = jobStatusService;
   }
 
   @Override
-  public void onCommand(CommandSender sender, String[] args) {
+  protected void onCommand(CommandSender sender, String[] args) {
     CommandAssertions.assertArgsLengthAtLeast(args, 1);
     Action action = CommandAssertions.assertOneOf(args[0], Action.class);
 
@@ -43,6 +35,12 @@ public class CmdJob extends CommandBaseSync {
       default:
         throw new RuntimeException("Unexpected action " + action);
     }
+  }
+
+  @Override
+  protected List<String> onTabComplete(CommandSender sender, String[] args) {
+    // TODO
+    return null;
   }
 
   private enum Action {

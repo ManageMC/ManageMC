@@ -16,6 +16,7 @@ import com.managemc.importer.service.PunishmentImporterService;
 import com.managemc.importer.translation.VanillaTypeTranslator;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.apache.commons.io.FileUtils;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.junit.After;
 import org.junit.Before;
@@ -65,6 +66,8 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
   protected OnboardingApiService onboardingApiService;
   @Mock
   protected CommandSender sender;
+  @Mock
+  protected Command command;
   @Mock
   protected ImportJobTracker jobTracker;
 
@@ -490,6 +493,6 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
 
     Mockito.when(config.getImporterService()).thenReturn(service);
 
-    new CmdImport(logging, config).execute(sender, "nobodycares", new String[]{"vanilla"});
+    new CmdImport(logging, config).onCommand(sender, command, "", new String[]{"vanilla"});
   }
 }

@@ -1,46 +1,49 @@
 package com.managemc.importer.command;
 
-import com.managemc.importer.command.base.CommandAssertions;
+import com.managemc.importer.command.util.CommandAssertions;
 import com.managemc.importer.config.ManageMCImportPluginConfig;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class CmdImportTest {
 
-  private static final String USAGE_MESSAGE = ChatColor.RED + "Usage: " + CmdImport.USAGE;
-
+  @Mock
   private CommandSender sender;
-
-  @Before
-  public void setup() {
-    sender = Mockito.mock(CommandSender.class);
-  }
+  @Mock
+  private Command command;
 
   @Test
   public void noArgs() {
-    onCommand();
+    boolean result = onCommand();
+
+    Assert.assertFalse(result);
     Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.WRONG_NUM_ARGS);
-    Mockito.verify(sender).sendMessage(USAGE_MESSAGE);
-    Mockito.verify(sender, Mockito.times(2)).sendMessage((String) ArgumentMatchers.any());
+    Mockito.verify(sender, Mockito.times(1)).sendMessage((String) ArgumentMatchers.any());
   }
 
   @Test
   public void invalidImportType() {
-    onCommand("oops");
+    boolean result = onCommand("oops");
+
+    Assert.assertFalse(result);
     Mockito.verify(sender).sendMessage(ChatColor.RED +
         "Invalid argument 'oops'. Must be one of: [VANILLA, ADVANCED_BAN, MAX_BANS_PLUS, ESSENTIALS_X]");
-    Mockito.verify(sender).sendMessage(USAGE_MESSAGE);
-    Mockito.verify(sender, Mockito.times(2)).sendMessage((String) ArgumentMatchers.any());
+    Mockito.verify(sender, Mockito.times(1)).sendMessage((String) ArgumentMatchers.any());
   }
 
 
-  private void onCommand(String... args) {
-    new CmdImport(Mockito.mock(BukkitLogging.class), Mockito.mock(ManageMCImportPluginConfig.class))
-        .execute(sender, "nobodycares", args);
+  private boolean onCommand(String... args) {
+    return new CmdImport(Mockito.mock(BukkitLogging.class), Mockito.mock(ManageMCImportPluginConfig.class))
+        .onCommand(sender, command, "", args);
   }
 }

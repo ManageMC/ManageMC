@@ -4,19 +4,18 @@ import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.refresher.TokenRefresher;
 import com.managemc.importer.command.CmdImport;
 import com.managemc.importer.command.CmdJob;
-import com.managemc.importer.command.base.CommandBase;
 import com.managemc.importer.config.LocalConfig;
 import com.managemc.importer.config.ManageMCImportPluginConfig;
 import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.config.FlexibleLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
 import com.managemc.plugins.logging.BukkitLogging;
-import lombok.SneakyThrows;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandMap;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.lang.reflect.Field;
+import java.util.Objects;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
@@ -46,8 +45,8 @@ public class ManageMCImporterPlugin extends JavaPlugin {
       LocalConfig localConfig = new LocalConfig(configLoader.load());
       ManageMCImportPluginConfig config = new ManageMCImportPluginConfig(bukkitWrapper, logger, localConfig);
 
-      registerCommand(new CmdImport(logger, config));
-      registerCommand(new CmdJob(logger, config.getJobStatusService()));
+      registerCommand("import", new CmdImport(logger, config));
+      registerCommand("job", new CmdJob(logger, config.getJobStatusService()));
 
       config.getClientProvider().externalApplication().getPingApi().ping();
     } catch (LocalConfig.IncompleteConfigException e) {
@@ -65,11 +64,9 @@ public class ManageMCImporterPlugin extends JavaPlugin {
     }
   }
 
-  @SneakyThrows
-  private void registerCommand(CommandBase command) {
-    final Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-    bukkitCommandMap.setAccessible(true);
-    CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
-    commandMap.register(PLUGIN_NAME, command);
+  private <T extends TabCompleter & CommandExecutor> void registerCommand(String cmd, T executor) {
+    PluginCommand command = Objects.requireNonNull(getCommand(cmd));
+    command.setExecutor(executor);
+    command.setTabCompleter(executor);
   }
 }

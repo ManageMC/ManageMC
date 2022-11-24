@@ -1,4 +1,6 @@
-package com.managemc.importer.command.base;
+package com.managemc.importer.command.util;
+
+import com.managemc.plugins.command.AbortCommand;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,11 +12,14 @@ public class CommandAssertions {
 
   public static void assertTrue(boolean expression, String errorMessage, boolean syntactic) {
     if (!expression) {
-      throw new CommandValidationException(errorMessage, syntactic);
+      if (syntactic) {
+        throw AbortCommand.withUsageMessage(errorMessage);
+      }
+      throw AbortCommand.withoutUsageMessage(errorMessage);
     }
   }
 
-  public static void assertArgsLength(String[] args, int length) throws CommandValidationException {
+  public static void assertArgsLength(String[] args, int length) {
     assertTrue(args.length == length, WRONG_NUM_ARGS, true);
   }
 
@@ -30,7 +35,7 @@ public class CommandAssertions {
       }
     } catch (NumberFormatException ignored) {
     }
-    throw new CommandValidationException("Invalid integer " + argument, true);
+    throw AbortCommand.withUsageMessage("Invalid integer " + argument);
   }
 
   public static <T extends Enum<T>> T assertOneOf(String argument, Class<T> clazz) {
@@ -45,6 +50,6 @@ public class CommandAssertions {
     }
 
     String message = "Invalid argument '" + argument + "'. Must be one of: " + values;
-    throw new CommandValidationException(message, true);
+    throw AbortCommand.withUsageMessage(message);
   }
 }

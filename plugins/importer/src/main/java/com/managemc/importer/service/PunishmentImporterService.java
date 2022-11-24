@@ -1,6 +1,5 @@
 package com.managemc.importer.service;
 
-import com.managemc.importer.command.base.CommandBaseAsync;
 import com.managemc.importer.data.ImportJobTracker;
 import com.managemc.importer.data.cache.*;
 import com.managemc.importer.reader.*;
@@ -168,8 +167,6 @@ public class PunishmentImporterService {
     } catch (Exception e) {
       logging.logStackTrace(e);
       sender.sendMessage(IMPORT_FAILED_MESSAGE);
-    } finally {
-      CommandBaseAsync.COMPLETED_ASYNC_COMMANDS.addAndGet(1);
     }
   }
 }

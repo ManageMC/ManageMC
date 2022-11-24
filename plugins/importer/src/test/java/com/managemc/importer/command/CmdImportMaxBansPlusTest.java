@@ -13,6 +13,7 @@ import com.managemc.plugins.logging.BukkitLogging;
 import lombok.Builder;
 import lombok.Getter;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +43,8 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
   private ManageMCImportPluginConfig config;
   @Mock
   private CommandSender sender;
+  @Mock
+  private Command command;
   @Mock
   private MaxBansPlusDb db;
   @Mock
@@ -591,7 +594,7 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
     Mockito.when(config.getImporterService()).thenReturn(service);
     Mockito.when(config.getMaxBansMainClass()).thenReturn(maxBansMainClass);
 
-    new CmdImport(logging, config).execute(sender, "nobodycares", args);
+    new CmdImport(logging, config).onCommand(sender, command, "", args);
   }
 
   @Builder

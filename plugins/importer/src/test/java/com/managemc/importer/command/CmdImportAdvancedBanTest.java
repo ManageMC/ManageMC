@@ -14,6 +14,7 @@ import lombok.Getter;
 import me.leoko.advancedban.utils.Punishment;
 import me.leoko.advancedban.utils.PunishmentType;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,6 +60,8 @@ public class CmdImportAdvancedBanTest extends TestsWithServiceClient {
   private OnboardingApiService onboardingApiService;
   @Mock
   private CommandSender sender;
+  @Mock
+  private Command command;
   @Mock
   private AdvancedBanDb db;
   @Mock
@@ -684,7 +687,7 @@ public class CmdImportAdvancedBanTest extends TestsWithServiceClient {
     Mockito.when(config.getImporterService()).thenReturn(service);
     Mockito.when(config.getAdvancedBanMainClass()).thenReturn(advancedBanMainClass);
 
-    new CmdImport(logging, config).execute(sender, "nobodycares", args);
+    new CmdImport(logging, config).onCommand(sender, command, "", args);
   }
 
   private static class MockPunishment extends Punishment {
