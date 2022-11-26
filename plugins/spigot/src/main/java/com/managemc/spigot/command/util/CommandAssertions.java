@@ -40,20 +40,22 @@ public class CommandAssertions {
     assertTrue(args.length >= atLeast, WRONG_NUM_ARGS, true);
   }
 
-  public static void assertValidUsername(String username) {
+  public static String assertValidUsername(String username) {
     assertTrue(username.matches(RegexConstants.USERNAME_REGEX), "Invalid username " + username, true);
+    return username;
   }
 
-  public static void assertValidIpAddress(String ipAddress) {
+  public static String assertValidIpAddress(String ipAddress) {
     assertTrue(IP_V4_VALIDATOR.isValid(ipAddress), "Invalid IPv4 address " + ipAddress, true);
+    return ipAddress;
   }
 
-  public static void assertValidIpOrIpRange(String ipAddressOrRange) {
+  public static String assertValidIpOrIpRange(String ipAddressOrRange) {
     if (ipAddressOrRange.contains("-")) {
       assertTrue(RANGE_IP_VALIDATOR.isValid(ipAddressOrRange), "Invalid IP address range " + ipAddressOrRange, true);
-    } else {
-      assertValidIpAddress(ipAddressOrRange);
+      return ipAddressOrRange;
     }
+    return assertValidIpAddress(ipAddressOrRange);
   }
 
   public static Player assertPlayerSender(CommandSender sender) {
