@@ -1,6 +1,7 @@
 package com.managemc.spigot.command.processor;
 
 import com.managemc.plugins.command.CommandExecutorAsync;
+import com.managemc.spigot.command.processor.tabcompletion.OnlinePlayersTabCompleter;
 import com.managemc.spigot.command.util.CommandAssertions;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import com.managemc.spigot.util.chat.formatter.WatchlistFormatter;
@@ -11,15 +12,16 @@ import org.openapitools.client.model.PlayerWatchList;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class CmdWatch extends CommandExecutorAsync {
 
   private final SpigotPluginConfig config;
+  private final OnlinePlayersTabCompleter tabCompleter;
 
   public CmdWatch(SpigotPluginConfig config) {
     super(config.getLogging());
     this.config = config;
+    this.tabCompleter = new OnlinePlayersTabCompleter(config.getBukkitWrapper());
   }
 
   private Player playerSender;
@@ -42,21 +44,6 @@ public class CmdWatch extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    switch (args.length) {
-      case 0:
-        return getMatchingOnlinePlayers("");
-      case 1:
-        return getMatchingOnlinePlayers(args[0]);
-      default:
-        return null;
-    }
-  }
-
-  private List<String> getMatchingOnlinePlayers(String lastArg) {
-    return config.getBukkitWrapper().getOnlinePlayers().stream()
-        .map(Player::getName)
-        .filter(name -> name.toLowerCase().startsWith(lastArg.toLowerCase()))
-        .sorted()
-        .collect(Collectors.toList());
+    return tabCompleter.onTabComplete(args);
   }
 }

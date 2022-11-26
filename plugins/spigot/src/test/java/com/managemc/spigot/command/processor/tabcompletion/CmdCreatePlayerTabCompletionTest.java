@@ -2,13 +2,11 @@ package com.managemc.spigot.command.processor.tabcompletion;
 
 import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.processor.CmdCreatePlayer;
-import com.managemc.spigot.testutil.TestBase;
+import com.managemc.spigot.command.processor.tabcompletion.util.TabCompletionTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
-
-public class CmdCreatePlayerTabCompletionTest extends TestBase {
+public class CmdCreatePlayerTabCompletionTest extends TabCompletionTest {
 
   @Test
   public void tabCompletion() {
@@ -17,9 +15,8 @@ public class CmdCreatePlayerTabCompletionTest extends TestBase {
     Assert.assertEquals("[]", tabComplete("players", "create", "as"));
   }
 
-  private String tabComplete(String... args) {
-    CommandExecutorAsync cmd = new CmdCreatePlayer(config);
-    List<String> completions = cmd.onTabComplete(sender, command, "", args);
-    return "[" + String.join(", ", completions) + "]";
+  @Override
+  protected CommandExecutorAsync newCommandExecutor() {
+    return new CmdCreatePlayer(config);
   }
 }

@@ -2,18 +2,17 @@ package com.managemc.spigot.command.processor;
 
 import com.managemc.api.ApiException;
 import com.managemc.plugins.command.CommandExecutorAsync;
+import com.managemc.spigot.command.processor.tabcompletion.OnlinePlayersTabCompleter;
 import com.managemc.spigot.command.util.CommandAssertions;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import com.managemc.spigot.util.chat.PluginMessageFormatter;
 import com.managemc.spigot.util.chat.formatter.PlayerPunishmentFormatter;
 import com.managemc.spigot.util.permissions.PermissibleAction;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.openapitools.client.model.PlayerPunishment;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class CmdHistory extends CommandExecutorAsync {
 
@@ -21,10 +20,12 @@ public class CmdHistory extends CommandExecutorAsync {
       .header("No punishments found for %s").toString();
 
   private final SpigotPluginConfig config;
+  private final OnlinePlayersTabCompleter tabCompleter;
 
   public CmdHistory(SpigotPluginConfig config) {
     super(config.getLogging());
     this.config = config;
+    this.tabCompleter = new OnlinePlayersTabCompleter(config.getBukkitWrapper());
   }
 
   private String username;
@@ -52,14 +53,7 @@ public class CmdHistory extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    switch (args.length) {
-      case 0:
-        return getMatchingOnlinePlayers("");
-      case 1:
-        return getMatchingOnlinePlayers(args[0]);
-      default:
-        return null;
-    }
+    return tabCompleter.onTabComplete(args);
   }
 
   private void printPunishments(
@@ -80,13 +74,5 @@ public class CmdHistory extends CommandExecutorAsync {
       message.append(punishment).append("\n");
     });
     sender.sendMessage(message.toString());
-  }
-
-  private List<String> getMatchingOnlinePlayers(String lastArg) {
-    return config.getBukkitWrapper().getOnlinePlayers().stream()
-        .map(Player::getName)
-        .filter(name -> name.toLowerCase().contains(lastArg.toLowerCase()))
-        .sorted()
-        .collect(Collectors.toList());
   }
 }

@@ -1,8 +1,10 @@
 package com.managemc.spigot.command.processor;
 
 import com.managemc.plugins.command.CommandExecutorAsync;
+import com.managemc.spigot.command.processor.tabcompletion.OnlinePlayersTabCompleter;
 import com.managemc.spigot.command.util.CommandArgumentPreprocessor;
 import com.managemc.spigot.command.util.CommandAssertions;
+import com.managemc.spigot.command.util.MultiWordArguments;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import com.managemc.spigot.util.KickMessages;
 import com.managemc.spigot.util.chat.formatter.WarningSuccessFormatter;
@@ -11,18 +13,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.openapitools.client.model.Warning;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class CmdWarn extends CommandExecutorAsync {
 
   private final SpigotPluginConfig config;
+  private final OnlinePlayersTabCompleter tabCompleter;
 
   public CmdWarn(SpigotPluginConfig config) {
     super(config.getLogging());
     this.config = config;
+    this.tabCompleter = new OnlinePlayersTabCompleter(config.getBukkitWrapper());
   }
 
   private String username;
@@ -37,7 +39,7 @@ public class CmdWarn extends CommandExecutorAsync {
     String[] processedArgs = CommandArgumentPreprocessor.processDoubleQuotes(args);
 
     reason = processedArgs.length > 1 ? processedArgs[1] : null;
-    details = determineDetails(processedArgs);
+    details = MultiWordArguments.startingAtIndex(args, 1);
 
     Player onlineOffender = config.getBukkitWrapper().getOnlinePlayer(args[0]);
 
@@ -61,37 +63,6 @@ public class CmdWarn extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    switch (args.length) {
-      case 0:
-        return getMatchingOnlinePlayers("");
-      case 1:
-        return getMatchingOnlinePlayers(args[0]);
-      default:
-        return null;
-    }
-  }
-
-  private String determineDetails(String[] args) {
-    if (args.length < 2) {
-      return null;
-    }
-
-    String details = Arrays
-        .stream(args, 2, args.length)
-        .collect(Collectors.joining(" "));
-
-    if (details.length() == 0) {
-      return null;
-    }
-
-    return details;
-  }
-
-  private List<String> getMatchingOnlinePlayers(String lastArg) {
-    return config.getBukkitWrapper().getOnlinePlayers().stream()
-        .map(Player::getName)
-        .filter(name -> name.toLowerCase().startsWith(lastArg.toLowerCase()))
-        .sorted()
-        .collect(Collectors.toList());
+    return tabCompleter.onTabComplete(args);
   }
 }

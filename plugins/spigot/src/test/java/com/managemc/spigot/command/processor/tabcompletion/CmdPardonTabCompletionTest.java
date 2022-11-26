@@ -2,14 +2,12 @@ package com.managemc.spigot.command.processor.tabcompletion;
 
 import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.processor.CmdPardon;
-import com.managemc.spigot.testutil.TestBase;
+import com.managemc.spigot.command.processor.tabcompletion.util.TabCompletionTest;
 import com.managemc.spigot.util.permissions.Permission;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
-
-public class CmdPardonTabCompletionTest extends TestBase {
+public class CmdPardonTabCompletionTest extends TabCompletionTest {
 
   @Test
   public void noArgs() {
@@ -215,9 +213,8 @@ public class CmdPardonTabCompletionTest extends TestBase {
   }
 
 
-  private String tabComplete(String... args) {
-    CommandExecutorAsync cmd = new CmdPardon(config);
-    List<String> completions = cmd.onTabComplete(sender, command, "", args);
-    return "[" + String.join(", ", completions) + "]";
+  @Override
+  protected CommandExecutorAsync newCommandExecutor() {
+    return new CmdPardon(config);
   }
 }

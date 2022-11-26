@@ -1,16 +1,16 @@
 package com.managemc.spigot.command.processor;
 
 import com.managemc.plugins.command.CommandExecutorAsync;
+import com.managemc.spigot.command.processor.tabcompletion.OnlinePlayersTabCompleter;
 import com.managemc.spigot.command.util.CommandAssertions;
+import com.managemc.spigot.command.util.MultiWordArguments;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class CmdReport extends CommandExecutorAsync {
 
@@ -21,10 +21,12 @@ public class CmdReport extends CommandExecutorAsync {
       "the player is still online and while you are recording them.";
 
   private final SpigotPluginConfig config;
+  private final OnlinePlayersTabCompleter tabCompleter;
 
   public CmdReport(SpigotPluginConfig config) {
     super(config.getLogging());
     this.config = config;
+    this.tabCompleter = new OnlinePlayersTabCompleter(config.getBukkitWrapper());
   }
 
   private Player playerSender;
@@ -37,7 +39,7 @@ public class CmdReport extends CommandExecutorAsync {
     CommandAssertions.assertArgsLengthAtLeast(args, 1);
     CommandAssertions.assertTrue(!sender.getName().equalsIgnoreCase(args[0]), NO_SELF_REPORTS, false);
     username = CommandAssertions.assertValidUsername(args[0]);
-    reason = determineReason(args);
+    reason = MultiWordArguments.startingAtIndex(args, 1);
   }
 
   @Override
@@ -56,37 +58,6 @@ public class CmdReport extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    switch (args.length) {
-      case 0:
-        return getMatchingOnlinePlayers("");
-      case 1:
-        return getMatchingOnlinePlayers(args[0]);
-      default:
-        return null;
-    }
-  }
-
-  private String determineReason(String[] args) {
-    if (args.length < 2) {
-      return null;
-    }
-
-    String reason = Arrays
-        .stream(args, 1, args.length)
-        .collect(Collectors.joining(" "));
-
-    if (reason.length() == 0) {
-      return null;
-    }
-
-    return reason;
-  }
-
-  private List<String> getMatchingOnlinePlayers(String lastArg) {
-    return config.getBukkitWrapper().getOnlinePlayers().stream()
-        .map(Player::getName)
-        .filter(name -> name.toLowerCase().startsWith(lastArg.toLowerCase()))
-        .sorted()
-        .collect(Collectors.toList());
+    return tabCompleter.onTabComplete(args);
   }
 }
