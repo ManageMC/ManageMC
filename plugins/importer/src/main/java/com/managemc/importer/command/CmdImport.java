@@ -8,7 +8,9 @@ import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.command.CommandSender;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CmdImport extends CommandExecutorAsync {
 
@@ -64,8 +66,14 @@ public class CmdImport extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    // TODO
-    return null;
+    switch (args.length) {
+      case 0:
+        return matchingSources("");
+      case 1:
+        return matchingSources(args[0]);
+      default:
+        return null;
+    }
   }
 
   private void validateSoftDependencies(PunishmentSource source) {
@@ -111,6 +119,16 @@ public class CmdImport extends CommandExecutorAsync {
       );
       throw AbortCommand.withoutUsageMessage(message);
     }
+  }
+
+  private List<String> matchingSources(String lastArg) {
+    String lastArgLower = lastArg.toLowerCase();
+
+    return Arrays.stream(PunishmentSource.values())
+        .map(Object::toString)
+        .filter(v -> v.toLowerCase().startsWith(lastArgLower))
+        .sorted()
+        .collect(Collectors.toList());
   }
 
   public enum PunishmentSource {
