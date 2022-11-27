@@ -142,7 +142,7 @@ public abstract class PlayerPunishmentTabCompleterTest extends TabCompletionTest
   @Test
   public void playerSender_withNoPermissions() {
     stubPlayerSenderWithPermissions();
-    Assert.assertEquals("[]", tabComplete("--"));
+    Assert.assertEquals("[]", tabComplete("asd", "--"));
   }
 
   @Test

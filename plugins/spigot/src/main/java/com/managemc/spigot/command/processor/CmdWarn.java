@@ -63,6 +63,9 @@ public class CmdWarn extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    return tabCompleter.onTabComplete(args);
+    if (PermissibleAction.WARN_PLAYER.isAllowed(sender)) {
+      return tabCompleter.onTabComplete(args);
+    }
+    return null;
   }
 }

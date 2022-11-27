@@ -73,6 +73,9 @@ public class CmdBan extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    return tabCompleter.onTabComplete(sender, args);
+    if (PermissibleAction.BAN_PLAYER.isAllowed(sender)) {
+      return tabCompleter.onTabComplete(sender, args);
+    }
+    return null;
   }
 }

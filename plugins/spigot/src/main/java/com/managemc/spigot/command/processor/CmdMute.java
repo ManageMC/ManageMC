@@ -65,6 +65,9 @@ public class CmdMute extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    return tabCompleter.onTabComplete(sender, args);
+    if (PermissibleAction.MUTE_PLAYER.isAllowed(sender)) {
+      return tabCompleter.onTabComplete(sender, args);
+    }
+    return null;
   }
 }

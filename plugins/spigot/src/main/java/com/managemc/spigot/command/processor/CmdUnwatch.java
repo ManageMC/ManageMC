@@ -44,6 +44,9 @@ public class CmdUnwatch extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    return tabCompleter.onTabComplete(args);
+    if (PermissibleAction.MANAGE_WATCHLIST.isAllowed(sender)) {
+      return tabCompleter.onTabComplete(args);
+    }
+    return null;
   }
 }

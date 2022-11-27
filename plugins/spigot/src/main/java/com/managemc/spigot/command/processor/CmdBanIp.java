@@ -83,7 +83,10 @@ public class CmdBanIp extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    return tabCompleter.onTabComplete(sender, args);
+    if (PermissibleAction.IP_BAN_PLAYER.isAllowed(sender)) {
+      return tabCompleter.onTabComplete(sender, args);
+    }
+    return null;
   }
 
   private String determineIpAddress(String firstArg) {

@@ -53,7 +53,10 @@ public class CmdHistory extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    return tabCompleter.onTabComplete(args);
+    if (PermissibleAction.FETCH_PUNISHMENT_HISTORY.isAllowed(sender)) {
+      return tabCompleter.onTabComplete(args);
+    }
+    return null;
   }
 
   private void printPunishments(
