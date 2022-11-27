@@ -3,6 +3,7 @@ package com.managemc.spigot.command.processor;
 import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.spigot.command.util.CommandAssertions;
 import com.managemc.spigot.testutil.TestBase;
+import com.managemc.spigot.testutil.TestConstants;
 import com.managemc.spigot.util.chat.formatter.WatchlistFormatter;
 import com.managemc.spigot.util.permissions.Permission;
 import org.bukkit.command.CommandSender;
@@ -38,6 +39,15 @@ public class CmdWatchlistTest extends TestBase {
     stubPlayerSenderWithPermissions(PHYLLIS_UUID, Permission.BAN_WEB);
     onCommand(true);
     expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
+  }
+
+  @Test
+  public void playerSender_noPermsServerSide() {
+    stubPlayerSenderWithPermissions(TestConstants.PHYLLIS_UUID, Permission.ADMIN);
+    awaitAsyncCommand(() -> onCommand(true));
+
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
+    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
   }
 
   @Test

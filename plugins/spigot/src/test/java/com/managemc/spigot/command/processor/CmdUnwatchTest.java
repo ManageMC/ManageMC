@@ -5,6 +5,7 @@ import com.managemc.spigot.command.util.CommandAssertions;
 import com.managemc.spigot.command.util.punishments.model.ResolvedPlayer;
 import com.managemc.spigot.service.WatchlistService;
 import com.managemc.spigot.testutil.TestBase;
+import com.managemc.spigot.testutil.TestConstants;
 import com.managemc.spigot.util.permissions.Permission;
 import org.bukkit.command.CommandSender;
 import org.junit.Assert;
@@ -84,6 +85,16 @@ public class CmdUnwatchTest extends TestBase {
     Assert.assertTrue(sentMessage.contains("Personal Watch List"));
     Assert.assertTrue(sentMessage.contains("Online:"));
     Assert.assertFalse(sentMessage.contains(PHYLLIS_USERNAME));
+  }
+
+  @Test
+  public void playerSender_noPermsServerSide() {
+    stubResolvedPlayer(PLS_USERNAME, PLS_UUID, ResolvedPlayer.Status.ONLINE_RECENTLY);
+    stubPlayerSenderWithPermissions(TestConstants.PHYLLIS_UUID, Permission.ADMIN);
+    awaitAsyncCommand(() -> onCommand(true, PLS_USERNAME));
+
+    expectAbort(CommandAssertions.NO_PERMS_MESSAGE);
+    Mockito.verify(config.getLogging(), NEVER).logStackTrace(Mockito.any());
   }
 
 
