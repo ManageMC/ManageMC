@@ -5,6 +5,7 @@ import com.managemc.importer.service.JobStatusService;
 import com.managemc.plugins.command.CommandExecutorSync;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ public class CmdJob extends CommandExecutorSync {
 
   @Override
   protected void onCommand(CommandSender sender, String[] args) {
+    CommandAssertions.assertConsoleSender(sender);
     CommandAssertions.assertArgsLengthAtLeast(args, 1);
     Action action = CommandAssertions.assertOneOf(args[0], Action.class);
 
@@ -41,14 +43,16 @@ public class CmdJob extends CommandExecutorSync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    switch (args.length) {
-      case 0:
-        return matchingActions("");
-      case 1:
-        return matchingActions(args[0]);
-      default:
-        return null;
+    if (sender instanceof ConsoleCommandSender) {
+      switch (args.length) {
+        case 0:
+          return matchingActions("");
+        case 1:
+          return matchingActions(args[0]);
+      }
     }
+
+    return null;
   }
 
   private List<String> matchingActions(String lastArg) {

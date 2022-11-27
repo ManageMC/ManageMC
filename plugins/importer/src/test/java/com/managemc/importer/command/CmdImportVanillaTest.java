@@ -17,7 +17,7 @@ import com.managemc.importer.translation.VanillaTypeTranslator;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +65,7 @@ public class CmdImportVanillaTest extends TestsWithServiceClient {
   @Mock
   protected OnboardingApiService onboardingApiService;
   @Mock
-  protected CommandSender sender;
+  protected ConsoleCommandSender sender;
   @Mock
   protected Command command;
   @Mock

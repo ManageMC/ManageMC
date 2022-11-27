@@ -5,10 +5,14 @@ import com.managemc.importer.config.ManageMCImportPluginConfig;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
@@ -21,9 +25,14 @@ public class CmdImportTabCompletionTest {
   @Mock
   private ManageMCImportPluginConfig config;
   @Mock
-  private CommandSender sender;
-  @Mock
   private Command command;
+
+  private CommandSender sender;
+
+  @Before
+  public void setup() {
+    sender = Mockito.mock(ConsoleCommandSender.class);
+  }
 
   @Test
   public void noArgs() {
@@ -38,6 +47,13 @@ public class CmdImportTabCompletionTest {
   @Test
   public void match() {
     Assert.assertEquals("[VANILLA]", tabComplete("va"));
+  }
+
+  @Test
+  public void playerSender() {
+    sender = Mockito.mock(Player.class);
+
+    Assert.assertEquals("[]", tabComplete("va"));
   }
 
   private String tabComplete(String... args) {

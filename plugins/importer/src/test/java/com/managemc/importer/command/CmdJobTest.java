@@ -8,6 +8,8 @@ import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +26,6 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class CmdJobTest {
 
-  @Mock
   private CommandSender sender;
   @Mock
   private Command command;
@@ -34,6 +35,7 @@ public class CmdJobTest {
 
   @Before
   public void setup() {
+    sender = Mockito.mock(ConsoleCommandSender.class);
     importJobTracker = new ImportJobTracker();
     jobStatusService = new JobStatusService(importJobTracker);
   }
@@ -54,6 +56,15 @@ public class CmdJobTest {
     Assert.assertFalse(result);
     verify(sender).sendMessage(ChatColor.RED + "Invalid argument 'covfefe'. Must be one of: [LIST, STATUS]");
     verify(sender, times(1)).sendMessage((String) any());
+  }
+
+  @Test
+  public void playerSender() {
+    sender = Mockito.mock(Player.class);
+    Assert.assertTrue(onCommand());
+
+    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.CONSOLE_SENDER_ONLY);
+    Mockito.verify(sender, Mockito.times(1)).sendMessage(Mockito.anyString());
   }
 
   @Test

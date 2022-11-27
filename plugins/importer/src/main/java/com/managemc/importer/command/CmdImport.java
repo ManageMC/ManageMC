@@ -6,6 +6,7 @@ import com.managemc.plugins.command.AbortCommand;
 import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.io.File;
 import java.util.Arrays;
@@ -38,6 +39,7 @@ public class CmdImport extends CommandExecutorAsync {
 
   @Override
   protected void preProcessCommand(CommandSender sender, String[] args) {
+    CommandAssertions.assertConsoleSender(sender);
     CommandAssertions.assertArgsLength(args, 1);
     source = CommandAssertions.assertOneOf(args[0], PunishmentSource.class);
     validateSoftDependencies(source);
@@ -66,14 +68,16 @@ public class CmdImport extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    switch (args.length) {
-      case 0:
-        return matchingSources("");
-      case 1:
-        return matchingSources(args[0]);
-      default:
-        return null;
+    if (sender instanceof ConsoleCommandSender) {
+      switch (args.length) {
+        case 0:
+          return matchingSources("");
+        case 1:
+          return matchingSources(args[0]);
+      }
     }
+
+    return null;
   }
 
   private void validateSoftDependencies(PunishmentSource source) {

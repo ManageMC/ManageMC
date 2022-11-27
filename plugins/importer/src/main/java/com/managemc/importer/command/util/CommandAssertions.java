@@ -1,6 +1,8 @@
 package com.managemc.importer.command.util;
 
 import com.managemc.plugins.command.AbortCommand;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,7 +10,14 @@ import java.util.stream.Collectors;
 
 public class CommandAssertions {
 
+  public static final String CONSOLE_SENDER_ONLY = "This command must be run from the console";
   public static String WRONG_NUM_ARGS = "Wrong number of arguments";
+
+  public static void assertConsoleSender(CommandSender sender) {
+    if (!(sender instanceof ConsoleCommandSender)) {
+      throw AbortCommand.withoutUsageMessage(CONSOLE_SENDER_ONLY);
+    }
+  }
 
   public static void assertTrue(boolean expression, String errorMessage, boolean syntactic) {
     if (!expression) {
