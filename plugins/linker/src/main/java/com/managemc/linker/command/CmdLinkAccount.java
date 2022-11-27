@@ -1,52 +1,50 @@
 package com.managemc.linker.command;
 
 import com.managemc.linker.service.AccountLinkingService;
+import com.managemc.plugins.command.AbortCommand;
+import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.plugins.logging.BukkitLogging;
-import lombok.NonNull;
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class CmdLinkAccount implements CommandExecutor {
+import java.util.List;
 
-  public static final String WRONG_NUM_ARGS = ChatColor.RED + "Wrong number of arguments";
-  public static final String WRONG_CMD_MEDIUM = ChatColor.RED + "Only players have a use for this command";
+public class CmdLinkAccount extends CommandExecutorAsync {
 
-  private final BukkitLogging logger;
+  public static final String WRONG_NUM_ARGS = "Wrong number of arguments";
+  public static final String WRONG_CMD_MEDIUM = "Only players have a use for this command";
+
   private final AccountLinkingService accountLinkingService;
 
   public CmdLinkAccount(BukkitLogging logger, AccountLinkingService accountLinkingService) {
-    this.logger = logger;
+    super(logger);
     this.accountLinkingService = accountLinkingService;
   }
 
+  private String token;
+  private Player playerSender;
+
   @Override
-  public boolean onCommand(
-      @NonNull CommandSender sender,
-      @NonNull Command command,
-      @NonNull String label,
-      String @NonNull [] args
-  ) {
-    try {
-      if (!(sender instanceof Player)) {
-        sender.sendMessage(WRONG_CMD_MEDIUM);
-        return true;
-      }
-
-      if (args.length != 1) {
-        sender.sendMessage(WRONG_NUM_ARGS);
-        return false;
-      }
-
-      Player player = (Player) sender;
-      accountLinkingService.linkPlayer(player, args[0]);
-    } catch (RuntimeException e) {
-      logger.logStackTrace(e);
-      sender.sendMessage(AccountLinkingService.UNEXPECTED_EXCEPTION);
+  protected void preProcessCommand(CommandSender sender, String[] args) {
+    if (!(sender instanceof Player)) {
+      throw AbortCommand.withoutUsageMessage(WRONG_CMD_MEDIUM);
     }
 
-    return true;
+    if (args.length != 1) {
+      throw AbortCommand.withUsageMessage(WRONG_NUM_ARGS);
+    }
+
+    token = args[0];
+    playerSender = (Player) sender;
+  }
+
+  @Override
+  protected void onCommandAsync(CommandSender sender) throws Exception {
+    accountLinkingService.linkPlayer(playerSender, token);
+  }
+
+  @Override
+  protected List<String> onTabComplete(CommandSender sender, String[] args) {
+    return null;
   }
 }

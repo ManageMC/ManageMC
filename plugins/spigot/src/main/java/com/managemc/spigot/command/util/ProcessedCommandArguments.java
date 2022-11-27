@@ -3,7 +3,6 @@ package com.managemc.spigot.command.util;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -17,19 +16,6 @@ public class ProcessedCommandArguments {
   private final Map<String, String> flags;
   @Getter
   private final Collection<CommandFlag> expectedFlags;
-
-  public static ProcessedCommandArguments forSubHandler(
-      ProcessedCommandArguments oldArgs,
-      CommandProcessorBase processor,
-      int currentIndex
-  ) {
-    ProcessedCommandArguments newArgs = CommandArgumentPreprocessor.preProcessArguments(
-        processor.flags,
-        Arrays.copyOfRange(oldArgs.getArgs(), currentIndex + 1, oldArgs.getArgs().length)
-    );
-    newArgs.finishedTyping = oldArgs.finishedTyping;
-    return newArgs;
-  }
 
   public String get(int index) {
     return get(index, null);
@@ -53,17 +39,6 @@ public class ProcessedCommandArguments {
 
   public String getFlag(String flag) {
     return flags.get(flag);
-  }
-
-  public boolean lastArgIsIncompleteFlag() {
-    if (finishedTyping) {
-      return false;
-    }
-
-    String lastArg = lastArg();
-
-    return expectedFlags.stream()
-        .anyMatch(flag -> flag.toString().startsWith(lastArg) || flag.aliasToString().startsWith(lastArg));
   }
 
   /**

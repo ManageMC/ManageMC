@@ -1,5 +1,15 @@
 name: ManageMCImporter
 main: com.managemc.importer.ManageMCImporterPlugin
 version: 0.1.0-SNAPSHOT
+description: Import data into ManageMC from third-party sources
+author: jacob@managemc.com
+website: managemc.com
 api-version: 1.19
 softdepend: [ AdvancedBan, MaxBansPlus ]
+commands:
+  import:
+    description: Import punishments to ManageMC from a supported external source
+    usage: /import <VANILLA | ADVANCED_BAN | MAX_BANS_PLUS | ESSENTIALS_X>
+  job:
+    description: List all punishment import jobs or get the status of a job
+    usage: /job <LIST | STATUS> [jobID]

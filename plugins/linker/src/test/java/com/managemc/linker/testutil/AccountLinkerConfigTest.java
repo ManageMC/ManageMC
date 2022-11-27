@@ -6,7 +6,6 @@ import com.managemc.api.wrapper.model.Keys;
 import com.managemc.linker.config.AccountLinkerConfig;
 import com.managemc.linker.service.AccountLinkingService;
 import com.managemc.linker.service.ApiPingService;
-import com.managemc.plugins.logging.BukkitLogging;
 import org.mockito.Mockito;
 
 public class AccountLinkerConfigTest implements AccountLinkerConfig {
@@ -32,6 +31,6 @@ public class AccountLinkerConfigTest implements AccountLinkerConfig {
 
   @Override
   public AccountLinkingService getAccountLinkingService() {
-    return new AccountLinkingService(Mockito.mock(BukkitLogging.class), CLIENT_PROVIDER);
+    return new AccountLinkingService(CLIENT_PROVIDER);
   }
 }

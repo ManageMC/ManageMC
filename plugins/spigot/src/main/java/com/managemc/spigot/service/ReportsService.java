@@ -2,7 +2,7 @@ package com.managemc.spigot.service;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.model.metadata.ExternalServerAuthMetadata;
-import com.managemc.spigot.command.util.CommandValidationException;
+import com.managemc.plugins.command.AbortCommand;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import org.bukkit.entity.Player;
 import org.openapitools.client.model.CreateWatchRequestInput;
@@ -41,7 +41,7 @@ public class ReportsService {
           .createWatchRequest(input);
     } catch (ApiException e) {
       if (e.getCode() == 422 && e.getResponseBody().contains("Accusee not found")) {
-        throw new CommandValidationException(WatchlistService.PLAYER_NOT_FOUND, false);
+        throw AbortCommand.withoutUsageMessage(WatchlistService.PLAYER_NOT_FOUND);
       }
       throw e;
     }

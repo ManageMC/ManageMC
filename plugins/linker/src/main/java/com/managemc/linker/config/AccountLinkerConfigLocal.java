@@ -21,7 +21,7 @@ public class AccountLinkerConfigLocal implements AccountLinkerConfig {
 
     ClientProvider clientProvider = ClientProvider.demo(new ClientProviderLogger(), localConfig.getKeys(), null);
     this.apiPingService = new ApiPingService(clientProvider);
-    this.accountLinkingService = new AccountLinkingService(logger, clientProvider);
+    this.accountLinkingService = new AccountLinkingService(clientProvider);
   }
 
   private class ClientProviderLogger implements ClientProvider.Logger {

@@ -1,6 +1,6 @@
 package com.managemc.spigot.command.util.punishments;
 
-import com.managemc.spigot.command.util.CommandValidationException;
+import com.managemc.plugins.command.AbortCommand;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -47,7 +47,7 @@ public class DurationStringParser {
 
   private void assertValid(String durationString) {
     if (!durationString.matches(VALIDITY_REGEX)) {
-      throw new CommandValidationException(String.format(INVALID_MESSAGE, durationString), true);
+      throw AbortCommand.withUsageMessage(String.format(INVALID_MESSAGE, durationString));
     }
   }
 

@@ -9,7 +9,6 @@ import com.managemc.api.wrapper.refresher.TokenRefresher;
 import com.managemc.spigot.config.SpigotPluginConfigTest;
 import com.managemc.spigot.testutil.TestBase;
 import com.managemc.spigot.testutil.TestMocks;
-import com.managemc.spigot.testutil.TestWebClients;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -52,7 +51,6 @@ public class PingServiceTest extends TestBase {
 
 
   private ApiPingService mockServiceWithHttpStatus(int status) throws ApiException {
-    ClientProvider mockClients = TestWebClients.mockClients();
     ApiPingService service = new SpigotPluginConfigTest(new TestMocks(), mockClients).getApiPingService();
     PingApi mockPingApi = Mockito.mock(PingApi.class);
     Mockito.when(mockClients.externalServer().getPingApi()).thenReturn(mockPingApi);

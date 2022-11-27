@@ -46,7 +46,7 @@ public class CommandArgumentPreprocessor {
    * All ManageMC commands interpret multiple words wrapped in quotation marks
    * as a single argument without quotation marks. This allows users to (for
    * example) ban a player with a multi-word reason:
-   * /mmc bans create player123 "being annoying" [other args...]
+   * /ban player123 "being annoying" [other args...]
    * <p>
    * For the current implementation:
    * - single quotes are ignored
@@ -55,7 +55,7 @@ public class CommandArgumentPreprocessor {
    * - quotes not connected to any word may be interpreted as starting or ending quotes
    * - we don't support quotes within quotes (use single quotes within double quotes instead)
    */
-  private static String[] processDoubleQuotes(String[] args) {
+  public static String[] processDoubleQuotes(String[] args) {
     List<String> processedArgs = new ArrayList<>();
 
     List<String> tempChunkedArgs = new ArrayList<>();

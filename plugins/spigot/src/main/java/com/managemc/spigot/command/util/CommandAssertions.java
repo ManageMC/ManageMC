@@ -1,5 +1,6 @@
 package com.managemc.spigot.command.util;
 
+import com.managemc.plugins.command.AbortCommand;
 import com.managemc.plugins.util.RegexConstants;
 import com.managemc.spigot.command.util.punishments.PlayerUuidResolver;
 import com.managemc.spigot.command.util.punishments.PunishmentDurations;
@@ -23,16 +24,20 @@ public class CommandAssertions {
   public static final String MOJANG_RATE_LIMIT_MSG = "Could not find player due to Mojang's rate limit";
   public static final String UUID_RESOLUTION_UNEXPECTED_MSG = "Player UUID resolution failed for unexpected reasons";
   public static final String ONLY_PLAYERS_MESSAGE = "Only players can execute this command";
+  public static final String NO_PERMS_MESSAGE = "You don't have permission to use that command";
   private static final IpV4Validator IP_V4_VALIDATOR = new IpV4Validator();
   private static final RangeIpValidator RANGE_IP_VALIDATOR = new RangeIpValidator();
 
   public static void assertTrue(boolean expression, String errorMessage, boolean syntactic) {
     if (!expression) {
-      throw new CommandValidationException(errorMessage, syntactic);
+      if (syntactic) {
+        throw AbortCommand.withUsageMessage(errorMessage);
+      }
+      throw AbortCommand.withoutUsageMessage(errorMessage);
     }
   }
 
-  public static void assertArgsLength(String[] args, int length) throws CommandValidationException {
+  public static void assertArgsLength(String[] args, int length) {
     assertTrue(args.length == length, WRONG_NUM_ARGS, true);
   }
 
@@ -40,32 +45,38 @@ public class CommandAssertions {
     assertTrue(args.length >= atLeast, WRONG_NUM_ARGS, true);
   }
 
-  public static void assertValidUsername(String username) {
+  public static String assertValidUsername(String username) {
     assertTrue(username.matches(RegexConstants.USERNAME_REGEX), "Invalid username " + username, true);
+    return username;
   }
 
-  public static void assertValidIpAddress(String ipAddress) {
+  public static String assertValidIpAddress(String ipAddress) {
     assertTrue(IP_V4_VALIDATOR.isValid(ipAddress), "Invalid IPv4 address " + ipAddress, true);
+    return ipAddress;
   }
 
-  public static void assertValidIpOrIpRange(String ipAddressOrRange) {
+  public static String assertValidIpOrIpRange(String ipAddressOrRange) {
     if (ipAddressOrRange.contains("-")) {
       assertTrue(RANGE_IP_VALIDATOR.isValid(ipAddressOrRange), "Invalid IP address range " + ipAddressOrRange, true);
-    } else {
-      assertValidIpAddress(ipAddressOrRange);
+      return ipAddressOrRange;
     }
+    return assertValidIpAddress(ipAddressOrRange);
   }
 
   public static Player assertPlayerSender(CommandSender sender) {
     if (sender instanceof Player) {
       return (Player) sender;
     }
-    throw new CommandValidationException(ONLY_PLAYERS_MESSAGE, false);
+    throw AbortCommand.withoutUsageMessage(ONLY_PLAYERS_MESSAGE);
+  }
+
+  public static void checkPermissions(PermissibleAction action, CommandSender sender) {
+    checkPermissions(action, sender, NO_PERMS_MESSAGE);
   }
 
   public static void checkPermissions(PermissibleAction action, CommandSender sender, String errorMessage) {
     if (!action.isAllowed(sender)) {
-      throw new CommandValidationException(errorMessage, false);
+      throw AbortCommand.withoutUsageMessage(errorMessage);
     }
   }
 
@@ -92,9 +103,9 @@ public class CommandAssertions {
       case HTTP_OK:
         return player.getUuid();
       case HTTP_NOT_FOUND:
-        throw new CommandValidationException(NOT_FOUND_MSG, false);
+        throw AbortCommand.withoutUsageMessage(NOT_FOUND_MSG);
       case HTTP_RATE_LIMIT_EXCEEDED:
-        throw new CommandValidationException(MOJANG_RATE_LIMIT_MSG, false);
+        throw AbortCommand.withoutUsageMessage(MOJANG_RATE_LIMIT_MSG);
       case HTTP_UNEXPECTED:
       case CLIENT_EXCEPTION:
         throw new RuntimeException(UUID_RESOLUTION_UNEXPECTED_MSG);

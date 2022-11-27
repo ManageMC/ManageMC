@@ -6,6 +6,7 @@ import com.managemc.linker.service.AccountLinkingService;
 import com.managemc.linker.testutil.AccountLinkerConfigTest;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.awaitility.Awaitility;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -50,20 +51,20 @@ public class CmdLinkAccountTest {
   @Test
   public void notEnoughArgs() {
     Assert.assertFalse(onCommand(randoPlayer));
-    Mockito.verify(randoPlayer).sendMessage(CmdLinkAccount.WRONG_NUM_ARGS);
+    Mockito.verify(randoPlayer).sendMessage(ChatColor.RED + CmdLinkAccount.WRONG_NUM_ARGS);
   }
 
   @Test
   public void tooManyArgs() {
     Assert.assertFalse(onCommand(randoPlayer, "a", "b"));
-    Mockito.verify(randoPlayer).sendMessage(CmdLinkAccount.WRONG_NUM_ARGS);
+    Mockito.verify(randoPlayer).sendMessage(ChatColor.RED + CmdLinkAccount.WRONG_NUM_ARGS);
   }
 
   @Test
   public void wrongSenderType() {
     ConsoleCommandSender nonPlayerSender = Mockito.mock(ConsoleCommandSender.class);
     Assert.assertTrue(onCommand(nonPlayerSender, "meh"));
-    Mockito.verify(nonPlayerSender).sendMessage(CmdLinkAccount.WRONG_CMD_MEDIUM);
+    Mockito.verify(nonPlayerSender).sendMessage(ChatColor.RED + CmdLinkAccount.WRONG_CMD_MEDIUM);
   }
 
   @Test

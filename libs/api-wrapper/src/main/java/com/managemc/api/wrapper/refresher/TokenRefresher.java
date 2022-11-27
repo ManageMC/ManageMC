@@ -30,7 +30,10 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
   private final ClientProvider.Logger logger;
 
   public TokenRefresher(ClientProvider.Logger logger, ApiHost apiHost) {
-    this.client = new ApiClient().setBasePath(apiHost.getBaseUrl()).setConnectTimeout(CONNECTION_TIMEOUT);
+    this.client = new ApiClient().setBasePath(apiHost.getBaseUrl())
+        .setConnectTimeout(CONNECTION_TIMEOUT)
+        .setReadTimeout(CONNECTION_TIMEOUT)
+        .setWriteTimeout(CONNECTION_TIMEOUT);
     this.unproxiedAuthApi = new AuthenticationApi(client);
     this.logger = logger;
   }

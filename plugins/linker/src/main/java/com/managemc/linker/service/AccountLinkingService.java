@@ -2,7 +2,6 @@ package com.managemc.linker.service;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
-import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.openapitools.client.model.LinkPlayerInput;
@@ -14,30 +13,20 @@ public class AccountLinkingService {
   public static final String WRONG_TOKEN_MSG = ChatColor.RED + "Wrong account linking token";
   public static final String ALREADY_LINKED_MSG = ChatColor.RED + "A different user has already linked this account";
   public static final String UNVERIFIED_EMAIL_MSG = ChatColor.RED + "Please verify your email address first";
-  public static final String UNEXPECTED_EXCEPTION = ChatColor.DARK_RED + "Unexpected plugin exception";
 
-  private final BukkitLogging logger;
   private final ClientProvider clientProvider;
 
-  public AccountLinkingService(BukkitLogging logger, ClientProvider clientProvider) {
-    this.logger = logger;
+  public AccountLinkingService(ClientProvider clientProvider) {
     this.clientProvider = clientProvider;
   }
 
-  public void linkPlayer(Player sender, String token) {
+  public void linkPlayer(Player sender, String token) throws ApiException {
     LinkPlayerInput input = new LinkPlayerInput()
         .accountLinkingToken(token)
         .uuid(sender.getUniqueId());
 
-    new Thread(() -> {
-      try {
-        LinkPlayerResponse response = clientProvider.internal().getAccountsApi().linkPlayer(input);
-        sender.sendMessage(getMessageForConsumer(response));
-      } catch (ApiException | RuntimeException e) {
-        logger.logStackTrace(e);
-        sender.sendMessage(UNEXPECTED_EXCEPTION);
-      }
-    }).start();
+    LinkPlayerResponse response = clientProvider.internal().getAccountsApi().linkPlayer(input);
+    sender.sendMessage(getMessageForConsumer(response));
   }
 
   private String getMessageForConsumer(LinkPlayerResponse response) {

@@ -1,6 +1,7 @@
 package com.managemc.spigot.command.util.punishments;
 
 import com.managemc.spigot.command.util.CommandFlag;
+import com.managemc.spigot.command.util.MultiWordArguments;
 import com.managemc.spigot.command.util.ProcessedCommandArguments;
 import com.managemc.spigot.config.model.LocalConfig;
 import lombok.Getter;
@@ -84,10 +85,7 @@ public class PunishmentFlags {
   }
 
   private String getDetails() {
-    if (args.length() >= 2) {
-      return String.join(" ", Arrays.copyOfRange(args.getArgs(), 2, args.length()));
-    }
-    return null;
+    return MultiWordArguments.startingAtIndex(args.getArgs(), 2);
   }
 
   private String getVisibility() {

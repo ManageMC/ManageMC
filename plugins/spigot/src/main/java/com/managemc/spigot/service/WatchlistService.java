@@ -2,7 +2,8 @@ package com.managemc.spigot.service;
 
 import com.managemc.api.ApiException;
 import com.managemc.api.wrapper.ClientProvider;
-import com.managemc.spigot.command.util.CommandValidationException;
+import com.managemc.plugins.command.AbortCommand;
+import com.managemc.spigot.command.util.CommandAssertions;
 import org.bukkit.entity.Player;
 import org.openapitools.client.model.PlayerWatchList;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
 public class WatchlistService {
 
   public static final String PLAYER_NOT_FOUND = "This player does not exist in our database yet. " +
-      "Please use the following command to add it:\n/mmc players create";
+      "Please use the following command to add it:\n/create-player";
   public static final String WATCHLIST_TOO_BIG = "Your watchlist has reached its max size";
 
   private final ClientProvider provider;
@@ -21,19 +22,30 @@ public class WatchlistService {
   }
 
   public PlayerWatchList getWatchlist(Player sender) throws ApiException {
-    return provider.player(sender.getUniqueId()).getPlayersApi().fetchPlayerWatchlist();
+    try {
+      return provider.player(sender.getUniqueId()).getPlayersApi().fetchPlayerWatchlist();
+    } catch (ApiException e) {
+      if (e.getCode() == 403) {
+        throw AbortCommand.withoutUsageMessage(CommandAssertions.NO_PERMS_MESSAGE);
+      }
+      throw e;
+    }
   }
 
   public PlayerWatchList addToWatchlist(Player sender, UUID playerId) throws ApiException {
     try {
       return provider.player(sender.getUniqueId()).getPlayersApi().watchPlayer(playerId.toString());
     } catch (ApiException e) {
-      if (e.getCode() == 422) {
-        if (e.getResponseBody().contains("Player not found")) {
-          throw new CommandValidationException(PLAYER_NOT_FOUND, false);
-        } else if (e.getResponseBody().contains("Watchlist already at max size")) {
-          throw new CommandValidationException(WATCHLIST_TOO_BIG, false);
-        }
+      switch (e.getCode()) {
+        case 422:
+          if (e.getResponseBody().contains("Player not found")) {
+            throw AbortCommand.withoutUsageMessage(PLAYER_NOT_FOUND);
+          } else if (e.getResponseBody().contains("Watchlist already at max size")) {
+            throw AbortCommand.withoutUsageMessage(WATCHLIST_TOO_BIG);
+          }
+          break;
+        case 403:
+          throw AbortCommand.withoutUsageMessage(CommandAssertions.NO_PERMS_MESSAGE);
       }
       throw e;
     }
@@ -43,8 +55,11 @@ public class WatchlistService {
     try {
       return provider.player(sender.getUniqueId()).getPlayersApi().unwatchPlayer(playerId.toString());
     } catch (ApiException e) {
-      if (e.getCode() == 422) {
-        throw new CommandValidationException(PLAYER_NOT_FOUND, false);
+      switch (e.getCode()) {
+        case 422:
+          throw AbortCommand.withoutUsageMessage(PLAYER_NOT_FOUND);
+        case 403:
+          throw AbortCommand.withoutUsageMessage(CommandAssertions.NO_PERMS_MESSAGE);
       }
       throw e;
     }
