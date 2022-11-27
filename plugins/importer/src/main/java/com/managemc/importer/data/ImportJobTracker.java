@@ -12,29 +12,52 @@ public class ImportJobTracker {
 
   private final AtomicInteger idIncrementer = new AtomicInteger();
 
-  private final Map<Integer, PunishmentImporter> jobs = new ConcurrentHashMap<>();
+  private final Map<String, PunishmentImporter> jobs = new ConcurrentHashMap<>();
+  private final Map<String, String> internalIdByTempId = new ConcurrentHashMap<>();
+  private final Map<String, String> tempIdByInternalId = new ConcurrentHashMap<>();
 
-  public int trackJob(PunishmentImporter importer) {
-    int nextId = idIncrementer.addAndGet(1);
+  public String trackJob(PunishmentImporter importer) {
+    String nextId = String.format("t%s", idIncrementer.addAndGet(1));
     jobs.put(nextId, importer);
     return nextId;
   }
 
-  public Status getJobStatus(int jobId) {
-    PunishmentImporter importer = jobs.get(jobId);
-    return importer == null
-        ? null
-        : new Status(importer);
+  public void updateJobId(String tempId, long internalId) {
+    internalIdByTempId.put(tempId, String.valueOf(internalId));
+    tempIdByInternalId.put(String.valueOf(internalId), tempId);
   }
 
-  public Map<Integer, Status> getAllStatuses() {
+  public Status getJobStatus(String jobId) {
+    String lookupId = jobId.startsWith("t") ? jobId : tempIdByInternalId.get(jobId);
+    if (lookupId == null) {
+      return null;
+    }
+
+    PunishmentImporter importer = jobs.get(lookupId);
+    return importer == null
+        ? null
+        : new Status(idToDisplay(jobId), importer);
+  }
+
+  public Map<String, Status> getAllStatuses() {
     return jobs.entrySet().stream().collect(Collectors.toMap(
-        Map.Entry::getKey,
-        entry -> new Status(entry.getValue())
+        entry -> idToDisplay(entry.getKey()),
+        entry -> new Status(idToDisplay(entry.getKey()), entry.getValue())
     ));
   }
 
+  private String idToDisplay(String tempId) {
+    if (internalIdByTempId.containsKey(tempId)) {
+      String internalId = String.valueOf(internalIdByTempId.get(tempId));
+      return String.format("%s (previously %s)", internalId, tempId);
+    }
+
+    return tempId;
+  }
+
   public static class Status {
+    @Getter
+    private final String id;
     @Getter
     private final int total;
     @Getter
@@ -44,7 +67,8 @@ public class ImportJobTracker {
     @Getter
     private final int failed;
 
-    private Status(PunishmentImporter importer) {
+    private Status(String id, PunishmentImporter importer) {
+      this.id = id;
       this.total = importer.getTotalCount();
       this.succeeded = importer.getSuccessCount();
       this.failed = importer.getFailureCount();

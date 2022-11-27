@@ -145,7 +145,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
 
     awaitAsyncCommand(this::onCommand);
 
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains(JOB_BEGAN_MESSAGE));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.FINISHED_MESSAGE);
@@ -159,6 +159,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
     Mockito.verify(onboardingApiService).completeImport(IMPORT_ID);
 
     Mockito.verify(jobTracker, Mockito.times(1)).trackJob(Mockito.any());
+    Mockito.verify(jobTracker, Mockito.times(1)).updateJobId(Mockito.any(), Mockito.eq(IMPORT_ID));
   }
 
   @Test
@@ -187,7 +188,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
 
     awaitAsyncCommand(this::onCommand);
 
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains(JOB_BEGAN_MESSAGE));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.FINISHED_MESSAGE);
@@ -228,7 +229,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
 
   @SneakyThrows
   private void assertThatMuteWasImported() {
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains(JOB_BEGAN_MESSAGE));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.FINISHED_MESSAGE);
@@ -261,6 +262,7 @@ public class CmdImportEssentialsXTest extends CmdImportVanillaTest {
     Mockito.verify(onboardingApiService).completeImport(IMPORT_ID);
 
     Mockito.verify(jobTracker).trackJob(Mockito.any());
+    Mockito.verify(jobTracker, Mockito.times(1)).updateJobId(Mockito.any(), Mockito.eq(IMPORT_ID));
   }
 
   @Override

@@ -109,15 +109,6 @@ public class CmdJobTest {
   }
 
   @Test
-  public void status_secondArgumentNotANumber() {
-    boolean result = onCommand("status", "oops");
-
-    Assert.assertFalse(result);
-    verify(sender).sendMessage(ChatColor.RED + "Invalid integer oops");
-    verify(sender, times(1)).sendMessage((String) any());
-  }
-
-  @Test
   public void status_jobNotFound() {
     boolean result = onCommand("status", "0");
 
@@ -129,7 +120,7 @@ public class CmdJobTest {
   @Test
   public void status_successfulJob() {
     buildAndTrackJob(1, 0, 1);
-    boolean result = onCommand("status", "1");
+    boolean result = onCommand("status", "t1");
 
     Assert.assertTrue(result);
     verify(sender).sendMessage(ArgumentMatchers.contains("imported 1 punishment(s) successfully"));
@@ -139,7 +130,7 @@ public class CmdJobTest {
   @Test
   public void status_inProgressJob() {
     buildAndTrackJob(5, 0, 7);
-    boolean result = onCommand("status", "1");
+    boolean result = onCommand("status", "t1");
 
     Assert.assertTrue(result);
     verify(sender).sendMessage(ArgumentMatchers.contains("imported 5/7 punishment(s) so far"));
@@ -149,7 +140,7 @@ public class CmdJobTest {
   @Test
   public void status_failedJob() {
     buildAndTrackJob(5, 1, 7);
-    boolean result = onCommand("status", "1");
+    boolean result = onCommand("status", "t1");
 
     Assert.assertTrue(result);
     verify(sender).sendMessage(ArgumentMatchers.contains("see server logs"));
