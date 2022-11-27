@@ -46,7 +46,7 @@ public class CommandArgumentPreprocessor {
    * All ManageMC commands interpret multiple words wrapped in quotation marks
    * as a single argument without quotation marks. This allows users to (for
    * example) ban a player with a multi-word reason:
-   * /mmc bans create player123 "being annoying" [other args...]
+   * /ban player123 "being annoying" [other args...]
    * <p>
    * For the current implementation:
    * - single quotes are ignored

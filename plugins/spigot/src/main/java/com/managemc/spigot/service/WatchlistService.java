@@ -12,7 +12,7 @@ import java.util.UUID;
 public class WatchlistService {
 
   public static final String PLAYER_NOT_FOUND = "This player does not exist in our database yet. " +
-      "Please use the following command to add it:\n/mmc players create";
+      "Please use the following command to add it:\n/create-player";
   public static final String WATCHLIST_TOO_BIG = "Your watchlist has reached its max size";
 
   private final ClientProvider provider;

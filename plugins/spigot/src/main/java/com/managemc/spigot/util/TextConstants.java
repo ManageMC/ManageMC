@@ -5,7 +5,7 @@ import org.bukkit.ChatColor;
 public class TextConstants {
   public static class Commands {
     public static class Punishment {
-      public static final String PUNISHMENT_404 = ChatColor.RED + "%s is a real player but does not yet exist in our database. Please use the following command to create this player: /mmc players create";
+      public static final String PUNISHMENT_404 = ChatColor.RED + "%s is a real player but has never been seen before by ManageMC. You can use the /create-player command to add them to our database.";
     }
 
     public static final String BROADCAST_FLAG_IGNORED_MESSAGE = ChatColor.YELLOW + "The --broadcast flag is ignored for shadow and private punishments, as these are always hidden from other players";
