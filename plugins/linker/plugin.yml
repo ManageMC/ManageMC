@@ -8,4 +8,4 @@ api-version: 1.19
 commands:
   link:
     description: Link your Minecraft account with your ManageMC account
-    usage: /link <token>
+    usage: "/link <token>\nhttps://docs.managemc.com/guides/link-player/"
