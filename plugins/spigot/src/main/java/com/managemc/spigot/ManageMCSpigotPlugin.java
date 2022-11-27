@@ -6,7 +6,7 @@ import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.config.FlexibleLocalConfigLoader;
 import com.managemc.plugins.config.LocalConfigLoader;
 import com.managemc.plugins.logging.BukkitLogging;
-import com.managemc.spigot.command.processor.*;
+import com.managemc.spigot.command.*;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import com.managemc.spigot.config.SpigotPluginConfigLocal;
 import com.managemc.spigot.config.helper.VersionDiscerner;
