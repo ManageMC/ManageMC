@@ -15,7 +15,7 @@ public class JobStatusService {
   }
 
   public void displayAllJobStatuses(CommandSender sender) {
-    Map<Integer, ImportJobTracker.Status> allStatuses = jobTracker.getAllStatuses();
+    Map<String, ImportJobTracker.Status> allStatuses = jobTracker.getAllStatuses();
     if (allStatuses.isEmpty()) {
       sender.sendMessage(ChatColor.BLUE + "No job history yet");
     } else {
@@ -23,16 +23,16 @@ public class JobStatusService {
     }
   }
 
-  public void displayJobStatus(CommandSender sender, int jobId) {
+  public void displayJobStatus(CommandSender sender, String jobId) {
     ImportJobTracker.Status status = jobTracker.getJobStatus(jobId);
     if (status == null) {
       sender.sendMessage(ChatColor.RED + "No job with ID " + jobId);
     } else {
-      displayJobStatus(sender, jobId, status);
+      displayJobStatus(sender, status.getId(), status);
     }
   }
 
-  private void displayJobStatus(CommandSender sender, int jobId, ImportJobTracker.Status status) {
+  private void displayJobStatus(CommandSender sender, String jobId, ImportJobTracker.Status status) {
     if (status.getFailed() > 0) {
       String message = String.format(
           "%s%s: %sFAILED%s - see server logs",

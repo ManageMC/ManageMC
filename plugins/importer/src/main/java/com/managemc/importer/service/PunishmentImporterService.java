@@ -145,18 +145,21 @@ public class PunishmentImporterService {
       RunnableThrowingException readTask
   ) {
     try {
-      int jobId = jobTracker.trackJob(importer);
+      String jobId = jobTracker.trackJob(importer);
       String beganMessage = String.format(
-          "%sPunishment import job has begun with ID %s. To check its status, use the /job command.",
+          "%sPunishment import job has begun with temporary ID %s%s%s. To check its status, use the /job command.",
           ChatColor.BLUE,
-          jobId
+          ChatColor.GOLD,
+          jobId,
+          ChatColor.BLUE
       );
       sender.sendMessage(String.format(beganMessage, jobId));
       sender.sendMessage(READING_MESSAGE);
       readTask.run();
       if (punishmentsCache.size() > 0) {
         sender.sendMessage(IMPORTING_MESSAGE);
-        importer.importAllPunishments();
+        long jobInternalId = importer.importAllPunishments();
+        jobTracker.updateJobId(jobId, jobInternalId);
         String message = importer.getFailureCount() == 0
             ? FINISHED_MESSAGE
             : IMPORT_FAILED_MESSAGE;

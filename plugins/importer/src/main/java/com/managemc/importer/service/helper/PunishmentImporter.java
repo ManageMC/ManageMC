@@ -39,7 +39,7 @@ public class PunishmentImporter {
     this.threadPoolSize = threadPoolSize;
   }
 
-  public void importAllPunishments() throws Exception {
+  public long importAllPunishments() throws Exception {
     long importId = onboardingApiService.createImport();
 
     ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
@@ -75,6 +75,8 @@ public class PunishmentImporter {
       onboardingApiService.cancelImport(importId);
     }
     executorService.shutdownNow();
+
+    return importId;
   }
 
   public int getTotalCount() {

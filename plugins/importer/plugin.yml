@@ -9,7 +9,7 @@ softdepend: [ AdvancedBan, MaxBansPlus ]
 commands:
   import:
     description: Import punishments to ManageMC from a supported external source
-    usage: /import <VANILLA | ADVANCED_BAN | MAX_BANS_PLUS | ESSENTIALS_X>
+    usage: "/import <VANILLA | ADVANCED_BAN | MAX_BANS_PLUS | ESSENTIALS_X>\nhttps://docs.managemc.com/commands/importer/import/"
   job:
     description: List all punishment import jobs or get the status of a job
-    usage: /job <LIST | STATUS> [jobID]
+    usage: "/job <LIST | STATUS> [jobID]\nhttps://docs.managemc.com/commands/importer/job-status/"

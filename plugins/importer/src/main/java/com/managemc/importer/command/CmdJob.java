@@ -33,8 +33,7 @@ public class CmdJob extends CommandExecutorSync {
         break;
       case STATUS:
         CommandAssertions.assertArgsLength(args, 2);
-        int jobId = CommandAssertions.assertInteger(args[1]);
-        jobStatusService.displayJobStatus(sender, jobId);
+        jobStatusService.displayJobStatus(sender, args[1]);
         break;
       default:
         throw new RuntimeException("Unexpected action " + action);

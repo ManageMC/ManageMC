@@ -30,7 +30,7 @@ public abstract class TestsWithServiceClient {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    await().atMost(10, TimeUnit.SECONDS).until(() -> CommandExecutorAsync.COMPLETED_COMMANDS.get() > completedRequests);
+    await().atMost(20, TimeUnit.SECONDS).until(() -> CommandExecutorAsync.COMPLETED_COMMANDS.get() > completedRequests);
   }
 
   @FunctionalInterface

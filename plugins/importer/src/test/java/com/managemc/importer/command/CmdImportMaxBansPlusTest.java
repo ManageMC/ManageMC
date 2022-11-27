@@ -36,6 +36,7 @@ import java.util.UUID;
 public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
 
   private static final long IMPORT_ID = 801;
+  private static final String JOB_BEGAN_MESSAGE = "Punishment import job has begun with temporary ID";
 
   @Mock
   private BukkitLogging logging;
@@ -118,7 +119,7 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
 
     awaitAsyncCommand(() -> onCommand("MAX_BANS_PLUS"));
 
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains(JOB_BEGAN_MESSAGE));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.NO_PUNISHMENTS_FOUND_MESSAGE);
     Mockito.verify(sender, Mockito.times(3)).sendMessage((String) ArgumentMatchers.any());
@@ -356,7 +357,7 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
 
     awaitAsyncCommand(() -> onCommand("MAX_BANS_PLUS"));
 
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains(JOB_BEGAN_MESSAGE));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.NO_PUNISHMENTS_FOUND_MESSAGE);
     Mockito.verify(sender, Mockito.times(3)).sendMessage((String) ArgumentMatchers.any());
@@ -405,6 +406,7 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
     Mockito.verify(onboardingApiService, Mockito.never()).importIpBans(Mockito.anyLong(), Mockito.any());
 
     Mockito.verify(jobTracker).trackJob(Mockito.any());
+    Mockito.verify(jobTracker).updateJobId(Mockito.any(), Mockito.eq(IMPORT_ID));
 
     Mockito.verify(onboardingApiService).completeImport(IMPORT_ID);
   }
@@ -421,6 +423,7 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
     Mockito.verify(onboardingApiService, Mockito.never()).importIpBans(Mockito.anyLong(), Mockito.any());
 
     Mockito.verify(jobTracker).trackJob(Mockito.any());
+    Mockito.verify(jobTracker).updateJobId(Mockito.any(), Mockito.eq(IMPORT_ID));
 
     Mockito.verify(onboardingApiService).completeImport(IMPORT_ID);
   }
@@ -437,6 +440,7 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
     Mockito.verify(onboardingApiService, Mockito.never()).importIpBans(Mockito.anyLong(), Mockito.any());
 
     Mockito.verify(jobTracker).trackJob(Mockito.any());
+    Mockito.verify(jobTracker).updateJobId(Mockito.any(), Mockito.eq(IMPORT_ID));
 
     Mockito.verify(onboardingApiService).completeImport(IMPORT_ID);
   }
@@ -453,12 +457,13 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
     Mockito.verify(onboardingApiService).importIpBans(IMPORT_ID, expected);
 
     Mockito.verify(jobTracker).trackJob(Mockito.any());
+    Mockito.verify(jobTracker).updateJobId(Mockito.any(), Mockito.eq(IMPORT_ID));
 
     Mockito.verify(onboardingApiService).completeImport(IMPORT_ID);
   }
 
   private void assertThatImportFailed() {
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains(JOB_BEGAN_MESSAGE));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORT_FAILED_MESSAGE);
@@ -510,7 +515,7 @@ public class CmdImportMaxBansPlusTest extends TestsWithServiceClient {
   }
 
   private void assertThatSuccessMessagesWereSent() {
-    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains("Punishment import job has begun with ID"));
+    Mockito.verify(sender).sendMessage(ArgumentMatchers.contains(JOB_BEGAN_MESSAGE));
     Mockito.verify(sender).sendMessage(PunishmentImporterService.READING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.IMPORTING_MESSAGE);
     Mockito.verify(sender).sendMessage(PunishmentImporterService.FINISHED_MESSAGE);
