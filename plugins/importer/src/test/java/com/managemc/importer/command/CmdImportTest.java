@@ -6,7 +6,10 @@ import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
@@ -17,10 +20,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class CmdImportTest {
 
-  @Mock
   private CommandSender sender;
   @Mock
   private Command command;
+
+  @Before
+  public void setup() {
+    sender = Mockito.mock(ConsoleCommandSender.class);
+  }
 
   @Test
   public void noArgs() {
@@ -39,6 +46,15 @@ public class CmdImportTest {
     Mockito.verify(sender).sendMessage(ChatColor.RED +
         "Invalid argument 'oops'. Must be one of: [VANILLA, ADVANCED_BAN, MAX_BANS_PLUS, ESSENTIALS_X]");
     Mockito.verify(sender, Mockito.times(1)).sendMessage((String) ArgumentMatchers.any());
+  }
+
+  @Test
+  public void playerSender() {
+    sender = Mockito.mock(Player.class);
+    Assert.assertTrue(onCommand());
+
+    Mockito.verify(sender).sendMessage(ChatColor.RED + CommandAssertions.CONSOLE_SENDER_ONLY);
+    Mockito.verify(sender, Mockito.times(1)).sendMessage(Mockito.anyString());
   }
 
 

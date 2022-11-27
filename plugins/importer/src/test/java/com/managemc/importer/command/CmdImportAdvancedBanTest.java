@@ -16,6 +16,7 @@ import me.leoko.advancedban.utils.PunishmentType;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +60,7 @@ public class CmdImportAdvancedBanTest extends TestsWithServiceClient {
   @Mock
   private OnboardingApiService onboardingApiService;
   @Mock
-  private CommandSender sender;
+  private ConsoleCommandSender sender;
   @Mock
   private Command command;
   @Mock

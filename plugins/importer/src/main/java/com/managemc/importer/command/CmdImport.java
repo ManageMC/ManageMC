@@ -6,9 +6,12 @@ import com.managemc.plugins.command.AbortCommand;
 import com.managemc.plugins.command.CommandExecutorAsync;
 import com.managemc.plugins.logging.BukkitLogging;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CmdImport extends CommandExecutorAsync {
 
@@ -36,6 +39,7 @@ public class CmdImport extends CommandExecutorAsync {
 
   @Override
   protected void preProcessCommand(CommandSender sender, String[] args) {
+    CommandAssertions.assertConsoleSender(sender);
     CommandAssertions.assertArgsLength(args, 1);
     source = CommandAssertions.assertOneOf(args[0], PunishmentSource.class);
     validateSoftDependencies(source);
@@ -64,7 +68,15 @@ public class CmdImport extends CommandExecutorAsync {
 
   @Override
   protected List<String> onTabComplete(CommandSender sender, String[] args) {
-    // TODO
+    if (sender instanceof ConsoleCommandSender) {
+      switch (args.length) {
+        case 0:
+          return matchingSources("");
+        case 1:
+          return matchingSources(args[0]);
+      }
+    }
+
     return null;
   }
 
@@ -111,6 +123,16 @@ public class CmdImport extends CommandExecutorAsync {
       );
       throw AbortCommand.withoutUsageMessage(message);
     }
+  }
+
+  private List<String> matchingSources(String lastArg) {
+    String lastArgLower = lastArg.toLowerCase();
+
+    return Arrays.stream(PunishmentSource.values())
+        .map(Object::toString)
+        .filter(v -> v.toLowerCase().startsWith(lastArgLower))
+        .sorted()
+        .collect(Collectors.toList());
   }
 
   public enum PunishmentSource {
