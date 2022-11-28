@@ -146,7 +146,7 @@ public class SpigotPluginConfigLocal implements SpigotPluginConfig {
     this.reportsService = new ReportsService(this);
 
     // tasks
-    this.periodicHeartbeatSender = new PeriodicHeartbeatSender(logging, bukkitWrapper, heartbeatService);
+    this.periodicHeartbeatSender = new PeriodicHeartbeatSender(logging, heartbeatService);
   }
 
   private static ClientProviderLogger newLogger(BukkitLogging logging) {

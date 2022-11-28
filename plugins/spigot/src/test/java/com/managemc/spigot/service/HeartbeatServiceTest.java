@@ -4,8 +4,11 @@ import com.managemc.api.ApiException;
 import com.managemc.spigot.testutil.TestBase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.mockito.verification.VerificationMode;
+import org.openapitools.client.model.EmitHeartbeatInput;
 
 public class HeartbeatServiceTest extends TestBase {
 
@@ -71,6 +74,7 @@ public class HeartbeatServiceTest extends TestBase {
     config.getHeartbeatService().emitHeartbeat();
     Mockito.verify(config.getLogging(), NEVER).logWarning(Mockito.any());
     Mockito.verify(config.getLogging(), NEVER).logSevere(Mockito.any());
+    Mockito.verify(config.getLogging(), NEVER).logInfo(HeartbeatService.CAUGHT_UP_MESSAGE);
     Mockito.verify(config.getBukkitWrapper(), NEVER).shutdown();
   }
 
@@ -92,6 +96,44 @@ public class HeartbeatServiceTest extends TestBase {
     Mockito.verify(config.getLogging(), NEVER).logWarning(Mockito.any());
     Mockito.verify(config.getLogging(), ONCE).logSevere(HeartbeatService.UNSUPPORTED_MESSAGE);
     Mockito.verify(config.getBukkitWrapper(), ONCE).shutdown();
+  }
+
+  @Captor
+  private ArgumentCaptor<EmitHeartbeatInput> heartbeatInput;
+  @Captor
+  private ArgumentCaptor<EmitHeartbeatInput> heartbeatInput2;
+
+  @Test
+  public void heartbeat_catchUpLogic() throws ApiException {
+    config.setClientProvider(mockClients);
+
+    // temporarily stub API exception
+    Mockito.when(mockClients.externalServer().getHeartbeatsApi().emitHeartbeat(Mockito.any()))
+        .thenThrow(new RuntimeException());
+
+    try {
+      config.getHeartbeatService().emitHeartbeat();
+    } catch (RuntimeException ignored) {
+    }
+
+    Mockito.verify(mockClients.externalServer().getHeartbeatsApi()).emitHeartbeat(heartbeatInput.capture());
+
+    EmitHeartbeatInput actualInput = heartbeatInput.getValue();
+    Assert.assertEquals(1, actualInput.getPlayerCountData().size());
+
+    // stop stubbing API exception
+    Mockito.reset(mockClients.externalServer().getHeartbeatsApi());
+    Mockito.when(mockClients.externalServer().getHeartbeatsApi().emitHeartbeat(Mockito.any()))
+        .thenCallRealMethod();
+
+    config.getHeartbeatService().emitHeartbeat();
+
+    Mockito.verify(mockClients.externalServer().getHeartbeatsApi()).emitHeartbeat(heartbeatInput2.capture());
+
+    EmitHeartbeatInput actualInput2 = heartbeatInput2.getValue();
+    Assert.assertEquals(2, actualInput2.getPlayerCountData().size());
+
+    Mockito.verify(config.getLogging(), ONCE).logInfo(HeartbeatService.CAUGHT_UP_MESSAGE);
   }
 
   @Test

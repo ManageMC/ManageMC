@@ -10,8 +10,9 @@ import org.mockito.verification.VerificationMode;
 
 public class PeriodicHeartbeatTaskTest extends TestBase {
 
-  private static final int MAX_FAILURES = PeriodicHeartbeatTask.MAX_FAILURES_BEFORE_SHUTDOWN;
-  private static final String FAILURE_MESSAGE = PeriodicHeartbeatTask.REQUEST_FAILURE_MESSAGE;
+  private static final int MAX_FAILURES = PeriodicHeartbeatTask.MAX_TRANSIENT_FAILURES;
+  private static final String TRANSIENT_FAILURE = PeriodicHeartbeatTask.TRANSIENT_FAILURE_MESSAGE;
+  private static final String PERSISTENT_FAILURE = PeriodicHeartbeatTask.PERSISTENT_FAILURE_MESSAGE;
 
   private static final VerificationMode NEVER = Mockito.never();
   private static final VerificationMode ONCE = Mockito.times(1);
@@ -21,7 +22,7 @@ public class PeriodicHeartbeatTaskTest extends TestBase {
 
   @Before
   public void setup() {
-    task = new PeriodicHeartbeatTask(config.getLogging(), config.getBukkitWrapper(), config.getHeartbeatService());
+    task = new PeriodicHeartbeatTask(config.getLogging(), config.getHeartbeatService());
   }
 
   @Test
@@ -29,7 +30,7 @@ public class PeriodicHeartbeatTaskTest extends TestBase {
     HeartbeatService heartbeatService = Mockito.mock(HeartbeatService.class);
     Exception exception = new ApiException(502, "oops");
     Mockito.doThrow(exception).when(heartbeatService).emitHeartbeat();
-    task = new PeriodicHeartbeatTask(config.getLogging(), config.getBukkitWrapper(), heartbeatService);
+    task = new PeriodicHeartbeatTask(config.getLogging(), heartbeatService);
 
     for (int i = 0; i < MAX_FAILURES; i++) {
       try {
@@ -38,18 +39,17 @@ public class PeriodicHeartbeatTaskTest extends TestBase {
       }
     }
 
-    Mockito.verify(config.getLogging(), MAX_FAILURES_TIMES).logWarning(FAILURE_MESSAGE);
-    Mockito.verify(config.getLogging(), MAX_FAILURES_TIMES).logStackTrace(exception);
-    Mockito.verify(config.getLogging(), NEVER).logSevere(Mockito.any());
-    Mockito.verify(config.getBukkitWrapper(), NEVER).shutdown();
+    Mockito.verify(config.getLogging(), MAX_FAILURES_TIMES).logWarning(TRANSIENT_FAILURE);
+    Mockito.verify(config.getLogging(), NEVER).logSevere(PERSISTENT_FAILURE);
+    Mockito.verify(config.getLogging(), NEVER).logStackTrace(exception);
   }
 
   @Test
-  public void failedToConnectToGrpc_oneTooManyTimes() throws ApiException {
+  public void failedToConnectToApi_oneTooManyTimes() throws ApiException {
     HeartbeatService heartbeatService = Mockito.mock(HeartbeatService.class);
     Exception exception = new ApiException(502, "oops");
     Mockito.doThrow(exception).when(heartbeatService).emitHeartbeat();
-    task = new PeriodicHeartbeatTask(config.getLogging(), config.getBukkitWrapper(), heartbeatService);
+    task = new PeriodicHeartbeatTask(config.getLogging(), heartbeatService);
 
     for (int i = 0; i < MAX_FAILURES + 1; i++) {
       try {
@@ -58,9 +58,8 @@ public class PeriodicHeartbeatTaskTest extends TestBase {
       }
     }
 
-    Mockito.verify(config.getLogging(), MAX_FAILURES_TIMES).logWarning(FAILURE_MESSAGE);
-    Mockito.verify(config.getLogging(), Mockito.times(MAX_FAILURES + 1)).logStackTrace(exception);
-    Mockito.verify(config.getLogging(), ONCE).logSevere(Mockito.any());
-    Mockito.verify(config.getBukkitWrapper(), ONCE).shutdown();
+    Mockito.verify(config.getLogging(), MAX_FAILURES_TIMES).logWarning(TRANSIENT_FAILURE);
+    Mockito.verify(config.getLogging(), ONCE).logSevere(PERSISTENT_FAILURE);
+    Mockito.verify(config.getLogging(), ONCE).logStackTrace(exception);
   }
 }

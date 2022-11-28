@@ -1,6 +1,5 @@
 package com.managemc.spigot.task;
 
-import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.logging.BukkitLogging;
 import com.managemc.spigot.service.HeartbeatService;
 
@@ -14,9 +13,9 @@ public class PeriodicHeartbeatSender {
   private final Timer timer;
   private final PeriodicHeartbeatTask heartbeatTask;
 
-  public PeriodicHeartbeatSender(BukkitLogging logging, BukkitWrapper bukkitWrapper, HeartbeatService heartbeatService) {
+  public PeriodicHeartbeatSender(BukkitLogging logging, HeartbeatService heartbeatService) {
     this.timer = new Timer();
-    this.heartbeatTask = new PeriodicHeartbeatTask(logging, bukkitWrapper, heartbeatService);
+    this.heartbeatTask = new PeriodicHeartbeatTask(logging, heartbeatService);
   }
 
   public void start() {
