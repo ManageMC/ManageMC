@@ -1,6 +1,5 @@
 package com.managemc.spigot.task;
 
-import com.managemc.plugins.bukkit.BukkitWrapper;
 import com.managemc.plugins.logging.BukkitLogging;
 import com.managemc.spigot.service.HeartbeatService;
 
@@ -14,18 +13,16 @@ import java.util.TimerTask;
  */
 public class PeriodicHeartbeatTask extends TimerTask {
 
-  static final int MAX_FAILURES_BEFORE_SHUTDOWN = 6;
-  static final String REQUEST_FAILURE_MESSAGE = "Failed to send heartbeat to ManageMC. Since this might be temporary, the server will only shut down if this persists for more than two minutes.";
-  static final String SHUTTING_DOWN_MESSAGE = "Shutting down due to repeated heartbeat failure";
+  static final int MAX_TRANSIENT_FAILURES = 3;
+  static final String TRANSIENT_FAILURE_MESSAGE = "Failed to send heartbeat to ManageMC. Next time, we will attempt to catch up.";
+  static final String PERSISTENT_FAILURE_MESSAGE = "Persistent heartbeat failure. Printing stack trace now.";
 
   private final BukkitLogging logging;
-  private final BukkitWrapper bukkitWrapper;
   private final HeartbeatService heartbeatService;
   private int consecutiveFailureCount = 0;
 
-  public PeriodicHeartbeatTask(BukkitLogging logging, BukkitWrapper bukkitWrapper, HeartbeatService heartbeatService) {
+  public PeriodicHeartbeatTask(BukkitLogging logging, HeartbeatService heartbeatService) {
     this.logging = logging;
-    this.bukkitWrapper = bukkitWrapper;
     this.heartbeatService = heartbeatService;
   }
 
@@ -40,12 +37,11 @@ public class PeriodicHeartbeatTask extends TimerTask {
       consecutiveFailureCount = 0;
     } catch (Exception e) {
       consecutiveFailureCount++;
-      logging.logStackTrace(e);
-      if (consecutiveFailureCount <= MAX_FAILURES_BEFORE_SHUTDOWN) {
-        logging.logWarning(REQUEST_FAILURE_MESSAGE);
+      if (consecutiveFailureCount <= MAX_TRANSIENT_FAILURES) {
+        logging.logWarning(TRANSIENT_FAILURE_MESSAGE);
       } else {
-        logging.logSevere(SHUTTING_DOWN_MESSAGE);
-        bukkitWrapper.shutdown();
+        logging.logSevere(PERSISTENT_FAILURE_MESSAGE);
+        logging.logStackTrace(e);
       }
     }
   }
