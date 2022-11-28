@@ -1655,19 +1655,29 @@ components:
           type: integer
           format: int64
           description: internal ID of the active server
-        player_count:
+        player_count_data:
+          type: array
+          maxItems: 1000
+          items:
+            "$ref": "#/components/schemas/PlayerCountSnapshot"
+      required:
+      - version
+      - server_id
+      - player_count_data
+    PlayerCountSnapshot:
+      properties:
+        count:
           type: integer
           format: int32
           description: the number of players currently online
-        player_count_collected_at_millis:
+          minimum: 0
+        timestamp:
           type: integer
           format: int64
           description: The epoch time at which player count was collected.
       required:
-      - version
-      - server_id
-      - player_count
-      - player_count_collected_at_millis
+      - count
+      - timestamp
     EmitHeartbeatResponse:
       properties:
         version_status:
@@ -6111,7 +6121,7 @@ paths:
             - server is associated with a different server network
             - the server has STOPPED status (indicating that it successfully shut down)
             - the server has CRASHED status (indicating that no heartbeats were sent for at least 10 minutes)
-            - player_count is not a nonnegative integer
+            - timestamp for any player count is from more than 24 hours ago or from the future
   "/initial_heartbeats":
     post:
       operationId: emit_initial_heartbeat
