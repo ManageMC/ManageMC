@@ -78,7 +78,8 @@ components:
         - PRIVATE = only the server network that issued the punishment and the player who received it know about the punishment
         - SHADOW = only staff on the server network know about the punishment (even the player is not aware that they were punished)
 
-        Only owners, admins, and players with the `com.managemc.staff.punishments.shadow.manage` permission can create shadow punishments.
+        Only owners, admins, and players with the `managemc.players.punishments.shadow` permission or one of its parents can create
+        shadow punishments.
 
         Shadow punishments are a useful solution for spambots and cases of exceptionally bad behavior but are very easy to
         misuse. Staff members should be warned of the risks. Only admins and the server owner may issue shadow punishments by
@@ -143,13 +144,13 @@ components:
         - OK = client is using a supported version
         - DEPRECATED = client is using a deprecated version and should update as soon as possible
         - NOT_SUPPORTED = client is using a deprecated version with known defects and must update now (generally this is blocking)
-    AccusationVerdict:
+    ReportVerdict:
       type: string
       enum:
       - CONCLUSIVE
       - INCONCLUSIVE
       description: |
-        This describes how an accusation was evaluated.
+        This describes how a report was evaluated.
 
         - CONCLUSIVE = the report conclusively proves that the player was breaking the rules
         - INCONCLUSIVE = the evidence provided is wrong or inconclusive
@@ -634,26 +635,26 @@ components:
             format: int64
           description: epoch times at which this player issued punishments, sorted
             starting with earliest
-        accusation_review_times:
+        review_times:
           type: array
           items:
             type: integer
             format: int64
-          description: epoch times at which this player reviewed accusations, sorted
+          description: epoch times at which this player reviewed video reports, sorted
             starting with earliest
-        accusation_review_style:
-          description: 'Stats on the player''s accusation rulings. Stats are recalculated
+        review_style:
+          description: 'Stats on the player''s video report rulings. Stats are recalculated
             at least once every 24 hours.
 
             '
-          "$ref": "#/components/schemas/AccusationReviewStyle"
+          "$ref": "#/components/schemas/ReportReviewStyle"
       required:
       - player
       - rank
       - login_history
       - punishment_issue_times
-      - accusation_review_times
-    AccusationReviewStyle:
+      - review_times
+    ReportReviewStyle:
       properties:
         style:
           type: integer
@@ -662,8 +663,8 @@ components:
           maximum: 100
           description: |
             A numerical characterization of the player's review style where -100 is maximally cautious
-            and 100 is maximally assertive. This number is derived from accusations with video evidence
-            on which staff members disagree on the verdict.
+            and 100 is maximally assertive. This number is derived from reports with video evidence on
+            which staff members disagree on the verdict.
 
             - Cautious players tend to vote `INCONCLUSIVE` in the event of a disagreement
             - Assertive players tend to vote `CONCLUSIVE` in the event of a disagreement
@@ -671,7 +672,7 @@ components:
             Verdicts with which the user exercised override power are excluded from calculations.
 
             The player's reviewing style is just a characterization. It is only useful as a performance
-            metric when considered in tandem with `accusation_review_deviation`.
+            metric when considered in tandem with `deviation`.
         deviation:
           type: integer
           format: int32
@@ -679,10 +680,10 @@ components:
           maximum: 100
           description: |
             A numerical characterization of the player's tendency to disagree with other staff members on
-            the verdict of an accusation with video evidence. Players with a deviation of 0 never disagree
+            the verdict of a report with video evidence. Players with a deviation of 0 never disagree
             at all, whereas players with a deviation of 100 always disagree. Neither extreme is realistic.
 
-            If a staff member issues an overriding verdict on an accusation, then that verdict is treated as
+            If a staff member issues an overriding verdict on a report, then that verdict is treated as
             the absolute truth and all other verdicts are compared only to it. Otherwise, verdicts are
             compared to each other.
 
@@ -1073,6 +1074,55 @@ components:
       oneOf:
       - "$ref": "#/components/schemas/BanOrMute"
       - "$ref": "#/components/schemas/Warning"
+    PunishmentHistoryForServer:
+      properties:
+        server_network_id:
+          type: integer
+          format: int64
+          description: Internal ID of the server network
+        server_network_name:
+          type: string
+          description: Display name of the server network
+        bans:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PublicPunishment"
+        mutes:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PublicPunishment"
+      required:
+      - server_network_id
+      - server_network_name
+      - bans
+      - mutes
+    PublicPunishment:
+      properties:
+        active:
+          type: boolean
+          description: punishments are "active" if they are have neither expired nor
+            been pardoned
+        scoped:
+          type: boolean
+          description: Whether the punishment is scoped to specific server(s)
+        reason:
+          type: string
+          description: The reason for the punishment, if provided
+        created_at_millis:
+          type: integer
+          format: int64
+          description: When the punishment was issued
+        expires_at_millis:
+          type: integer
+          format: int64
+          description: When the punishment expires, if ever
+        pardoned_at_millis:
+          type: integer
+          format: int64
+          description: When the punishment was pardoned, if ever
+      required:
+      - scoped
+      - created_at_millis
     CreateBanOrMuteInput:
       properties:
         visibility:
@@ -1100,9 +1150,9 @@ components:
 
             Special permissions are required to create long or permanent punishments:
             - default: up to 24 hours
-            - `com.managemc.staff.punishments.length.medium`: 7 days
-            - `com.managemc.staff.punishments.length.long`: up to 30 days
-            - `com.managemc.staff.punishments.length.permanent`: no restriction
+            - `managemc.players.punishments.length.medium`: 7 days
+            - `managemc.players.punishments.length.long`: up to 30 days
+            - `managemc.players.punishments.length.permanent`: no restriction
       required:
       - visibility
     UpdateBanOrMuteInput:
@@ -1125,9 +1175,9 @@ components:
 
             Special permissions are required to create long or permanent punishments:
             - default: up to 24 hours
-            - `com.managemc.staff.punishments.length.medium`: 7 days
-            - `com.managemc.staff.punishments.length.long`: up to 30 days
-            - `com.managemc.staff.punishments.length.permanent`: no restriction
+            - `managemc.players.punishments.length.medium`: 7 days
+            - `managemc.players.punishments.length.long`: up to 30 days
+            - `managemc.players.punishments.length.permanent`: no restriction
         scope:
           type: array
           items:
@@ -1286,7 +1336,8 @@ components:
             "$ref": "#/components/schemas/IpAddressLogin"
         bans:
           type: array
-          description: Will be null unless caller has `com.managemc.staff.punishments.view`
+          description: Will be null unless caller has `managemc.players.punishments.view`
+            or one of its parent permissions
           items:
             "$ref": "#/components/schemas/IpBan"
       required:
@@ -1302,6 +1353,8 @@ components:
           "$ref": "#/components/schemas/PlayerUuid"
         username:
           "$ref": "#/components/schemas/PlayerUsername"
+        status:
+          "$ref": "#/components/schemas/PlayerVerificationStatus"
         active_server:
           "$ref": "#/components/schemas/PlayerActiveServer"
       required:
@@ -1800,8 +1853,9 @@ components:
         last_player_count:
           type: integer
           format: int32
-          description: the number of players using this server at the time of the
-            last heartbeat
+          description: |
+            The number of players using this server at the time of the last heartbeat. This field
+            will be 0 if the server's status is not `ACTIVE`.
       required:
       - id
       - name
@@ -1928,7 +1982,7 @@ components:
             helps staff by pointing directly to relevant footage.
 
             If this field is null, then there is no restriction.
-    AccusationConfig:
+    PlayerReportConfig:
       properties:
         video_max_length_seconds:
           type: integer
@@ -1945,7 +1999,7 @@ components:
           format: int32
           minimum: 1
           description: |
-            The minimum number of times any accusation must be reviewed. Reviews with override power
+            The minimum number of times any video report must be reviewed. Reviews with override power
             bypass this rule.
         review_permit_expiration_time_minutes:
           type: integer
@@ -2015,29 +2069,46 @@ components:
         embeddable:
           type: boolean
           description: whether the video can be embedded on other websites
-    WatchRequest:
+    ResolveVideolessReportInput:
+      properties:
+        status:
+          type: string
+          enum:
+          - CLOSED_ACCEPTED
+          - CLOSED_REJECTED
+          description: |
+            - `CLOSED_ACCEPTED`: the player was found to be breaking the rules
+            - `CLOSED_REJECTED`: the player was found NOT to be breaking the rules
+        resolve_similar_reports:
+          type: boolean
+          description: |
+            Whether other videoless reports with the same accusee should also be closed with
+            the same status.
+      required:
+      - status
+      - resolve_similar_reports
+    PlayerReport:
       properties:
         id:
           type: integer
           format: int64
-          description: internal ID of the accusation
+          description: internal ID of the report
         server_network_id:
           type: integer
           format: int64
-          description: internal ID of the server network on which the accusation was
-            filed
+          description: internal ID of the server network on which the report was filed
         server_network_name:
           type: string
           description: display name of the server network
         server_group_id:
           type: integer
           format: int64
-          description: internal ID of the server group on which the accusation was
-            filed (optional)
+          description: internal ID of the server group on which the report was filed
+            (optional)
         server_group_name:
           type: string
-          description: name of the server group on which the accusation was filed
-            (present only if `server_group_id` is)
+          description: name of the server group on which the report was filed (present
+            only if `server_group_id` is)
         accuser:
           "$ref": "#/components/schemas/CursoryPlayerInfo"
         accusee:
@@ -2046,171 +2117,30 @@ components:
           type: string
           enum:
           - OPEN
-          - CLOSED_AUTOMATIC
-          - CLOSED_MANUAL
-          - CLOSED_RULEBREAKING
-          - CLOSED_NOT_RULEBREAKING
-          - CLOSED_BY_REPORTER
-          description: |
-            Enum indicating the status of the report:
-
-            - OPEN: request is open
-            - CLOSED_AUTOMATIC: closed by automatic process, typically because the report is too old
-            - CLOSED_MANUAL: closed manually by a staff member who deemed the report inactionable
-            - CLOSED_RULEBREAKING: the player was found to be breaking the rules
-            - CLOSED_NOT_RULEBREAKING: the player was found not to be breaking the rules
-            - CLOSED_BY_REPORTER: closed by the reporter (e.g. if the report was filed accidentally)
-        created_at_millis:
-          type: integer
-          format: int64
-          description: epoch time at which the accusation was issued
-        closed_at_millis:
-          type: integer
-          format: int64
-          description: epoch time at which the accusation was closed (optional)
-        in_game_distance:
-          type: integer
-          format: int32
-          description: |
-            If provided, this means that the accuser and accusee were using the same server at the time this report was filed. This
-            provides additional confidence (although not a guarantee) that any video evidence submitted alongside the report was not
-            faked using a hacked client.
-
-            Distance is provided in meters, rounded to the nearest meter. One meter in Minecraft is equal to the length of a block.
-        summary:
-          type: string
-          description: brief message for staff members watching the player
-      required:
-      - id
-      - server_network_id
-      - server_network_name
-      - accuser
-      - accusee
-      - status
-      - created_at_millis
-    CreateWatchRequestInput:
-      properties:
-        server_network_id:
-          type: integer
-          format: int64
-          description: internal ID of the server network (this is NOT inferred from
-            the session!)
-        server_group_id:
-          type: integer
-          format: int64
-          description: internal ID of the server group (optional, but helpful to reviewers)
-        accusee_uuid:
-          "$ref": "#/components/schemas/PlayerUuid"
-        summary:
-          type: string
-          description: brief message for staff members watching the player
-        in_game_distance:
-          type: integer
-          format: int32
-          description: |
-            If provided, this means that the accuser and accusee were using the same server at the time this report was filed. This
-            provides additional confidence (although not a guarantee) that any video evidence submitted alongside the report was not
-            faked using a hacked client.
-
-            Distance is provided in meters, rounded to the nearest meter. One meter in Minecraft is equal to the length of a block.
-      required:
-      - server_network_id
-      - accusee_uuid
-    ResolveWatchRequestInput:
-      properties:
-        status:
-          type: string
-          enum:
-          - CLOSED_MANUAL
-          - CLOSED_RULEBREAKING
-          - CLOSED_NOT_RULEBREAKING
-          description: |
-            - `CLOSED_MANUAL`: close the report without indicating whether the player was cheating,
-              typically because it is too old or otherwise inactionable
-            - `CLOSED_RULEBREAKING`: the player was found to be breaking the rules
-            - `CLOSED_NOT_RULEBREAKING`: the player was found NOT to be breaking the rules
-        resolve_similar_reports:
-          type: boolean
-          description: 'Whether other reports with the same accusee should also be
-            closed with the same status.
-
-            '
-      required:
-      - status
-      - resolve_similar_reports
-    Reports:
-      properties:
-        accusations:
-          type: array
-          items:
-            "$ref": "#/components/schemas/AccusationBasicInfo"
-        watch_requests:
-          type: array
-          items:
-            "$ref": "#/components/schemas/WatchRequest"
-      required:
-      - accusations
-      - watch_requests
-    AccusationBasicInfo:
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: internal ID of the accusation
-        server_network_id:
-          type: integer
-          format: int64
-          description: internal ID of the server network on which the accusation was
-            filed
-        server_network_name:
-          type: string
-          description: display name of the server network
-        server_group_id:
-          type: integer
-          format: int64
-          description: internal ID of the server group on which the accusation was
-            filed (optional)
-        server_group_name:
-          type: string
-          description: name of the server group on which the accusation was filed
-            (present only if `server_group_id` is)
-        accuser:
-          "$ref": "#/components/schemas/CursoryPlayerInfo"
-        accusee:
-          "$ref": "#/components/schemas/CursoryPlayerInfo"
-        status:
-          type: string
-          enum:
-          - NOT_SUBMITTED
-          - SUBMITTED
-          - CLOSED
+          - CLOSED_ACCEPTED
+          - CLOSED_REJECTED
           - CONFLICTING_VERDICTS
-          - REPORTER_CLAIMS_INCONCLUSIVE
-          - CLOSED_EARLY
+          - ARCHIVED
+          - CLOSED_AUTOMATICALLY
           description: |
-            Enum indicating the status of the report:
+            The status of the report:
 
-            The following may be characterized as "pending submission":
-            - NOT_SUBMITTED: report has not been submitted for review yet
-
-            The following may be characterized as "in review":
-            - SUBMITTED: submitted and available for review
-            - CONFLICTING_VERDICTS: flagged for review because reviewers disagreed on the verdict
-
-            The following may be characterized as "closed" (terminal statuses):
-            - CLOSED: a consensus verdict was offered on the report
-            - REPORTER_CLAIMS_INCONCLUSIVE: the reporter knows that their report does not provide enough evidence to warrant punishment
-            - CLOSED_EARLY: the report was closed either by the reporter or by staff before a verdict could be given
-        overall_verdict:
-          "$ref": "#/components/schemas/AccusationVerdict"
+            - `OPEN`: Report is awaiting review
+            - `CLOSED_ACCEPTED`: Report was accepted by the staff team as being indicative of rulebreaking
+            - `CLOSED_REJECTED`: Report was reviewed by the staff team and found NOT to be indicative of rulebreaking
+            - `CONFLICTING_VERDICTS`: The staff team did not agree on whether the report was indicative of rulebreaking.
+                                      Such reports must be manually overridden by a higher staff member.
+            - `ARCHIVED`: The report was closed with no action, but was retained for historical records.
+            - `CLOSED_AUTOMATICALLY`: The report was closed by an automatic process, probably because it is too old to
+                                      be actionable.
         created_at_millis:
           type: integer
           format: int64
-          description: epoch time at which the accusation was issued
+          description: epoch time at which the report was issued
         closed_at_millis:
           type: integer
           format: int64
-          description: epoch time at which the accusation was closed (optional)
+          description: epoch time at which the report was closed (optional)
         time_of_event:
           type: integer
           format: int64
@@ -2227,13 +2157,23 @@ components:
             Distance is provided in meters, rounded to the nearest meter. One meter in Minecraft is equal to the length of a block.
         ruling_times:
           type: array
-          description: the epoch times at which reviews were submitted for the accusation
+          description: the epoch times at which reviews were submitted for the report
           items:
             type: integer
             format: int64
-        includes_video_evidence:
-          type: boolean
-          description: whether the reporter included video evidence
+        evidence_type:
+          type: string
+          enum:
+          - VIDEO
+          - TEXT
+          description: |
+            The type of evidence currently provided in the report:
+
+            `VIDEO`: The report includes at least one attached video
+            `TEXT`: The report includes no video evidence
+        summary:
+          type: string
+          description: user-provided summary of the report
       required:
       - id
       - server_network_id
@@ -2242,14 +2182,13 @@ components:
       - accusee
       - status
       - created_at_millis
-    AccusationInDepthInfo:
+      - ruling_times
+      - evidence_type
+    PlayerReportInDepth:
       allOf:
-      - "$ref": "#/components/schemas/AccusationBasicInfo"
+      - "$ref": "#/components/schemas/PlayerReport"
       - type: object
         properties:
-          summary:
-            type: string
-            description: user-provided summary of the accusation
           video_evidence:
             type: array
             items:
@@ -2260,14 +2199,23 @@ components:
               each reviewer until evaluation has completed, even if one or more rulings have been offered.
             type: array
             items:
-              "$ref": "#/components/schemas/AccusationRuling"
+              "$ref": "#/components/schemas/PlayerReportRuling"
           review_permits:
-            description: |
-              List of rulings with verdicts by various staff members. This list will not include the actual verdict of
-              each reviewer until evaluation has completed, even if one or more rulings have been offered.
+            description: 'List of active review permits granted to staff members.
+
+              '
             type: array
             items:
-              "$ref": "#/components/schemas/AccusationReviewPermit"
+              "$ref": "#/components/schemas/PlayerReportReviewPermit"
+          closed_by:
+            description: |
+              All reports can be closed by staff members or their authors at certain points in
+              their lifecycles. For reports with video evidence, this field indicates which player
+              marked the report as `ARCHIVED`. For those without video evidence, this field can
+              mean the same thing, but it also shows which player ultimately resolved the report,
+              if the status is `CLOSED_ACCEPTED` or `CLOSED_REJECTED`. This way, users will know
+              where to direct their questions about a closed report.
+            "$ref": "#/components/schemas/CursoryPlayerInfo"
         required:
         - video_evidence
         - rulings
@@ -2288,12 +2236,12 @@ components:
         required:
         - start_time_seconds
         - end_time_seconds
-    AccusationRuling:
+    PlayerReportRuling:
       properties:
         ruler:
           "$ref": "#/components/schemas/CursoryPlayerInfo"
         verdict:
-          "$ref": "#/components/schemas/AccusationVerdict"
+          "$ref": "#/components/schemas/ReportVerdict"
         comment:
           type: string
           description: comment about the verdict, if the ruler provided one
@@ -2310,7 +2258,7 @@ components:
       required:
       - ruler
       - issued_at_millis
-    AccusationReviewPermit:
+    PlayerReportReviewPermit:
       properties:
         ruler:
           "$ref": "#/components/schemas/CursoryPlayerInfo"
@@ -2326,7 +2274,7 @@ components:
       - ruler
       - created_at_millis
       - expires_at_millis
-    BaseAccusationInput:
+    BaseReportInput:
       properties:
         server_network_id:
           type: integer
@@ -2341,25 +2289,11 @@ components:
           "$ref": "#/components/schemas/PlayerUuid"
         summary:
           type: string
-          description: the user-provided summary of the accusation
+          description: the user-provided summary of the report
         video_evidence:
           type: array
           items:
             "$ref": "#/components/schemas/VideoEvidenceInput"
-        status:
-          type: string
-          enum:
-          - NOT_SUBMITTED
-          - SUBMITTED
-          - REPORTER_CLAIMS_INCONCLUSIVE
-          description: |
-            Enum indicating the initial status of the report:
-
-            - NOT_SUBMITTED: user will come back and finish the report later
-            - SUBMITTED: report is available for review
-            - REPORTER_CLAIMS_INCONCLUSIVE: the reporter knows that their report does not provide
-              enough evidence to warrant punishment. When the accusation author "closes" their
-              report, this is the status to use. The `close_accusation` endpoint is for staff only.
         time_of_event:
           type: integer
           format: int64
@@ -2368,10 +2302,9 @@ components:
       required:
       - server_network_id
       - accusee_uuid
-      - status
-    CreateAccusationInput:
+    CreateReportInput:
       allOf:
-      - "$ref": "#/components/schemas/BaseAccusationInput"
+      - "$ref": "#/components/schemas/BaseReportInput"
       - type: object
         properties:
           in_game_distance:
@@ -2385,6 +2318,24 @@ components:
               Distance is provided in meters, rounded to the nearest meter. One meter in Minecraft is equal to the length of a block.
 
               Only include this field for reports submitted from a Minecraft server.
+          game_server_id:
+            type: integer
+            format: int64
+            description: internal ID of the server group (only for requests from Minecraft
+              servers)
+          status:
+            type: string
+            enum:
+            - OPEN
+            - ARCHIVED
+            description: |
+              Enum indicating the initial status of the report:
+
+              - OPEN: report is available for review (user can update it later)
+              - ARCHIVED: the reporter knows that their report does not provide enough evidence
+                to warrant punishment.
+        required:
+        - status
     VideoEvidenceInput:
       properties:
         video_id:
@@ -2402,10 +2353,10 @@ components:
             Defaults to the full video length.
       required:
       - video_id
-    UpdateAccusationInput:
+    UpdateReportInput:
       allOf:
-      - "$ref": "#/components/schemas/BaseAccusationInput"
-    UpdateAccusationResponse:
+      - "$ref": "#/components/schemas/BaseReportInput"
+    UpdateReportResponse:
       properties:
         status:
           type: string
@@ -2415,20 +2366,20 @@ components:
           - REVIEW_IN_PROGRESS
           description: |
             The status of the update request, which may indicate soft failure due to a change
-            in the accusation state made by another user.
-            - SUCCESS: update was successful
-            - STATUS_CHANGED: accuation no longer has a status that permits updates
-            - REVIEW_IN_PROGRESS: review began while the user was making edits, meaning it's
+            in the report state made by another user.
+            - `SUCCESS`: update was successful
+            - `STATUS_CHANGED`: accuation no longer has a status that permits updates
+            - `REVIEW_IN_PROGRESS`: review began while the user was making edits, meaning it's
               no longer possible to accept those edits
-        accusation:
-          "$ref": "#/components/schemas/AccusationInDepthInfo"
+        report:
+          "$ref": "#/components/schemas/PlayerReportInDepth"
       required:
-      - accusation
+      - report
       - status
-    CreateAccusationRulingInput:
+    CreateReportRulingInput:
       properties:
         verdict:
-          "$ref": "#/components/schemas/AccusationVerdict"
+          "$ref": "#/components/schemas/ReportVerdict"
         comment:
           type: string
           description: |
@@ -2436,38 +2387,15 @@ components:
             staff members as well as the accuser once review is complete.
       required:
       - verdict
-    CreateAccusationRulingResponse:
+    InitReportReviewInput:
       properties:
-        consumer_action:
-          type: string
-          enum:
-          - SUGGEST_PUNISHMENT
-          - ALERT_CLOSED
-          - NOTHING
-          description: |
-            This indicates what the consuming application should direct the reviewer to do:
-
-            - SUGGEST_PUNISHMENT: provide a link to the player's profile so that the user can issue a
-              punishment (if needed; the accusee might already have been punished for something else)
-            - ALERT_CLOSED: alert the user the accusation was closed during review, so it wasn't possible to issue a verdict
-            - NOTHING: no further instructions for the user
-
-            This summary is provided for the consumer's convenience. All of this information may be
-            derived from the updated `accusation` field.
-        accusation:
-          "$ref": "#/components/schemas/AccusationInDepthInfo"
-      required:
-      - consumer_action
-      - accusation
-    InitAccusationReviewInput:
-      properties:
-        accusation_id:
+        report_id:
           type: integer
           format: int64
           description: |
             The internal ID of the report the user wants to review. Leave this blank to select a
             random one.
-    InitAccusationReviewResponse:
+    InitReportReviewResponse:
       properties:
         permit_reservation_status:
           type: string
@@ -2480,16 +2408,16 @@ components:
             The status of the request, which may indicate a "soft" failure that the client had
             no way to anticipate. If the status is something other than SUCCESS, provide a
             specific error message in the UI and do not proceed with the reviewing process.
-            If the user requested to review a specific accusation, then that accusation will
+            If the user requested to review a specific report, then that report will
             always be included in the payload here. The front end should use that data to
             refresh the state of the app so that it's clear why the user cannot review this
-            accusation.
+            report.
 
             - SUCCESS: permit reserved successfully
-            - NO_REVIEW_NEEDED: no accusations currently need review
+            - NO_REVIEW_NEEDED: no reports currently need review
             - NO_PERMITS_AVAILABLE: the permit pool is empty, probably because another user
               grabbed one very recently.
-            - STATUS_CHANGED: the accusation cannot be reviewed because its status changed, probably
+            - STATUS_CHANGED: the report cannot be reviewed because its status changed, probably
               very recently.
         permit_id:
           type: integer
@@ -2498,8 +2426,8 @@ components:
             The internal ID of the permit reserved that will allow the user to submit a verdict.
             You will need this ID to return the permit to the pool if the user cancels their
             review.
-        accusation:
-          "$ref": "#/components/schemas/AccusationInDepthInfo"
+        report:
+          "$ref": "#/components/schemas/PlayerReportInDepth"
       required:
       - permit_reservation_status
     AccessConfiguration:
@@ -2560,13 +2488,82 @@ components:
           description: |
             Whether the permission is managed by the service itself. Built-in permissions cannot be
             edited.
+        staff:
+          type: boolean
+          description: |
+            Whether the permission is considered to be a staff permission. Players with one or more
+            staff permissions will be included in staff analytics. Players using the ManageMC website
+            may operate on any server network on which they have one or more built-in staff permissions.
+        total_assignments:
+          type: integer
+          format: int32
+          description: |
+            The number of times this permission has been explicitly granted to players on your server
+            network. This does not include assignments through roles.
+        total_revocations:
+          type: integer
+          format: int32
+          description: |
+            The number of times this permission has been explicitly revoked from players on your server
+            network. This does not include assignments through roles.
       required:
       - name
       - display_name
       - granted_by_default
       - server_scoping
       - built_in
-    RoleTemplateBase:
+      - staff
+      - total_assignments
+      - total_revocations
+    PermissionTemplateExpanded:
+      allOf:
+      - "$ref": "#/components/schemas/PermissionTemplate"
+      - type: object
+        properties:
+          assignments:
+            type: array
+            items:
+              "$ref": "#/components/schemas/AssignedPermission"
+          role_ids:
+            type: array
+            items:
+              type: integer
+              format: int64
+              description: Internal ID of a role this permission is associated with
+          taxonomy_ids:
+            type: array
+            items:
+              type: integer
+              format: int64
+              description: Internal ID of a top-level taxonomy this permission is
+                categorized into
+      required:
+      - assignments
+      - role_ids
+      - taxonomy_ids
+    AssignedPermission:
+      properties:
+        player:
+          "$ref": "#/components/schemas/CursoryPlayerInfo"
+        granted:
+          type: boolean
+          description: 'Whether the permission has been granted to or revoked from
+            the player.
+
+            '
+        server_groups:
+          type: array
+          items:
+            type: integer
+            format: int64
+            description: |
+              The internal IDs of server groups on which this permission applies. If
+              empty, that means the permission applies to all servers.
+      required:
+      - player
+      - granted
+      - server_groups
+    RoleTemplate:
       properties:
         id:
           type: integer
@@ -2605,39 +2602,61 @@ components:
             roles cannot be edited.
 
             '
+        permission_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+            description: 'the internal IDs of all permissions associated with this
+              role, in no particular order
+
+              '
+        total_assignments:
+          type: integer
+          format: int32
+          description: 'The number of players on your network who are granted this
+            role.
+
+            '
       required:
       - id
       - display_name
       - granted_by_default
       - server_scoping
       - built_in
-    RoleTemplate:
-      allOf:
-      - "$ref": "#/components/schemas/RoleTemplateBase"
-      - type: object
-        properties:
-          permissions:
-            type: array
-            items:
-              type: integer
-              format: int64
-              description: 'the internal IDs of all permissions associated with this
-                role, in no particular order
-
-                '
-      required:
-      - permissions
+      - permission_ids
+      - total_assignments
     RoleTemplateExpanded:
       allOf:
-      - "$ref": "#/components/schemas/RoleTemplateBase"
+      - "$ref": "#/components/schemas/RoleTemplate"
       - type: object
         properties:
           permissions:
             type: array
             items:
               "$ref": "#/components/schemas/PermissionTemplate"
+          assignments:
+            type: array
+            items:
+              "$ref": "#/components/schemas/AssignedRole"
       required:
       - permissions
+      - assignments
+    AssignedRole:
+      properties:
+        player:
+          "$ref": "#/components/schemas/CursoryPlayerInfo"
+        server_groups:
+          type: array
+          items:
+            type: integer
+            format: int64
+            description: |
+              The internal IDs of server groups on which this role applies. If
+              empty, that means the role applies to all servers.
+      required:
+      - player
+      - server_groups
     PermissionGroup:
       properties:
         id:
@@ -2669,9 +2688,9 @@ components:
             Permission groups have no programmatic significance. They just make it easier to display
             permissions nicely in a UI.
 
-            - ELECTED: customer has manually elected this permission group
-            - UNIVERSALLY_ELECTED: this permission group is always elected and cannot be un-elected
-            - NOT_ELECTED: customer has not manually elected this permission group, but may choose to
+            - `ELECTED`: customer has manually elected this permission group
+            - `UNIVERSALLY_ELECTED`: this permission group is always elected and cannot be un-elected
+            - `NOT_ELECTED`: customer has not manually elected this permission group, but may choose to
         omnipermission:
           type: integer
           format: int64
@@ -2751,11 +2770,18 @@ components:
 
             Roles are server scopeable if and only if all associated permissions are server scopeable.
             This field is provided as a convenience even though the consumer could derive it.
+        staff:
+          type: boolean
+          description: |
+            Whether the permission is considered to be a staff permission. Players with one or more
+            staff permissions will be included in staff analytics. Players using the ManageMC website
+            may operate on any server network on which they have one or more built-in staff permissions.
       required:
       - name
       - display_name
       - granted_by_default
       - server_scopeable
+      - staff
     PermissionTemplateInput:
       allOf:
       - "$ref": "#/components/schemas/NewPermissionTemplate"
@@ -3259,17 +3285,13 @@ components:
               message:
                 type: string
                 description: A brief description of what was wrong with the user input
-              bad_user_input:
+              requestId:
                 type: string
-                description: The user input that violated the API specification, if
-                  applicable
-              field:
-                type: string
-                description: |
-                  A description of the field for which validation was performed. For nested JSON
-                  objects, this will include the path through that object to the offending field.
+                format: uuid
+                description: Unique ID of the failed request for debugging purposes.
             required:
             - message
+            - requestId
 paths:
   "/health":
     get:
@@ -3424,9 +3446,11 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.apikeys.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.credentials.*
+      - managemc.config.credentials.view
       description: |
         Fetch all active API keys for a server. These are not JWTs; these are the credentials
         used to request external JWTs. They never expire but also cannot be used for anything
@@ -3460,9 +3484,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.apikeys.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.credentials.*
       description: |
         Admins/owners may generate up to 10 new API keys for their external servers to use. This
         endpoint generates a new one. Only after calling this endpoint will the private key ever
@@ -3507,9 +3532,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.apikeys.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.credentials.*
       description: 'Admins/owners may update the name field on an external Minecraft
         key.
 
@@ -3551,9 +3577,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.apikeys.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.credentials.*
       description: |
         This action is permanent. Admins should only disable a key if they are certain it's
         not in use. The web/mobile apps should provide a warning if the key was used recently.
@@ -3593,9 +3620,11 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.imports.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.data.*
+      - managemc.config.imports.data.view
       description: 'Fetch status and metadata about all punishment imports, including
         cancelled ones.
 
@@ -3841,9 +3870,10 @@ paths:
       - user_mobile: []
       - external_minecraft: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.imports.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.data.*
       description: |
         Any import may be cancelled. Cancellation causes all imported punishments to be deleted in a
         fully recoverable way.
@@ -3878,9 +3908,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.imports.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.data.*
       description: |
         This causes all of its punishments to be restored to their state at the time of cancellation.
         The import itself will be considered completed, meaning it's no longer possible to add
@@ -3918,9 +3949,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.imports.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.data.*
       description: |
         By default, all punishments are public. However, customers might have imported some or
         all of their punishments by calling our API themselves rather than using our plugin, in
@@ -3968,9 +4000,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.imports.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.data.*
       description: |
         If customers are importing punishments from third party plugins and
         have not configured said plugins to run on a single database, they
@@ -4038,9 +4071,11 @@ paths:
       - user_mobile: []
       - external_minecraft: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.overview.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.overview.*
+      - managemc.config.overview.view
       responses:
         200:
           description: the active server network
@@ -4061,9 +4096,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.overview.edit
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.overview.*
       description: |
         Edit the name or public IP address of the server network. Neither of these has programmatic
         significance.
@@ -4089,43 +4125,46 @@ paths:
           "$ref": "#/components/responses/UnauthenticatedError"
         403:
           "$ref": "#/components/responses/PermissionDeniedError"
-  "/active_server_network/accusation_config":
+  "/active_server_network/report_config":
     get:
-      operationId: fetch_accusation_config
-      summary: Fetch the active server network's accusation config.
+      operationId: fetch_report_config
+      summary: Fetch the active server network's report config.
       tags:
       - Server Networks
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.accusations.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.reports.*
+      - managemc.config.reports.view
       responses:
         200:
-          description: accusation config
+          description: report config
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/AccusationConfig"
+                "$ref": "#/components/schemas/PlayerReportConfig"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
         403:
           "$ref": "#/components/responses/PermissionDeniedError"
     put:
-      operationId: update_accusation_config
-      summary: Update accusation configuration
+      operationId: update_report_config
+      summary: Update report configuration
       tags:
       - Server Networks
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.accusations.edit
-      description: 'Update the active server network''s accusation configuration.
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.reports.*
+      description: 'Update the active server network''s player report configuration.
 
         '
       requestBody:
@@ -4133,14 +4172,14 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/AccusationConfig"
+              "$ref": "#/components/schemas/PlayerReportConfig"
       responses:
         200:
-          description: the updated accusation config
+          description: the updated player report config
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/AccusationConfig"
+                "$ref": "#/components/schemas/PlayerReportConfig"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -4158,9 +4197,11 @@ paths:
       - user_mobile: []
       - external_minecraft: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.punishments.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.punishments.*
+      - managemc.config.punishments.view
       responses:
         200:
           description: punishment config
@@ -4181,9 +4222,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.punishments.edit
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.punishments.*
       description: 'Update the active server network''s punishment configuration.
 
         '
@@ -4223,9 +4265,11 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.servers.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.servers.*
+      - managemc.config.servers.view
       description: |
         Server groups are logical groupings of game servers. They are configured by customers.
         We use them as a scope for punishments, statistics, and more (example use case: ban a player
@@ -4289,9 +4333,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.servers.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.servers.*
       description: |
         This only supports updating the server group color as that is the only attribute that
         may be modified. Customers will never be able to directly change the server group
@@ -4335,9 +4380,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.performance.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.staff
       description: 'Fetch detailed activity and performance data about all players
         with staff permissions.
 
@@ -4367,7 +4413,7 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
+      - managemc.special.owner
       description: |
         Grant a player the admin rank. This gives them unrestricted access to nearly everything.
 
@@ -4408,8 +4454,8 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
+      - managemc.special.owner
+      - managemc.special.admin
       description: |
         Revoke a player's admin rank. The consumer has the option to restore the player to the default
         permissioned state in case the player has elevated permissions aside from the admin rank.
@@ -4457,11 +4503,12 @@ paths:
         - a user on our website imports a single player while using our player search/import UI
         - we import player data ourselves from a treasure trove we found on the internet
 
-        This endpoint will return any sensitive data unless the user has one of these permissions:
+        This endpoint will only return sensitive data if the user has one of these permissions:
 
-        - `com.managemc.staff.owner`
-        - `com.managemc.staff.admin`
-        - `com.managemc.staff.players.view-enhanced`
+        - `managemc.special.owner`
+        - `managemc.special.admin`
+        - `managemc.players.*`
+        - `managemc.players.enhanced-info`
       parameters:
       - in: path
         name: uuid_or_username
@@ -4480,6 +4527,36 @@ paths:
           "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
+        404:
+          description: Player not found in our database, but may exist within Minecraft
+  "/players/public/{uuid_or_username}":
+    get:
+      operationId: fetch_player_public
+      summary: Fetch cursory information about a player
+      tags:
+      - Players
+      description: 'Fetch a player by ID or username, similar to `fetch_player` except
+        this API is public.
+
+        '
+      parameters:
+      - in: path
+        name: uuid_or_username
+        schema:
+          type: string
+        required: true
+        description: the Minecraft ID or username of the player
+      responses:
+        200:
+          description: player details
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CursoryPlayerInfo"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
         403:
           "$ref": "#/components/responses/PermissionDeniedError"
         404:
@@ -4565,9 +4642,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.players.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.players.*
       description: |
         Delete a player and all information associated with it. This cannot be undone.
 
@@ -4592,7 +4670,7 @@ paths:
 
             - player has ever joined any Minecraft server managed by ManageMC
             - player is on a staff member's watch list (on any server network)
-            - player has been accused of rulebreaking (i.e. accusation or watch request) on any server network
+            - player has been accused of rulebreaking (via a report) on any server network
   "/players/{id}/notes":
     get:
       operationId: fetch_notes
@@ -4603,9 +4681,11 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.notes.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.notes.*
+      - managemc.players.notes.view
       description: |
         Fetch all notes for a player. If the API consumer is a moderator, then "hidden" notes will be
         omitted from the result. The result is sorted by creation time, starting with the most recent.
@@ -4642,9 +4722,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.notes.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.notes.*
       description: |
         Create a new note. Any user can create a hidden note, which will be visible only
         to the author. Notes without an author are considered automatic.
@@ -4684,15 +4765,18 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.view
       description: |
         This includes pardoned/expired IP bans as well as bans against whole IP address ranges (e.g.
         10.10.10.0-10.10.10.45).
 
-        Players without the special `com.managemc.staff.punishments.shadow.manage` permission will be unable
-        to see shadow IP bans.
+        Players without the special `managemc.players.punishments.shadow` permission or one of its
+        parents will be unable to see shadow IP bans.
       responses:
         200:
           description: IP bans
@@ -4718,10 +4802,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.bans.create
-      - com.managemc.staff.punishments.bans.create-ingame
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.bans.*
+      - managemc.players.punishments.bans.ingame
       description: |
         Issue a ban against a player.
 
@@ -4779,10 +4865,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.mutes.create
-      - com.managemc.staff.punishments.mutes.create-ingame
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.mutes.*
+      - managemc.players.punishments.mutes.ingame
       description: |
         Issue a mute against a player.
 
@@ -4840,10 +4928,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.warnings.create
-      - com.managemc.staff.punishments.warnings.create-ingame
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.warnings.*
+      - managemc.players.punishments.warnings.ingame
       description: |
         Warnings give staff members a way of formally communicating to players that
         they have broken the rules.
@@ -4888,14 +4978,16 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.view
       description: |
         This includes punishments that are expired and/or pardoned.
 
-        Players without the special `com.managemc.staff.punishments.shadow.manage` permission will be unable
-        to see shadow punishments.
+        Players without the special `managemc.players.punishments.shadow` permission or one of its
+        parents will be unable to see shadow punishments.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
@@ -4931,14 +5023,16 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.view
       description: |
         This includes bans and mutes that are expired and/or pardoned. Does not include IP bans.
 
-        Players without the special `com.managemc.staff.punishments.shadow.manage` permission will be unable
-        to see shadow punishments.
+        Players without the special `managemc.players.punishments.shadow` permission or one of
+        its parents will be unable to see shadow punishments.
       parameters:
       - "$ref": "#/components/parameters/FlexiblePlayerId"
       responses:
@@ -4956,6 +5050,33 @@ paths:
           "$ref": "#/components/responses/UnauthenticatedError"
         403:
           "$ref": "#/components/responses/PermissionDeniedError"
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - player is not in our database
+  "/players/{id}/public_punishment_history":
+    get:
+      operationId: fetch_public_punishment_history
+      summary: Fetch all public punishments received by a player across all server
+        networks
+      tags:
+      - Punishments
+      description: Intended for use with the public players page. Does not include
+        IP bans.
+      parameters:
+      - "$ref": "#/components/parameters/FlexiblePlayerId"
+      responses:
+        200:
+          description: list of punishment data partitioned by server network
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PunishmentHistoryForServer"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
         404:
           description: |
             Under any of the following conditions:
@@ -4972,9 +5093,10 @@ paths:
       - user_mobile: []
       - user_minecraft: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.watchlist.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.watchlist
       description: |
         Watch a player to receive notifications when that player logs into servers owned by the
         active server network. If the player is already on the watch list, calling this endpoint
@@ -5014,9 +5136,10 @@ paths:
       - user_mobile: []
       - user_minecraft: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.watchlist.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.watchlist
       description: |
         Stop watching a player. If the player was not on the watch list to begin with, calling
         this endpoint will have no effect and raise no error.
@@ -5050,9 +5173,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.players.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.players.*
       description: |
         Manually assign a UUID to a player that requires manual attention. Manual
         assignment is required when players are not given a UUID (such as during an
@@ -5100,9 +5224,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.player-activity.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.activity
       description: |
         For use in player activity tab and the alternate account analysis feature. The
         response will omit any login events that have not finished yet, because due to the
@@ -5140,9 +5265,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.player-activity.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.activity
       description: |
         Server-side computation of mutual login history analytics. Most of this data can
         be derived from `fetch_player_login_history` if the consumer is willing to do a
@@ -5184,9 +5310,11 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.alt-analysis.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.altaccounts.*
+      - managemc.players.altaccounts.view
       description: |
         Fetch a list of alt account analysis results, in which a user indicates
         whether a given player is an alt account of another and with what level of
@@ -5223,9 +5351,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.alt-analysis.analyze
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.altaccounts.*
       description: |
         A staff member indicates whether two players are alternate accounts (i.e. used
         partially or fully by the same human user). They reach this conclusion based
@@ -5278,9 +5407,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.ips.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.altaccounts.*
+      - managemc.manage.*
+      - managemc.manage.ips
       description: |
         Fetch IP addresses used by a given player on the active server network. Unfinished
         server activity will not be considered because it's possible for servers to crash
@@ -5347,9 +5479,10 @@ paths:
       - user_mobile: []
       - user_minecraft: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.watchlist.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.watchlist
       description: |
         Fetch the list of players watched by the active user on the active server network. The user
         will receive notifications when watched players enter servers within the server network.
@@ -5400,9 +5533,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.ips.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.altaccounts.*
+      - managemc.manage.*
+      - managemc.manage.ips
       description: 'Matches IP addresses that contain the user input exactly at any
         position.
 
@@ -5440,9 +5576,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.ips.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.altaccounts.*
+      - managemc.manage.*
+      - managemc.manage.ips
       description: Get geolocation data about an IP address.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
@@ -5501,16 +5640,19 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.ips.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.altaccounts.*
+      - managemc.manage.*
+      - managemc.manage.ips
       description: |
         Fetch details about an IP address. If the consumer queries by address instead of
         ID, then the address will be created in our systems if it hasn't been created
         already.
 
-        If the caller does not have the `com.managemc.staff.punishments.view` permission,
-        then no IP bans will be included.
+        If the caller does not have the `managemc.players.punishments.view` permission or
+        one of its parent permissions, then no IP bans will be included.
       parameters:
       - in: path
         name: id_or_address
@@ -5567,10 +5709,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.ip-bans.create
-      - com.managemc.staff.punishments.ip-bans.create-ingame
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.ip-bans.*
+      - managemc.players.punishments.ip-bans.ingame
       description: |
         Issue a ban against an IP address.
 
@@ -5633,9 +5777,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.notes.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.notes.*
       description: |
         Edit the contents of a note. Notes cannot be made hidden once created. Users can only
         edit their own notes.
@@ -5676,9 +5821,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.notes.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.notes.*
       description: 'Delete a note. This cannot be undone.
 
         '
@@ -5716,10 +5862,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.edit
-      - com.managemc.staff.punishments.bans.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.punishments.edit
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.bans.*
       description: |
         Only some attributes may be modified once a ban is created. Most attributes are optional, but if they are
         left blank, the API will set them to null. If you wish to edit only some subset of these attributes, make
@@ -5734,7 +5882,7 @@ paths:
           - details
           - visibility
 
-        Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
+        Players need the special permission `managemc.players.punishments.edit` to edit punishments issued by other
         players.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
@@ -5776,10 +5924,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.edit
-      - com.managemc.staff.punishments.mutes.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.edit
+      - managemc.players.punishments.mutes.*
       description: |
         Only some attributes may be modified once a mute is created. Most attributes are optional, but if they are
         left blank, the API will set them to null. If you wish to edit only some subset of these attributes, make
@@ -5794,7 +5944,7 @@ paths:
           - details
           - visibility
 
-        Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
+        Players need the special permission `managemc.players.punishments.edit` to edit punishments issued by other
         players.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
@@ -5838,10 +5988,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.edit
-      - com.managemc.staff.punishments.warnings.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.edit
+      - managemc.players.punishments.warnings.*
       description: |
         Only some attributes may be modified once a warning is created. If optional attributes are left blank,
         the API will set them to null. If you wish to edit only some subset of these attributes, make sure to pass
@@ -5849,7 +6001,7 @@ paths:
 
         The pardon_details field will be ignored unless the warning has been pardoned.
 
-        Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
+        Players need the special permission `managemc.players.punishments.edit` to edit punishments issued by other
         players.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
@@ -5917,10 +6069,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.edit
-      - com.managemc.staff.punishments.ip-bans.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.edit
+      - managemc.players.punishments.ip-bans.*
       description: |
         Only some attributes may be modified once an IP ban is created. Most attributes are optional, but if they are
         left blank, the API will set them to null. If you wish to edit only some subset of these attributes, make
@@ -5935,7 +6089,7 @@ paths:
           - details
           - visibility
 
-        Players need the special permission `com.managemc.staff.punishments.edit` to edit punishments issued by other
+        Players need the special permission `managemc.players.punishments.edit` to edit punishments issued by other
         players.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
@@ -5981,17 +6135,19 @@ paths:
       - external_minecraft: []
       - user_minecraft: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.pardon
-      - com.managemc.staff.punishments.bans.create
-      - com.managemc.staff.punishments.mutes.create
-      - com.managemc.staff.punishments.warnings.create
-      - com.managemc.staff.punishments.ip-bans.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.punishments.edit
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.bans.*
+      - managemc.players.punishments.mutes.*
+      - managemc.players.punishments.warnings.*
+      - managemc.players.punishments.ip-bans.*
       description: |
         Players with permission to issue punishments via the website also have permission to pardon those
         punishments. Pardoning punishments issued by other players requires the special permission
-        `com.managemc.staff.punishments.pardon`.
+        `managemc.players.punishments.edit`.
 
         Punishments that have expired or already been pardoned are ignored.
 
@@ -6032,17 +6188,19 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.punishments.delete
-      - com.managemc.staff.punishments.bans.create
-      - com.managemc.staff.punishments.mutes.create
-      - com.managemc.staff.punishments.warnings.create
-      - com.managemc.staff.punishments.ip-bans.create
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.punishments.*
+      - managemc.players.punishments.edit
+      - managemc.players.punishments.bans.*
+      - managemc.players.punishments.mutes.*
+      - managemc.players.punishments.warnings.*
+      - managemc.players.punishments.ip-bans.*
       description: |
         Players with permission to issue punishments via the website also have permission to delete those
         punishments. Deleting punishments issued by other players requires the special permission
-        `com.managemc.staff.punishments.delete`.
+        `managemc.players.punishments.edit`.
 
         Punishments are archived instead of deleted and thus may be recovered in the event that this
         feature is misused.
@@ -6301,9 +6459,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.traffic.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.traffic
       responses:
         200:
           description: List of Minecraft servers in no particular order
@@ -6327,9 +6486,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.traffic.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.traffic
       description: |
         This endpoint exposes statistics about how many players were playing concurrently on
         each server group over time. Stats are collected once per minute, exactly on the
@@ -6405,113 +6565,28 @@ paths:
           "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
-  "/watch_requests":
-    get:
-      operationId: fetch_watch_requests
-      summary: Fetch cursory information about watch requests for the active server
-        network
+  "/reports/{id}/actions/resolve_videoless":
+    post:
+      operationId: resolve_videoless_report
+      summary: Close a videoless report with a verdict
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.reports.*
+      - managemc.manage.reports.review
       description: |
-        This endpoint fetches all submitted watch requests for the active server network. Separate
-        endpoints exist for fetching watch requests filed or reviewed by a particular player.
-      parameters:
-      - in: query
-        name: include_inactive
-        schema:
-          type: boolean
-        required: false
-        description: |
-          Optional flag indicating that the API should fetch closed reports, not just active
-          ones. Closed watch requests will NOT include an active server, even if the accused
-          player is online.
-      responses:
-        200:
-          description: 'Watch requests, starting with open requests whose accusee
-            is currently online.
+        As a staff member, close a videoless report on the active server network or update its
+        verdict. Users with access to this endpoint can close or update any videoless reports,
+        including their own. They can also elect to close similar reports (i.e. reports with
+        status `OPEN`, the same accusee, and no video evidence).
 
-            '
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/WatchRequest"
-        400:
-          "$ref": "#/components/responses/SyntaxError"
-        401:
-          "$ref": "#/components/responses/UnauthenticatedError"
-        403:
-          "$ref": "#/components/responses/PermissionDeniedError"
-    post:
-      operationId: create_watch_request
-      summary: Create a new watch request
-      tags:
-      - Accusations
-      security:
-      - user_web: []
-      - user_mobile: []
-      - user_minecraft: []
-      description: |
-        Creates a new watch request. If the user has already reported the same player on the
-        same server network and that request is still open, then the summary and in-game
-        distance will be updated (if provided) and no new request will be made.
-
-        The response body will be the watch request in its current state, accounting for any
-        updates if applicable.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/CreateWatchRequestInput"
-      responses:
-        200:
-          description: The newly created watch request
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/WatchRequest"
-        400:
-          "$ref": "#/components/responses/SyntaxError"
-        401:
-          "$ref": "#/components/responses/UnauthenticatedError"
-        403:
-          "$ref": "#/components/responses/PermissionDeniedError"
-        422:
-          description: |
-            Under any of the following conditions:
-
-            - server network not found
-            - server group (if provided) not found
-            - server group does not belong to server network
-            - accusee not found
-            - player tries to report themself
-            - in_game_distance is provided but token type is not user_minecraft
-  "/watch_requests/{id}/actions/resolve":
-    post:
-      operationId: resolve_watch_request
-      summary: Close watch request as a staff member
-      tags:
-      - Accusations
-      security:
-      - user_web: []
-      - user_mobile: []
-      x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.review
-      description: |
-        As a staff member, close a watch request on the active server network. Staff members
-        can close their own watch requests. They can also elect to close similar reports (i.e.
-        watch requests with status `OPEN` and the same accusee).
+        Use `init_report_review` instead for reports with video evidence.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
@@ -6519,14 +6594,14 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/ResolveWatchRequestInput"
+              "$ref": "#/components/schemas/ResolveVideolessReportInput"
       responses:
         200:
-          description: The updated watch request
+          description: The updated report
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/WatchRequest"
+                "$ref": "#/components/schemas/PlayerReportInDepth"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6537,72 +6612,35 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - watch request not found
-            - watch request belongs to a different server network
-            - invalid status
-  "/watch_requests/{id}/actions/close":
-    post:
-      operationId: close_watch_request
-      summary: Close watch request as the author
-      tags:
-      - Accusations
-      security:
-      - user_web: []
-      - user_mobile: []
-      description: |
-        Close a watch request. This endpoint is for use only by the user who authored the
-        watch request at hand. No special permissions are required, but unlike
-        `resolve_watch_request`, this endpoint does not allow the user to indicate whether
-        the reported player was cheating.
-
-        If the watch request is already closed, then this endpoint will ignore the request
-        and keep the status as it is. The final state of the watch request is reflected in
-        the response body.
-      parameters:
-      - "$ref": "#/components/parameters/NumericIdentifier"
-      responses:
-        200:
-          description: The updated watch request
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/WatchRequest"
-        400:
-          "$ref": "#/components/responses/SyntaxError"
-        401:
-          "$ref": "#/components/responses/UnauthenticatedError"
-        403:
-          description: |
-            Under any of the following conditions:
-
-            - user is not the author
-        422:
-          description: |
-            Under any of the following conditions:
-
-            - watch request not found
-  "/accusations":
+            - report not found
+            - report belongs to a different server network
+            - active user is the accusee
+            - report has video evidence
+  "/reports":
     get:
-      operationId: fetch_accusations
-      summary: Fetch cursory information about accusations for the active server network
+      operationId: fetch_reports
+      summary: Fetch cursory information about reports for the active server network
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.manage.*
+      - managemc.manage.reports.*
+      - managemc.manage.reports.review
+      - managemc.manage.reports.view
       description: |
-        An accusation is a formal complaint about the behavior of a player. They are filed
-        by users and reviewed by staff members with the appropriate permissions. Most
-        accusations will probably be hacker reports and complaints about chat abuse. Staff
-        members who review accusations may elect to issue punishments as a result of the
-        evidence provided in these reports.
+        A report is a formal complaint about the behavior of a player. They are filed
+        by users and reviewed by staff members. Staff members who review reports may
+        elect to issue punishments as a result of the evidence provided in these
+        reports.
 
-        This endpoint fetches all submitted accusations for the active server network. Separate
-        endpoints exist for fetching accusations filed or reviewed by a particular player.
+        This endpoint fetches all submitted reports for the active server network. Separate
+        endpoints exist for fetching reports filed or reviewed by a specific player.
       parameters:
       - in: query
         name: include_inactive
@@ -6611,24 +6649,25 @@ paths:
         required: false
         description: |
           Optional flag indicating that the API should fetch all reports, not just active
-          ones. "Active" reports are those with status `SUBMITTED` or `CONFLICTING_VERDICTS`.
+          ones. "Active" reports are those with status `OPEN` or `CONFLICTING_VERDICTS`.
       - in: query
         name: include_stats
         schema:
           type: boolean
         required: false
         description: |
-          Optional flag indicating that the API should fetch stats for the accusations (the
-          `ruling_times` and `includes_video_evidence` fields).
+          Optional flag indicating that the API should fetch stats for the reports (the
+          `ruling_times` field).
       responses:
         200:
-          description: Accusations in reverse creation order
+          description: Reports sorted by creation time, descending, with those with
+            online accusees on top
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  "$ref": "#/components/schemas/AccusationBasicInfo"
+                  "$ref": "#/components/schemas/PlayerReport"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6636,27 +6675,35 @@ paths:
         403:
           "$ref": "#/components/responses/PermissionDeniedError"
     post:
-      operationId: create_accusation
-      summary: Create a new accusation
+      operationId: create_report
+      summary: Report a player, usually for breaking the rules
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       - user_minecraft: []
+      description: |
+        This opens a report about a player who is breaking the rules or otherwise needs
+        to be investigated by a staff member.
+
+        If the user provides video evidence, then the report will be reviewed by one or
+        more staff members. If the user does not provide video evidence, the report will
+        still show up on the player's profile and will result in the staff team being
+        alerted when the player comes online.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/CreateAccusationInput"
+              "$ref": "#/components/schemas/CreateReportInput"
       responses:
         200:
-          description: The newly created accusation
+          description: The newly created report
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/AccusationInDepthInfo"
+                "$ref": "#/components/schemas/PlayerReportInDepth"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6667,10 +6714,12 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - status not recognized
             - server network not found
             - server group (if provided) not found
             - server group does not belong to server network
+            - game server (if provided) not found
+            - game server is not associated with server group
+            - game server is provided but server group is not
             - accusee not found
             - YouTube video is private or does not exist
             - YouTube video duration within start/end time constraints exceeds configured maximum
@@ -6678,31 +6727,36 @@ paths:
             - end is equal to or less than start
             - player tries to report themself
             - in_game_distance is provided but token type is not user_minecraft
-  "/accusations/{id}":
+            - game_server_id is provided but token type is not user_minecraft
+  "/reports/{id}":
     get:
-      operationId: fetch_accusation
-      summary: Fetch a single accusation
+      operationId: fetch_report
+      summary: Fetch a single report
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       description: |
-        This endpoint fetches more in-depth information about a particular accusation. In order
-        to call this endpoint, a user must be the author of the accusation or have one of the
+        This endpoint fetches more in-depth information about a particular report. In order
+        to call this endpoint, a user must be the author of the report or have one of the
         following permissions:
-        - com.managemc.staff.owner
-        - com.managemc.staff.admin
-        - com.managemc.staff.accusations.view
+        - managemc.special.owner
+        - managemc.special.admin
+        - managemc.players.*
+        - managemc.manage.*
+        - managemc.manage.reports.*
+        - managemc.manage.reports.review
+        - managemc.manage.reports.view
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
-          description: In-depth data about the accusation
+          description: In-depth data about the report
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/AccusationInDepthInfo"
+                "$ref": "#/components/schemas/PlayerReportInDepth"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6711,50 +6765,50 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - if operator is a staff member: accusation was issued by a different player on a different server network
-            - if operator is a regular user: accusation was issued by a different player
+            - if operator is a staff member: report was issued by a different player on a different server network
+            - if operator is a regular user: report was issued by a different player
         422:
           description: |
             Under any of the following conditions:
 
-            - accusation not found
+            - report not found
     put:
-      operationId: update_accusation
-      summary: Update an accusation
+      operationId: update_report
+      summary: Update a report
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       description: |
-        The player that issued an accusation is allowed to edit that accusation as long as no staff
-        members have begun reviewing it and the report was not closed. More concretely, an accusation
+        The player that issued a report is allowed to edit that report as long as no staff
+        members have begun reviewing it and the report was not closed. More concretely, a report
         is editable if all of the following are true:
 
-        - no user is actively reviewing the accusation
-        - no verdicts have been issued for the accusation
-        - `status` is `NOT_SUBMITTED` or `SUBMITTED`
+        - no user is actively reviewing the report
+        - no verdicts have been issued for the report
+        - status is `OPEN`
       parameters:
       - in: path
         name: id
         schema:
           type: integer
           format: int64
-        description: internal ID of the accusation
+        description: internal ID of the report
         required: true
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/UpdateAccusationInput"
+              "$ref": "#/components/schemas/UpdateReportInput"
       responses:
         200:
-          description: The updated accusation
+          description: The updated report
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/UpdateAccusationResponse"
+                "$ref": "#/components/schemas/UpdateReportResponse"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6765,24 +6819,29 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - accusation not found
-            - accusation authored by a different player
+            - report not found
+            - report authored by a different player
+            - user tries to update `server_network_id`, `server_group_id`, `accusee_uuid`, or
+              `time_of_event` when `in_game_distance` is already set
 
-            Or any of the other 422 conditions listed under create_accusation.
-  "/accusations/{id}/rulings":
+            Or any of the other 422 conditions listed under `create_report`, excepting
+            (obviously) those pertaining to parameters not supported by this endpoint.
+  "/reports/{id}/rulings":
     post:
-      operationId: create_accusation_ruling
-      summary: Create accusation ruling
+      operationId: create_report_ruling
+      summary: Create report ruling
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.review
-      description: 'Call this when a user with a permit to review an accusation submits
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.reports.*
+      - managemc.manage.reports.review
+      description: 'Call this when a user with a permit to review a report submits
         a verdict.
 
         '
@@ -6793,14 +6852,14 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/CreateAccusationRulingInput"
+              "$ref": "#/components/schemas/CreateReportRulingInput"
       responses:
         200:
-          description: Response with updated accusation
+          description: Response with updated report
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/CreateAccusationRulingResponse"
+                "$ref": "#/components/schemas/PlayerReportInDepth"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6810,91 +6869,149 @@ paths:
             Under any of the following conditions:
 
             - operator is not a staff member
-            - accusation is managed by a different server network
+            - report is managed by a different server network
         422:
           description: |
             Under any of the following conditions:
 
-            - accusation not found
+            - report not found
             - unrecognized verdict
             - user does not have a permit or the permit expired
-  "/accusations/{id}/actions/close":
+  "/reports/{id}/actions/close":
     post:
-      operationId: close_accusation
-      summary: Close an accusation
+      operationId: close_report
+      summary: Close a report
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
-      x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.review
       description: |
-        This action permanently closes an open accusation, making its status `CLOSED_EARLY`.
-        Staff members might do this if they do not belive it's a good use of time to review
-        the report for accuracy. Staff members with permission to use this API can close
-        an accusation regardless of whether review has begun.
+        This action closes an open report, making its status `ARCHIVED`. Staff members might do
+        this if they do not belive it's a good use of time to review the report for accuracy.
+        They can do this regardless of whether review has begun. Once a report is closed in this
+        way, it will not contribute toward review or report accuracy stats.
 
         Examples:
         - video evidence is too old to be meaningful
         - video evidence was recorded on a different server network and is thus irrelevant,
           but not necessarily wrong
-        - the author was sending redundant accusations
+        - the author was sending redundant reports
 
-        Once a report is closed in this way, it is archived and cannot be changed. It will
-        count neither for nor against the accuser and reviewers.
+        Staff members need at least one of the following permissions:
+        - managemc.special.owner
+        - managemc.special.admin
+        - managemc.manage.*
+        - managemc.manage.reports.*
+        - managemc.manage.reports.review
+
+        The report author can also close their own report as long as review has not begun yet.
+        The author does not need special permissions to close their own report.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
-          description: The updated accusation
+          description: The updated report
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/AccusationInDepthInfo"
+                "$ref": "#/components/schemas/PlayerReportInDepth"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
         403:
-          "$ref": "#/components/responses/PermissionDeniedError"
+          description: |
+            Under any of the following conditions:
+
+            - user is neither the report author nor an appropriately permissioned staff member
         422:
           description: |
             Under any of the following conditions:
 
-            - accusation not found
-            - accusation has a terminal status
+            - report not found
+            - report has a terminal status
             - active player is the accusee
-  "/accusations/{id}/actions/override_verdict":
+            - report review has begun and the active player is not a staff member
+  "/reports/{id}/actions/reopen":
     post:
-      operationId: override_accusation_verdict
-      summary: Override the verdict on an accusation
+      operationId: reopen_report
+      summary: Reopen a closed report
       tags:
-      - Accusations
+      - Reports
+      security:
+      - user_web: []
+      - user_mobile: []
+      description: |
+        This action opens an `ARCHIVED` report. If a report was closed by its author, then only
+        the author can reopen it. Otherwise, only staff members can reopen it.
+
+        Reopening reports other than one's own requires at least one of the following permissions:
+        - managemc.special.owner
+        - managemc.special.admin
+        - managemc.manage.*
+        - managemc.manage.reports.*
+        - managemc.manage.reports.review
+
+        If the report status is not `ARCHIVED`, this request will change nothing.
+      parameters:
+      - "$ref": "#/components/parameters/NumericIdentifier"
+      responses:
+        200:
+          description: The updated report
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PlayerReportInDepth"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          description: |
+            Under any of the following conditions:
+
+            - user is neither the report author nor an appropriately permissioned staff member
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - report not found
+            - active player is the accusee
+            - report was closed by the author and active user is not the author
+  "/reports/{id}/actions/override_verdict":
+    post:
+      operationId: override_report_verdict
+      summary: Override the verdict on a report
+      tags:
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.reports.*
       description: |
-        If not all reviewers issue identical verdicts on a given accusation, they are said to
+        If not all reviewers issue identical verdicts on a given report, they are said to
         "disagree" on the overall verdict.
 
-        In the event of disagreement, an accusation is flagged with a special status indicating
+        In the event of disagreement, a report is flagged with a special status indicating
         a need for further review. Any user with override power may then issue an overriding
-        verdict on the accusation. Doing so closes the accusation and overrides any other rulings.
+        verdict on the report. Doing so closes the report and overrides any other rulings.
         Unlike the standard review workflow, this action does not require a review permit.
 
-        Permissioned users may also issue overriding verdicts on closed accusations. This merely
+        Permissioned users may also issue overriding verdicts on closed reports. This merely
         updates the overall verdict.
 
         If the user issued one of the conflicting verdicts initially, this overriding verdict will
         update the initial verdict instead of creating a new one, effectively preventing this
         conflict from contributing toward their review statistics.
+
+        Even reports without video evidence may be "overridden" using this API, making this endpoint
+        an acceptable alternative to simply calling `resolve_videoless_report` again for highly
+        permissioned users. However, the user will not have the option of closing related reports.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
       requestBody:
@@ -6902,14 +7019,14 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/CreateAccusationRulingInput"
+              "$ref": "#/components/schemas/CreateReportRulingInput"
       responses:
         200:
-          description: The updated accusation
+          description: The updated report
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/AccusationInDepthInfo"
+                "$ref": "#/components/schemas/PlayerReportInDepth"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6920,48 +7037,53 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - accusation not found
-            - accusation managed by different server network
-            - accusation status is neither `CLOSED` nor `CONFLICTING_VERDICTS`
+            - report not found
+            - report managed by different server network
+            - report status is not one of: `CLOSED_ACCEPTED`, `CLOSED_REJECTED`, `CONFLICTING_VERDICTS`
             - user is the accuser or accusee
-  "/accusation_review_permits":
+  "/report_review_permits":
     post:
-      operationId: init_accusation_review
-      summary: Initiate accusation review
+      operationId: init_report_review
+      summary: Initiate the review of a report
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.review
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.reports.*
+      - managemc.manage.reports.review
       description: |
-        Call this endpoint when a staff member wants to review an accusation and is not
-        using override power (e.g. to resolve a conflict between disagreeing verdicts
-        from other users). Depending on whether `accusation_id` is provided in the request
-        body, this endpoint may be used to either reserve a specific accusation for review
-        or a random one.
+        Call this endpoint when a staff member wants to review a report with video
+        evidence and is not using override power (e.g. to resolve a conflict between
+        disagreeing verdicts from other users). Depending on whether `report_id` is
+        provided in the request body, this endpoint may be used to either reserve a
+        specific report for review or a random one.
 
-        Any staff member is allowed to initiate review on the same accusation more than
-        once. This allows them to update their original verdict. This feature is only
-        available before an overall verdict has been established. Permits issued to staff
-        members who are updating their previous reviews are not counted toward the permit
-        quota.
+        Any permissioned staff member is allowed to initiate review on the same report
+        more than once, since this is what allows them to update their original verdict.
+        This feature is only available before an overall verdict has been established.
+        Permits issued to staff members who are updating their previous reviews are not
+        counted toward the permit quota.
+
+        Reports without video evidence are resolved with only a single review using
+        `resolve_videoless_report` instead.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/InitAccusationReviewInput"
+              "$ref": "#/components/schemas/InitReportReviewInput"
       responses:
         200:
-          description: Object representing a reviewable accusation (soft failure possible)
+          description: Object representing a reviewable report (soft failure possible)
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/InitAccusationReviewResponse"
+                "$ref": "#/components/schemas/InitReportReviewResponse"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -6972,24 +7094,28 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - accusation (if specified) was not found
-            - accusation (if specified) is managed by a different server network
-            - active player is the accuser or accusee (if accusation is provided)
-  "/accusation_review_permits/{id}":
+            - report has no video evidence
+            - report status is not `OPEN`
+            - report (if specified) was not found
+            - report (if specified) is managed by a different server network
+            - active player is the accuser or accusee (if report is provided)
+  "/report_review_permits/{id}":
     delete:
-      operationId: cancel_accusation_review
-      summary: Cancel an accusation review
+      operationId: cancel_report_review
+      summary: Cancel a report review
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.review
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.manage.*
+      - managemc.manage.reports.*
+      - managemc.manage.reports.review
       description: |
-        Calling this endpoint will return an accusation review permit to the shared pool.
+        Calling this endpoint will return a report review permit to the shared pool.
         Call this if the user explicitly cancels the review.
 
         Fully idempotent.
@@ -7012,37 +7138,41 @@ paths:
   "/players/{id}/reports_issued":
     get:
       operationId: fetch_reports_issued
-      summary: Fetch accusations issued by a player
+      summary: Fetch reports issued by a player
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       description: |
-        This endpoint fetches accusations and watch requests issued by a given player. If
-        the active user is fetching their own data, then the response will include
-        accusations issued across all server networks. Otherwise, the active user must have
-        one of the following permissions, and only accusations issued on the active server
-        network will be included:
+        This endpoint fetches reports issued by a given player. If the active user is
+        fetching their own data, then the response will include reports issued across
+        all server networks. Otherwise, the active user must have one of the following
+        permissions, and only reports issued on the active server network will be
+        included:
 
-        - com.managemc.staff.owner
-        - com.managemc.staff.admin
-        - com.managemc.staff.accusations.view
+        - managemc.special.owner
+        - managemc.special.admin
+        - managemc.players.*
+        - managemc.manage.*
+        - managemc.manage.reports.*
+        - managemc.manage.reports.review
+        - managemc.manage.reports.view
 
-        Accusations that have not yet been submitted are not included unless the user is
-        fetching their own data. This endpoint will not include "stats" concepts
-        (`ruling_times`, `includes_video_evidence`). Similarly, this endpoint omits the
-        `accusee.active_server` field.
+        Reports that have not yet been submitted are not included unless the user is
+        fetching their own data. This endpoint will not include `ruling_times` or
+        `accusee.active_server`.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
-          description: Accusations and watch requests, separately, both in reverse
-            creation order
+          description: Reports in reverse creation order
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/Reports"
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PlayerReport"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -7051,7 +7181,7 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - unpermissioned user is trying to fetch accusations for a different player
+            - unpermissioned user is trying to fetch reports for a different player
         422:
           description: |
             Under any of the following conditions:
@@ -7060,34 +7190,39 @@ paths:
   "/players/{id}/reports_received":
     get:
       operationId: fetch_reports_received
-      summary: Fetch accusations received by a player
+      summary: Fetch reports received by a player
       tags:
-      - Accusations
+      - Reports
       security:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.accusations.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.manage.*
+      - managemc.manage.reports.*
+      - managemc.manage.reports.review
+      - managemc.manage.reports.view
       description: |
-        This endpoint fetches accusations received by a given player on the active server network.
+        This endpoint fetches reports received by a given player on the active server network.
         Only staff members can use this endpoint.
 
-        Does not include accusations that have been opened but not submitted. This endpoint will
-        not include "stats" concepts (`ruling_times`, `includes_video_evidence`). Similarly, this
-        endpoint omits the `accusee.active_server` field.
+        Does not include reports that have been opened but not submitted. This endpoint will
+        not include `ruling_times` or `accusee.active_server`.
 
-        All accusations and watch requests will pertain to the active server network only.
+        All reports will pertain to the active server network only.
       parameters:
       - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
-          description: Accusations in reverse creation order
+          description: Reports in reverse creation order
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/Reports"
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PlayerReport"
         400:
           "$ref": "#/components/responses/SyntaxError"
         401:
@@ -7109,9 +7244,13 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.players.permissions.view
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Everything the consumer might possibly need to know about:
 
@@ -7120,7 +7259,7 @@ paths:
         - what permission groups are available for and/or in use by the active server network
       responses:
         200:
-          description: Accusations in reverse creation order
+          description: Configured permissions and roles
           content:
             application/json:
               schema:
@@ -7141,9 +7280,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Permissions that already exist (based on technical name) will be updated; otherwise,
         permissions will be created. Returns detailed information about all created and updated
@@ -7173,13 +7313,53 @@ paths:
           description: |
             Under any of the following conditions:
 
-            - one or more permissions start with `com.managemc`
+            - one or more permissions start with `managemc`
             - one or more permissions not found by ID for active server network
             - required fields missing or blank
             - two or more permissions have the same name
             - consumer tries to set server_scopeable to false for a permission that is already
               assigned on a server, either directly or as part of a role
-  "/access/configuration/permissions/{name}":
+  "/access/configuration/permissions/{id}":
+    get:
+      operationId: fetch_permission
+      summary: Fetch details about an existing permission
+      tags:
+      - Access
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.players.permissions.view
+      - managemc.config.*
+      - managemc.config.permissions
+      description: |
+        Fetch details about an existing permission, including how it is assigned to players
+        on your server network and which roles and taxonomies it's associated with.
+      parameters:
+      - "$ref": "#/components/parameters/NumericIdentifier"
+      responses:
+        200:
+          description: The permission
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PermissionTemplateExpanded"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - permission not found
+            - permission exists but is managed by a different server network
     delete:
       operationId: delete_permission
       summary: Delete a permission template
@@ -7189,20 +7369,16 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Deleting a permission template is irreversible. The permission will be deleted, removed
         from all roles and groups, and unassigned from all players. The permission will need to
         be reconfigured manually if this is done accidentally.
       parameters:
-      - in: path
-        name: name
-        schema:
-          type: string
-        required: true
-        description: the technical name of the permission
+      - "$ref": "#/components/parameters/NumericIdentifier"
       responses:
         200:
           "$ref": "#/components/responses/NoOpResponse"
@@ -7228,9 +7404,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: Create a new role and associate it with permissions.
       requestBody:
         required: true
@@ -7260,6 +7437,46 @@ paths:
             - one or more permissions not found by ID for active server network
             - one or more existing permissions are not configurable
   "/access/configuration/roles/{id}":
+    get:
+      operationId: fetch_role
+      summary: Fetch details about an existing role
+      tags:
+      - Access
+      security:
+      - user_web: []
+      - user_mobile: []
+      x-permissions:
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.players.permissions.view
+      - managemc.config.*
+      - managemc.config.permissions
+      description: |
+        Fetch details about an existing role, including how it is assigned to players
+        on your server network.
+      parameters:
+      - "$ref": "#/components/parameters/NumericIdentifier"
+      responses:
+        200:
+          description: The role
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RoleTemplateExpanded"
+        400:
+          "$ref": "#/components/responses/SyntaxError"
+        401:
+          "$ref": "#/components/responses/UnauthenticatedError"
+        403:
+          "$ref": "#/components/responses/PermissionDeniedError"
+        422:
+          description: |
+            Under any of the following conditions:
+
+            - role not found
+            - role exists but is managed by a different server network
     put:
       operationId: update_role
       summary: Update existing role
@@ -7269,9 +7486,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Fully reconfigure a new role along with its permissions. The permissions passed to
         this endpoint will fully replace the old ones, so include all those the user intends
@@ -7316,9 +7534,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Deleting a role template is irreversible. The role will be deleted and unassigned
         from all players. The role will need to be reconfigured manually if this is done
@@ -7356,9 +7575,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Permission groups are logically related sets of permissions that should be displayed together.
         Unlike roles, permission groups have no programmatic significance. Each permission group may
@@ -7408,9 +7628,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: 'This fully replaces all previous attributes, including subgroups
         and permissions.
 
@@ -7453,9 +7674,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.permissions.configure
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         If the consumer does this by accident, it will cause only a minor inconvenience
         because permission groups have no programmatic significance.
@@ -7496,9 +7718,13 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.players.permissions.view
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Obtain an explanation of why a player does or does not have a given permission
         on a given server. This powers a debugging tool.
@@ -7553,9 +7779,13 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.players.permissions.view
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Returns a list of permissions currently assigned to the active player according to the
         database. This endpoint reads directly from the database, not a cache.
@@ -7588,9 +7818,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.assign
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Completely reconfigures a player's permissions. Consumer must be sure to pass ALL desired permissions
         to this endpoint, as any permissions not specified will be removed.
@@ -7650,9 +7883,13 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.view
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.players.permissions.view
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Returns a list of permissions currently assigned to the active player on a specific
         server group. Unlike `fetch_player_permissions`, this endpoint reads from a cache
@@ -7698,9 +7935,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.assign
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Clones a player's permissions and assigns them to another player. Returns the same payload as
         `fetch_player_permissions`.
@@ -7744,9 +7984,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.assign
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Assign a single role and/or rescope it. As usual, set `server_groups` to an empty array
         to indicate that the role should be scoped throughout the network.
@@ -7796,9 +8039,12 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.permissions.assign
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.players.*
+      - managemc.players.permissions.*
+      - managemc.config.*
+      - managemc.config.permissions
       description: |
         Revoke a player's role across all scopes on which it is assigned. Request is
         ignored if the role is not assigned.
@@ -7914,9 +8160,11 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.players.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.players.*
+      - managemc.config.imports.players.view
       description: 'Powers the player overview tab in the configuration dashboard.
 
         '
@@ -7941,9 +8189,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.players.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.players.*
       description: |
         When players are imported as part of a player or punishment import, they are not
         validated with Mojang right away. Players are flagged as `INVALID` in two cases:
@@ -7996,9 +8245,10 @@ paths:
       - user_web: []
       - user_mobile: []
       x-permissions:
-      - com.managemc.staff.owner
-      - com.managemc.staff.admin
-      - com.managemc.staff.config.players.manage
+      - managemc.special.owner
+      - managemc.special.admin
+      - managemc.config.*
+      - managemc.config.imports.players.*
       description: |
         When players are imported as part of a player or punishment import, they are not
         validated with Mojang right away. Players are flagged as `INVALID` in two cases:
