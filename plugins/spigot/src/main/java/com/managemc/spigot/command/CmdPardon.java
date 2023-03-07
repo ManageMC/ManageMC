@@ -42,11 +42,11 @@ public class CmdPardon extends CommandExecutorAsync {
   private String details;
 
   /**
-   * Special note here: the "pardon-other" permission (com.managemc.staff.punishments.pardon)
+   * Special note here: the "edit-any" permission (managemc.players.punishments.edit)
    * allows a user to pardon punishments issued by other players. All users can pardon
    * their own punishments, provided they still have permission to issue the given
    * punishment type, but since this plugin has no way of knowing which player issued a
-   * punishment without making API requests, we do not check the "pardon-other" permission
+   * punishment without making API requests, we do not check the "edit-any" permission
    * client-side. If the server throws a 403 when we try to pardon, then we display a permission
    * error to the command sender asynchronously. We do this for every player-initiated API
    * request, because it's always possible for permissions to be out of sync.

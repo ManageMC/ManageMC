@@ -2,7 +2,6 @@ package com.managemc.spigot.command;
 
 import com.managemc.api.wrapper.model.metadata.ExternalServerAuthMetadata;
 import com.managemc.plugins.command.CommandExecutorAsync;
-import com.managemc.spigot.command.CmdReport;
 import com.managemc.spigot.command.util.CommandAssertions;
 import com.managemc.spigot.command.util.punishments.model.ResolvedPlayer;
 import com.managemc.spigot.testutil.TestBase;
@@ -16,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.openapitools.client.model.CreateWatchRequestInput;
+import org.openapitools.client.model.CreateReportInput;
 
 import java.util.UUID;
 
@@ -171,13 +170,14 @@ public class CmdReportTest extends TestBase {
 
     awaitAsyncCommand(() -> onCommand(true, args));
 
-    CreateWatchRequestInput expected = new CreateWatchRequestInput()
+    CreateReportInput expected = new CreateReportInput()
         .accuseeUuid(expectedUuid)
         .summary(expectedSummary)
         .inGameDistance(expectedDistance)
         .serverGroupId(TestConstants.KITPVP_ID)
-        .serverNetworkId(TestConstants.NETWORK_ID);
-    Mockito.verify(playerClient.getAccusationsApi()).createWatchRequest(expected);
+        .serverNetworkId(TestConstants.NETWORK_ID)
+        .status(CreateReportInput.StatusEnum.OPEN);
+    Mockito.verify(playerClient.getReportsApi()).createReport(expected);
   }
 
   private void onCommand(boolean noSyntaxError, String... args) {

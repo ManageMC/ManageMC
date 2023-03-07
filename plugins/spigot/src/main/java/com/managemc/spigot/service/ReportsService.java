@@ -5,7 +5,7 @@ import com.managemc.api.wrapper.model.metadata.ExternalServerAuthMetadata;
 import com.managemc.plugins.command.AbortCommand;
 import com.managemc.spigot.config.SpigotPluginConfig;
 import org.bukkit.entity.Player;
-import org.openapitools.client.model.CreateWatchRequestInput;
+import org.openapitools.client.model.CreateReportInput;
 
 import java.util.UUID;
 
@@ -29,16 +29,17 @@ public class ReportsService {
   private void reportPlayer(Player sender, UUID accusedId, String reason, Integer distanceBetween) throws ApiException {
     ExternalServerAuthMetadata authMetadata = config.getClientProvider().externalServer().getAuthMetadata();
 
-    CreateWatchRequestInput input = new CreateWatchRequestInput()
+    CreateReportInput input = new CreateReportInput()
         .accuseeUuid(accusedId)
         .inGameDistance(distanceBetween)
         .serverGroupId(authMetadata.getServerGroupId())
         .serverNetworkId(authMetadata.getServerNetworkId())
-        .summary(reason);
+        .summary(reason)
+        .status(CreateReportInput.StatusEnum.OPEN);
 
     try {
-      config.getClientProvider().player(sender.getUniqueId()).getAccusationsApi()
-          .createWatchRequest(input);
+      config.getClientProvider().player(sender.getUniqueId()).getReportsApi()
+          .createReport(input);
     } catch (ApiException e) {
       if (e.getCode() == 422 && e.getResponseBody().contains("Accusee not found")) {
         throw AbortCommand.withoutUsageMessage(WatchlistService.PLAYER_NOT_FOUND);

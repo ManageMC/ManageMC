@@ -3,22 +3,27 @@ package com.managemc.spigot.util.permissions;
 import lombok.Getter;
 
 public enum Permission {
-  OWNER("com.managemc.staff.owner"),
-  ADMIN("com.managemc.staff.admin"),
-  BAN_WEB("com.managemc.staff.punishments.bans.create"),
-  BAN_IN_GAME("com.managemc.staff.punishments.bans.create-ingame"),
-  MUTE_WEB("com.managemc.staff.punishments.mutes.create"),
-  MUTE_IN_GAME("com.managemc.staff.punishments.mutes.create-ingame"),
-  WARN_WEB("com.managemc.staff.punishments.warnings.create"),
-  WARN_IN_GAME("com.managemc.staff.punishments.warnings.create-ingame"),
-  IP_BAN_WEB("com.managemc.staff.punishments.ip-bans.create"),
-  IP_BAN_IN_GAME("com.managemc.staff.punishments.ip-bans.create-ingame"),
-  PUNISHMENTS_VIEW("com.managemc.staff.punishments.view"),
-  PUNISHMENTS_SHADOW("com.managemc.staff.punishments.shadow.manage"),
-  PUNISHMENTS_LENGTH_MED("com.managemc.staff.punishments.length.medium"),
-  PUNISHMENTS_LENGTH_LONG("com.managemc.staff.punishments.length.long"),
-  PUNISHMENTS_LENGTH_PERM("com.managemc.staff.punishments.length.permanent"),
-  MANAGE_WATCHLIST("com.managemc.staff.watchlist.manage"),
+  OWNER("managemc.special.owner"),
+  ADMIN("managemc.special.admin"),
+
+  PLAYERS_ALL("managemc.players.*"),
+  MANAGE_ALL("managemc.manage.*"),
+  CONFIG_ALL("managemc.config.*"),
+  PUNISHMENTS_ALL("managemc.players.punishments.*"),
+  BAN_WEB("managemc.players.punishments.bans.*"),
+  BAN_IN_GAME("managemc.players.punishments.bans.ingame"),
+  MUTE_WEB("managemc.players.punishments.mutes.*"),
+  MUTE_IN_GAME("managemc.players.punishments.mutes.ingame"),
+  WARN_WEB("managemc.players.punishments.warnings.*"),
+  WARN_IN_GAME("managemc.players.punishments.warnings.ingame"),
+  IP_BAN_WEB("managemc.players.punishments.ip-bans.*"),
+  IP_BAN_IN_GAME("managemc.players.punishments.ip-bans.ingame"),
+  PUNISHMENTS_VIEW("managemc.config.punishments.view"),
+  PUNISHMENTS_SHADOW("managemc.players.punishments.shadow"),
+  PUNISHMENTS_LENGTH_MED("managemc.players.punishments.length.medium"),
+  PUNISHMENTS_LENGTH_LONG("managemc.players.punishments.length.long"),
+  PUNISHMENTS_LENGTH_PERM("managemc.players.punishments.length.permanent"),
+  MANAGE_WATCHLIST("managemc.manage.watchlist"),
   ;
 
   @Getter
