@@ -20,7 +20,9 @@ public class PlayerUuidResolver {
   private static final String RESPONSE_UUID_KEY = "id";
 
   public static final int OK_CODE = 200;
-  public static final int NOT_FOUND_CODE = 204;
+  // Mojang API switched from 204 to 404 for "player not found" condition
+  public static final int LEGACY_NOT_FOUND_CODE = 204;
+  public static final int NEWER_NOT_FOUND_CODE = 404;
   public static final int RATE_LIMIT_EXCEEDED_CODE = 429;
 
   private final BukkitLogging logging;
@@ -56,7 +58,8 @@ public class PlayerUuidResolver {
       HttpResponse<String> response = httpRequestMaker.get(url);
 
       switch (response.getStatus()) {
-        case NOT_FOUND_CODE:
+        case LEGACY_NOT_FOUND_CODE:
+        case NEWER_NOT_FOUND_CODE:
           return ResolvedPlayer.builder().statusCode(ResolvedPlayer.Status.HTTP_NOT_FOUND).build();
         case RATE_LIMIT_EXCEEDED_CODE:
           return ResolvedPlayer.builder().statusCode(ResolvedPlayer.Status.HTTP_RATE_LIMIT_EXCEEDED).build();
