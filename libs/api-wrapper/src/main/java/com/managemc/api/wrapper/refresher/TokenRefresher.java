@@ -41,7 +41,7 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
   @Override
   public final Object invoke(Object o, Method thisMethod, Method proceed, Object[] args) throws Throwable {
     try {
-      refreshTokenIfNecessary(thisMethod.getName());
+      refreshTokenIfNecessary();
       return proceed.invoke(o, args);
     } catch (InvocationTargetException e) {
       if (e.getCause() instanceof ApiException) {
@@ -61,12 +61,9 @@ public abstract class TokenRefresher<T extends AuthMetadata> implements MethodHa
 
   /**
    * Should refresh the token if the token is expired. Failure to refresh the token
-   * should result in a runtime exception.
+   * should result in a runtime exception. See also TokenRefresherMethodFilter.
    */
-  private void refreshTokenIfNecessary(String methodName) throws ApiException {
-    // TODO: remove this once we're confident we found everything (see TokenRefresherMethodFilter)
-    logger.logInfo("Request made to ManageMC API: " + methodName);
-
+  private void refreshTokenIfNecessary() throws ApiException {
     if (shouldRefresh()) {
       refreshToken();
     }
