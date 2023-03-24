@@ -49,15 +49,15 @@ public class ManageMCLinkerPlugin extends JavaPlugin {
       registerCommand("link", new CmdLinkAccount(logger, config.getAccountLinkingService()));
     } catch (LocalConfig.IncompleteConfigException e) {
       logger.logInfo("Welcome to ManageMC! Please fill out the local config file at " + configFilePath + ".");
-      logger.logInfo("Shutting down because local config is incomplete...");
+      logger.logWarning("Disabling because local config is incomplete...");
       bukkitWrapper.disable();
     } catch (TokenRefresher.BadCredentialsException e) {
       logger.logWarning("Authentication with ManageMC failed because the credentials at " + configFilePath + " are wrong.");
-      logger.logWarning("Shutting down due to misconfiguration...");
+      logger.logWarning("Disabling due to misconfiguration...");
       bukkitWrapper.disable();
     } catch (RuntimeException | ApiException e) {
       logger.logStackTrace(e);
-      logger.logWarning("Shutting down due to an unexpected error...");
+      logger.logWarning("Disabling due to an unexpected error...");
       bukkitWrapper.disable();
     }
   }
