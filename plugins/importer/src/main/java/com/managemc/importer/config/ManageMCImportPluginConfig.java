@@ -2,6 +2,7 @@ package com.managemc.importer.config;
 
 import com.managemc.api.wrapper.ClientProvider;
 import com.managemc.importer.data.ImportJobTracker;
+import com.managemc.importer.environment.ConditionalBehavior;
 import com.managemc.importer.reader.source.AdvancedBanDb;
 import com.managemc.importer.reader.source.AdvancedBanDbImpl;
 import com.managemc.importer.reader.source.MaxBansPlusDb;
@@ -37,11 +38,7 @@ public class ManageMCImportPluginConfig {
   ) {
     this.bukkitWrapper = bukkitWrapper;
     this.logging = logging;
-    clientProvider = ClientProvider.demo(
-        new ClientProviderLogger(),
-        localConfig.getKeys(),
-        null
-    );
+    clientProvider = ConditionalBehavior.getClientProvider(new ClientProviderLogger(), localConfig);
     OnboardingApiService onboardingApiService = new OnboardingApiService(clientProvider);
     ImportJobTracker importJobTracker = new ImportJobTracker();
     jobStatusService = new JobStatusService(importJobTracker);

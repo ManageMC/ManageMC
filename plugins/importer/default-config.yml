@@ -5,3 +5,7 @@
 # to share them with hooligans you do not trust.
 MMC_PUBLIC_KEY:
 MMC_PRIVATE_KEY:
+
+# Options: [production, demo, local]
+# https://docs.managemc.com/guides/developers/api/api-environments/
+MMC_ENVIRONMENT: production
