@@ -17,3 +17,8 @@ MMC_GROUP:
 # for this field is the server's public IP, if you know it, but a descriptive label might be good enough.
 # Examples: KitPvP 2, KitPvP eu
 MMC_NAME:
+
+# Options: [production, demo, local]
+# https://docs.managemc.com/guides/developers/api/api-environments/
+# You won't need to change this unless you are a developer making contributions to ManageMC.
+MMC_ENVIRONMENT: production

@@ -1,6 +1,7 @@
 package com.managemc.spigot.config.model;
 
 import com.managemc.api.wrapper.model.Keys;
+import com.managemc.spigot.environment.Environment;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,8 @@ public class LocalConfig {
   public static final String PRIVATE_KEY_KEY = "MMC_PRIVATE_KEY";
   public static final String SERVER_GROUP_KEY = "MMC_GROUP";
   public static final String SERVER_NAME_KEY = "MMC_NAME";
+  public static final String ENVIRONMENT_KEY = "MMC_ENVIRONMENT";
+
   public static final String DEFAULT_SERVER_NAME = "Unnamed Server";
 
   @Getter
@@ -21,6 +24,8 @@ public class LocalConfig {
   private final String serverGroup;
   @Getter
   private final String serverName;
+  @Getter
+  private final Environment environment;
   @Getter
   @Setter
   private String version;
@@ -38,6 +43,10 @@ public class LocalConfig {
         .ofNullable(configMap.get(SERVER_NAME_KEY))
         .map(Object::toString)
         .orElse(DEFAULT_SERVER_NAME);
+    String envString = Optional.ofNullable(configMap.get(ENVIRONMENT_KEY))
+        .map(Object::toString)
+        .orElse(Environment.PRODUCTION.toString());
+    this.environment = Environment.valueOf(envString.toUpperCase());
     this.version = version;
   }
 
