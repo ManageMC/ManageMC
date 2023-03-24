@@ -1,6 +1,7 @@
 package com.managemc.linker.config;
 
 import com.managemc.api.wrapper.ClientProvider;
+import com.managemc.linker.environment.ConditionalBehavior;
 import com.managemc.linker.model.LocalConfig;
 import com.managemc.linker.service.AccountLinkingService;
 import com.managemc.linker.service.ApiPingService;
@@ -19,7 +20,7 @@ public class AccountLinkerConfigLocal implements AccountLinkerConfig {
   public AccountLinkerConfigLocal(BukkitLogging logger, LocalConfig localConfig) {
     this.logger = logger;
 
-    ClientProvider clientProvider = ClientProvider.demo(new ClientProviderLogger(), localConfig.getKeys(), null);
+    ClientProvider clientProvider = ConditionalBehavior.getClientProvider(new ClientProviderLogger(), localConfig);
     this.apiPingService = new ApiPingService(clientProvider);
     this.accountLinkingService = new AccountLinkingService(clientProvider);
   }
