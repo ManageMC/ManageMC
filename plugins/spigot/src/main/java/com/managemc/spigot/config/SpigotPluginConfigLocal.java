@@ -6,6 +6,7 @@ import com.managemc.plugins.logging.BukkitLogging;
 import com.managemc.spigot.command.util.punishments.PlayerUuidResolver;
 import com.managemc.spigot.config.model.LocalConfig;
 import com.managemc.spigot.config.model.PermissionsManager;
+import com.managemc.spigot.environment.ConditionalBehavior;
 import com.managemc.spigot.service.*;
 import com.managemc.spigot.state.MuteManager;
 import com.managemc.spigot.state.PardonablePunishmentData;
@@ -105,7 +106,7 @@ public class SpigotPluginConfigLocal implements SpigotPluginConfig {
         bukkitWrapper,
         localConfig,
         new PlayerData(),
-        ClientProvider.demo(newLogger(logging), localConfig.getKeys(), localConfig.getServerGroup())
+        ConditionalBehavior.getClientProvider(newLogger(logging), localConfig)
     );
   }
 

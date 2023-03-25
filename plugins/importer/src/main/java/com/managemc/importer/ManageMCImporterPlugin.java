@@ -22,7 +22,7 @@ import java.util.Optional;
 public class ManageMCImporterPlugin extends JavaPlugin {
 
   private static final String DEFAULT_CONFIG_FILENAME = "default-config.yml";
-  private static final String CONFIG_FILENAME = "ManageMC.yml";
+  private static final String CONFIG_FILENAME = "config.yml";
   private static final String PLUGIN_NAME = "ManageMC Importer";
 
   @Override
@@ -51,15 +51,15 @@ public class ManageMCImporterPlugin extends JavaPlugin {
       config.getClientProvider().externalApplication().getPingApi().ping();
     } catch (LocalConfig.IncompleteConfigException e) {
       logger.logInfo("Welcome to ManageMC! Please fill out the local config file at " + configFilePath + ".");
-      logger.logInfo("Shutting down because local config is incomplete...");
+      logger.logWarning("Disabling because local config is incomplete...");
       bukkitWrapper.disable();
     } catch (TokenRefresher.BadCredentialsException e) {
       logger.logWarning("Authentication with ManageMC failed because the credentials at " + configFilePath + " are wrong.");
-      logger.logWarning("Shutting down due to misconfiguration...");
+      logger.logWarning("Disabling due to misconfiguration...");
       bukkitWrapper.disable();
     } catch (RuntimeException | ApiException e) {
       logger.logStackTrace(e);
-      logger.logWarning("Shutting down due to an unexpected error...");
+      logger.logWarning("Disabling due to an unexpected error...");
       bukkitWrapper.disable();
     }
   }
