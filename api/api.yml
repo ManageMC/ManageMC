@@ -1780,9 +1780,12 @@ components:
             account with the user securely.
         uuid:
           "$ref": "#/components/schemas/PlayerUuid"
+        username:
+          "$ref": "#/components/schemas/PlayerUsername"
       required:
       - account_linking_token
       - uuid
+      - username
     LinkPlayerResponse:
       properties:
         status:
@@ -6386,11 +6389,6 @@ paths:
           "$ref": "#/components/responses/SyntaxError"
         401:
           "$ref": "#/components/responses/UnauthenticatedError"
-        422:
-          description: |
-            Under any of the following conditions:
-
-            - player not found
   "/linked_players/{id}":
     delete:
       operationId: unlink_player
