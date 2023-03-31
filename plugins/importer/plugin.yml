@@ -1,6 +1,6 @@
 name: ManageMCImporter
 main: com.managemc.importer.ManageMCImporterPlugin
-version: 0.1.0-SNAPSHOT
+version: 1.0.0
 description: Import data into ManageMC from third-party sources
 author: jacob@managemc.com
 website: managemc.com

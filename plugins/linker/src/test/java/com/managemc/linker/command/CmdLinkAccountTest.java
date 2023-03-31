@@ -45,7 +45,9 @@ public class CmdLinkAccountTest {
     command = new CmdLinkAccount(Mockito.mock(BukkitLogging.class), CONFIG.getAccountLinkingService());
 
     Mockito.when(randoPlayer.getUniqueId()).thenReturn(UUID.fromString(BENNEY_UUID));
+    Mockito.when(randoPlayer.getName()).thenReturn("__rando");
     Mockito.when(unlinkedPlayer.getUniqueId()).thenReturn(UUID.fromString(UNLINKED_UUID));
+    Mockito.when(unlinkedPlayer.getName()).thenReturn("__unlinked");
   }
 
   @Test
