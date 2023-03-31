@@ -1,6 +1,6 @@
 name: ManageMCLinker
 main: com.managemc.linker.ManageMCLinkerPlugin
-version: 0.1.0-SNAPSHOT
+version: 1.0.1
 description: Plugin for linking Minecraft accounts with ManageMC
 author: jacob@managemc.com
 website: managemc.com
