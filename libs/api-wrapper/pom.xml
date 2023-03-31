@@ -7,13 +7,13 @@
     <groupId>com.managemc.api.wrapper</groupId>
     <artifactId>managemc-api-wrapper</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>ManageMC API Wrapper</name>
 
     <parent>
         <groupId>com.managemc</groupId>
         <artifactId>managemc-pom-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>1.0.0</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>com.managemc.api</groupId>
             <artifactId>managemc-api</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- For proxying abstract classes (as opposed to interfaces, which is all InvocationHandler supports -->
@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.19.3-R0.1-SNAPSHOT</version>
+            <version>1.19.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

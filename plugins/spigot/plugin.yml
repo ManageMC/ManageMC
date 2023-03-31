@@ -1,9 +1,9 @@
 name: ManageMC
 main: com.managemc.spigot.ManageMCSpigotPlugin
-version: 0.1.0-SNAPSHOT
-description: Cloud-based player management and data analytics
+version: 1.0.1
+description: Internal tooling for Minecraft servers
 author: jacob@managemc.com
-website: managemc.com
+website: https://managemc.com
 api-version: 1.19
 commands:
   report:

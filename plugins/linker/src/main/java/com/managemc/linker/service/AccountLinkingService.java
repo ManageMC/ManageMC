@@ -23,7 +23,8 @@ public class AccountLinkingService {
   public void linkPlayer(Player sender, String token) throws ApiException {
     LinkPlayerInput input = new LinkPlayerInput()
         .accountLinkingToken(token)
-        .uuid(sender.getUniqueId());
+        .uuid(sender.getUniqueId())
+        .username(sender.getName());
 
     LinkPlayerResponse response = clientProvider.internal().getAccountsApi().linkPlayer(input);
     sender.sendMessage(getMessageForConsumer(response));
