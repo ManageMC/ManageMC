@@ -42,7 +42,7 @@ public class PermissionsManager {
    * a player SHOULD have, and then we assign them all here.
    */
   public void assignPermissions(Player player) {
-    PermissionAttachment attachment = new PermissionAttachment(bukkitWrapper.getPlugin(), player);
+    PermissionAttachment attachment = player.addAttachment(bukkitWrapper.getPlugin());
 
     if (intendedPermissions.containsKey(player.getUniqueId())) {
       intendedPermissions.get(player.getUniqueId()).forEach(p -> attachment.setPermission(p, true));
