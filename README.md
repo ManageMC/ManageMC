@@ -1,6 +1,6 @@
 # ManageMC
 
-Welcome to [ManageMC](https://managemc.com)'s public repository, which contains the open source components of our software.
+Welcome to ManageMC's public repository, which contains the (formerly) open source components of our software. This project has since been discontinued, and now our internal apps [are also open source now](https://github.com/ManageMC/internal).
 
 ## Contents
 
